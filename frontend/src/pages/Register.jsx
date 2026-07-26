@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import axios from 'axios';
 import { LineChart, Sparkles, User, Mail, Lock, Key, Eye, EyeOff, ArrowRight } from 'lucide-react';
 import Navbar from '../components/Navbar/Navbar';
@@ -493,9 +493,9 @@ const Register = () => {
 
                 <p className="text-center font-body-md text-body-md text-on-surface-variant mt-6">
                   Already have an account?{' '}
-                  <a className="text-primary font-bold hover:underline" href="#">
+                  <Link className="text-primary font-bold hover:underline" to="/login">
                     Sign in instead
-                  </a>
+                  </Link>
                 </p>
               </form>
             </div>

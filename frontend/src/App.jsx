@@ -4,6 +4,7 @@ import BackgroundShader from './components/Common/BackgroundShader';
 import LandingPage from './pages/LandingPage';
 import Register from './pages/Register';
 import Login from './pages/Login';
+import Dashboard from './pages/Dashboard';
 
 function App() {
   return (
@@ -45,11 +46,7 @@ function App() {
         {/* Dashboard Route */}
         <Route
           path="/dashboard"
-          element={
-            <div className="min-h-screen flex items-center justify-center bg-surface text-on-surface">
-              <h1 className="text-4xl font-bold">Dashboard</h1>
-            </div>
-          }
+          element={<Dashboard />}
         />
       </Routes>
     </Router>

@@ -186,3 +186,73 @@ class Transaction(models.Model):
 
     def __str__(self):
         return f"{self.user.email} - {self.stock_symbol} ({self.transaction_type})"
+from decimal import Decimal
+from django.db import models
+from django.conf import settings
+
+
+class Portfolio(models.Model):
+
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="portfolio"
+    )
+
+    stock_symbol = models.CharField(
+        max_length=20
+    )
+
+    company_name = models.CharField(
+        max_length=100
+    )
+
+    quantity = models.PositiveIntegerField(
+        default=0
+    )
+
+    average_buy_price = models.DecimalField(
+        max_digits=12,
+        decimal_places=2,
+        default=Decimal("0.00")
+    )
+
+    current_price = models.DecimalField(
+        max_digits=12,
+        decimal_places=2,
+        default=Decimal("0.00")
+    )
+
+    invested_amount = models.DecimalField(
+        max_digits=15,
+        decimal_places=2,
+        default=Decimal("0.00")
+    )
+
+    current_value = models.DecimalField(
+        max_digits=15,
+        decimal_places=2,
+        default=Decimal("0.00")
+    )
+
+    profit_loss = models.DecimalField(
+        max_digits=15,
+        decimal_places=2,
+        default=Decimal("0.00")
+    )
+
+    profit_loss_percentage = models.DecimalField(
+        max_digits=7,
+        decimal_places=2,
+        default=Decimal("0.00")
+    )
+
+    updated_at = models.DateTimeField(
+        auto_now=True
+    )
+
+    class Meta:
+        unique_together = ("user", "stock_symbol")
+
+    def __str__(self):
+        return f"{self.user.email} - {self.stock_symbol}"
