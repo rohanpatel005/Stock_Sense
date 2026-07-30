@@ -6,8 +6,18 @@ from django.db.models import Sum
 from apps.users.models import Transaction, Portfolio
 import yfinance as yf
 
+import math
+
 # Helper function to get real-time price from Yahoo Finance
 def get_live_stock_data(symbol, default_val=100.0):
+    def safe_float(val, default=0.0):
+        """Convert to float, replacing NaN/Inf with default."""
+        try:
+            v = float(val)
+            return default if (math.isnan(v) or math.isinf(v)) else v
+        except Exception:
+            return default
+
     try:
         # Indian stocks on Yahoo Finance need .NS suffix, except indices starting with ^
         is_index = symbol.startswith("^")
@@ -15,16 +25,14 @@ def get_live_stock_data(symbol, default_val=100.0):
         # Get fast info or historical info (last 1 day)
         history = ticker.history(period="2d")
         if not history.empty and len(history) >= 2:
-            prev_close = history['Close'].iloc[-2]
-            current_price = history['Close'].iloc[-1]
-            change = current_price - prev_close
-            change_percent = (change / prev_close) * 100
-            
-            # Simple simulation chart points
-            low = float(history['Low'].min())
-            high = float(history['High'].max())
-            chart = [float(val) for val in history['Close'].tolist()]
-            
+            prev_close    = safe_float(history['Close'].iloc[-2], default_val)
+            current_price = safe_float(history['Close'].iloc[-1], default_val)
+            change        = current_price - prev_close
+            change_percent = (change / prev_close) * 100 if prev_close else 0.0
+
+            # Filter NaN values from chart — float('nan') is not JSON-serialisable
+            chart = [safe_float(v) for v in history['Close'].tolist() if not (isinstance(v, float) and math.isnan(v))]
+
             return {
                 "price": round(current_price, 2),
                 "change": f"{'+' if change >= 0 else ''}{round(change, 2)}",
@@ -34,7 +42,7 @@ def get_live_stock_data(symbol, default_val=100.0):
             }
     except Exception:
         pass
-    
+
     # Fallback to mock values if Yahoo Finance query fails or is throttled
     return {
         "price": default_val,
@@ -43,6 +51,7 @@ def get_live_stock_data(symbol, default_val=100.0):
         "trend": "up",
         "chart": [default_val - 10, default_val - 5, default_val, default_val + 2, default_val]
     }
+
 
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])

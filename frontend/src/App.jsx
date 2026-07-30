@@ -5,6 +5,7 @@ import LandingPage from './pages/LandingPage';
 import Register from './pages/Register';
 import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
+import Markets from './pages/Markets';
 
 function App() {
   return (
@@ -20,7 +21,7 @@ function App() {
             </>
           }
         />
-        
+
         {/* Register Page Route */}
         <Route
           path="/register"
@@ -44,10 +45,10 @@ function App() {
         />
 
         {/* Dashboard Route */}
-        <Route
-          path="/dashboard"
-          element={<Dashboard />}
-        />
+        <Route path="/dashboard" element={<Dashboard />} />
+
+        {/* Markets Route */}
+        <Route path="/markets" element={<Markets />} />
       </Routes>
     </Router>
   );

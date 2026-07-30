@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { 
   TrendingUp, TrendingDown, ArrowUpRight, Search, 
@@ -6,19 +7,76 @@ import {
   Menu, X, LineChart, PieChart, Clock, Layers, BookOpen, AlertCircle
 } from 'lucide-react';
 
+// ─── Flash-animation CSS injected once ──────────────────────────────────────
+const FLASH_STYLE = `
+  @keyframes flash-green {
+    0%   { background-color: transparent; }
+    25%  { background-color: #d1fae5; }
+    100% { background-color: transparent; }
+  }
+  @keyframes flash-red {
+    0%   { background-color: transparent; }
+    25%  { background-color: #fee2e2; }
+    100% { background-color: transparent; }
+  }
+  .flash-up   { animation: flash-green 1.5s ease; border-radius: 4px; }
+  .flash-down { animation: flash-red   1.5s ease; border-radius: 4px; }
+`;
+
+// ─── NSE market-hours helper (IST = UTC+5:30) ────────────────────────────────
+const isNSEOpen = () => {
+  const now = new Date();
+  // Convert to IST
+  const istOffset = 5.5 * 60; // minutes
+  const utcMinutes = now.getUTCHours() * 60 + now.getUTCMinutes();
+  const istMinutes = (utcMinutes + istOffset) % (24 * 60);
+  const istHour   = Math.floor(istMinutes / 60);
+  const istMin    = istMinutes % 60;
+  // Check weekday in IST (approximate — offset doesn't change the date here)
+  const istDay = now.getUTCDay(); // close enough for IST Mon–Fri
+  if (istDay === 0 || istDay === 6) return false; // Sunday or Saturday
+  // 9:15 → 9*60+15=555   15:30 → 15*60+30=930
+  const openMin  = 9  * 60 + 15;
+  const closeMin = 15 * 60 + 30;
+  const currentMin = istHour * 60 + istMin;
+  return currentMin >= openMin && currentMin <= closeMin;
+};
+
+// ─── Module-level Cache for Stale-While-Revalidate ───────────────────────────
+let cachedDashboardData = null;
+let cachedGainers = [];
+let cachedLosers = [];
+let cachedGainersIsLive = true;
+let cachedGainersLastUpdated = '';
+let cachedLosersIsLive = true;
+let cachedLosersLastUpdated = '';
+
 const Dashboard = () => {
-  const [data, setData] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
+  const [data, setData] = useState(cachedDashboardData);
+  const [loading, setLoading] = useState(!cachedDashboardData);
   const [error, setError] = useState('');
-  
-  // Top Gainers & Losers States
-  const [gainers, setGainers] = useState([]);
-  const [gainersLoading, setGainersLoading] = useState(true);
+
+  // ── Live-refresh state ──────────────────────────────────────────────────
+  // marketStatus: { is_open: bool, label: string, fetched_at: string }
+  const [marketStatus, setMarketStatus] = useState({ is_open: true, label: '' });
+  const [lastRefreshed, setLastRefreshed] = useState('');
+  // flashMap: { [key]: 'up' | 'down' | null } — drives CSS flash per price element
+  const [flashMap, setFlashMap] = useState({});
+  // Keep a ref to the previous prices to detect changes
+  const prevPricesRef = useRef({});
+
+  const [gainers, setGainers] = useState(cachedGainers);
+  const [gainersLoading, setGainersLoading] = useState(cachedGainers.length === 0);
   const [gainersError, setGainersError] = useState('');
-  
-  const [losers, setLosers] = useState([]);
-  const [losersLoading, setLosersLoading] = useState(true);
+  const [gainersIsLive, setGainersIsLive] = useState(cachedGainersIsLive);
+  const [gainersLastUpdated, setGainersLastUpdated] = useState(cachedGainersLastUpdated);
+
+  const [losers, setLosers] = useState(cachedLosers);
+  const [losersLoading, setLosersLoading] = useState(cachedLosers.length === 0);
   const [losersError, setLosersError] = useState('');
+  const [losersIsLive, setLosersIsLive] = useState(cachedLosersIsLive);
+  const [losersLastUpdated, setLosersLastUpdated] = useState(cachedLosersLastUpdated);
 
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState([]);
@@ -40,6 +98,29 @@ const Dashboard = () => {
     { symbol: 'LT', name: 'Larsen & Toubro Limited' }
   ];
 
+  // ── Inject flash-animation CSS once ─────────────────────────────────────
+  useEffect(() => {
+    const styleTag = document.createElement('style');
+    styleTag.id = 'stocksense-flash-css';
+    styleTag.textContent = FLASH_STYLE;
+    if (!document.getElementById('stocksense-flash-css')) {
+      document.head.appendChild(styleTag);
+    }
+    return () => {
+      const el = document.getElementById('stocksense-flash-css');
+      if (el) el.remove();
+    };
+  }, []);
+
+  // ── Helper: detect a price change and trigger a flash for 1.5 s ──────────
+  const triggerFlash = useCallback((key, newPrice, oldPrice) => {
+    if (oldPrice === undefined || newPrice === oldPrice) return;
+    const dir = newPrice > oldPrice ? 'up' : 'down';
+    setFlashMap(prev => ({ ...prev, [key]: dir }));
+    setTimeout(() => setFlashMap(prev => ({ ...prev, [key]: null })), 1500);
+  }, []);
+
+  // ── Initial full dashboard fetch (shows spinner, sets all state) ──────────
   const fetchDashboardData = async () => {
     try {
       const token = localStorage.getItem('access_token');
@@ -47,6 +128,18 @@ const Dashboard = () => {
         headers: { Authorization: `Bearer ${token}` }
       });
       setData(response.data);
+      cachedDashboardData = response.data;
+      // Seed the previous-prices ref so first live refresh can compare
+      const d = response.data;
+      prevPricesRef.current = {
+        nifty50:    parseFloat(d.summary?.nifty_50?.value?.replace(/,/g, '') || 0),
+        sensex:     parseFloat(d.summary?.sensex?.value?.replace(/,/g, '')   || 0),
+        bank_nifty: parseFloat(d.summary?.bank_nifty?.value?.replace(/,/g, '') || 0),
+        ...(d.trending_stocks || []).reduce((acc, s) => {
+          acc[s.symbol] = parseFloat(s.price?.replace(/,/g, '') || 0);
+          return acc;
+        }, {}),
+      };
     } catch (err) {
       setError('Failed to fetch dashboard data. Please log in again.');
     } finally {
@@ -54,15 +147,137 @@ const Dashboard = () => {
     }
   };
 
+  // ── Live refresh: silently merges /api/market/live/, top-gainers, and top-losers into existing state ───
+  const fetchLiveData = useCallback(async () => {
+    // Do NOT fetch if market is closed — show stale values silently
+    if (!isNSEOpen()) {
+      setMarketStatus({ is_open: false, label: 'Market Closed' });
+      return;
+    }
+    try {
+      const token = localStorage.getItem('access_token');
+      const [liveRes, gainersRes, losersRes] = await Promise.allSettled([
+        axios.get('http://127.0.0.1:8000/api/market/live/', { headers: { Authorization: `Bearer ${token}` } }),
+        axios.get('http://127.0.0.1:8000/api/market/top-gainers/', { headers: { Authorization: `Bearer ${token}` } }),
+        axios.get('http://127.0.0.1:8000/api/market/top-losers/', { headers: { Authorization: `Bearer ${token}` } }),
+      ]);
+
+      if (liveRes.status === 'fulfilled') {
+        const live = liveRes.value.data;
+
+        // ── Detect price changes and trigger flashes ──
+        const prev = prevPricesRef.current;
+        const newPrev = { ...prev };
+
+        const checkFlash = (key, valueStr) => {
+          const newPrice = parseFloat(valueStr?.replace(/,/g, '') || 0);
+          triggerFlash(key, newPrice, prev[key]);
+          newPrev[key] = newPrice;
+        };
+
+        if (live.indices) {
+          checkFlash('nifty50',    live.indices.nifty_50?.value);
+          checkFlash('sensex',     live.indices.sensex?.value);
+          checkFlash('bank_nifty', live.indices.bank_nifty?.value);
+        }
+        (live.trending_stocks || []).forEach(s => checkFlash(s.symbol, s.price));
+        (live.watchlist || []).forEach(s => checkFlash(s.symbol, s.price));
+        prevPricesRef.current = newPrev;
+
+        // ── Merge live data into the main `data` state (functional update) ──
+        setData(prevVal => {
+          if (!prevVal) return prevVal;
+          const updated = {
+            ...prevVal,
+            summary: live.summary ? {
+              ...prevVal.summary,
+              nifty_50:   live.summary.nifty_50,
+              sensex:     live.summary.sensex,
+              bank_nifty: live.summary.bank_nifty,
+              portfolio:  live.summary.portfolio ?? prevVal.summary.portfolio,
+              ai_mood:    live.summary.ai_mood   ?? prevVal.summary.ai_mood,
+              wallet:     prevVal.summary.wallet,  // wallet unchanged by live refresh
+            } : prevVal.summary,
+            market_overview:  live.market_overview  || prevVal.market_overview,
+            trending_stocks:  live.trending_stocks  || prevVal.trending_stocks,
+            watchlist:        live.watchlist        || prevVal.watchlist,
+            fii_dii:          live.fii_dii           || prevVal.fii_dii,
+            ai_insights:      live.ai_insights       || prevVal.ai_insights,
+          };
+          cachedDashboardData = updated;
+          return updated;
+        });
+
+        // ── Update market status and last-refreshed timestamp ──
+        if (live.market_status) {
+          setMarketStatus(live.market_status);
+        }
+        setLastRefreshed(new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', second: '2-digit' }));
+      }
+
+      if (gainersRes.status === 'fulfilled') {
+        const payload = gainersRes.value.data;
+        if (payload && payload.success) {
+          const list = payload.data?.top_gainers || [];
+          setGainers(list);
+          cachedGainers = list;
+          setGainersIsLive(payload.is_live);
+          cachedGainersIsLive = payload.is_live;
+          setGainersLastUpdated(payload.last_updated || '');
+          cachedGainersLastUpdated = payload.last_updated || '';
+        } else {
+          const list = Array.isArray(payload) ? payload : [];
+          setGainers(list);
+          cachedGainers = list;
+        }
+        setGainersLoading(false);
+      }
+      if (losersRes.status === 'fulfilled') {
+        const payload = losersRes.value.data;
+        if (payload && payload.success) {
+          const list = payload.data?.top_losers || [];
+          setLosers(list);
+          cachedLosers = list;
+          setLosersIsLive(payload.is_live);
+          cachedLosersIsLive = payload.is_live;
+          setLosersLastUpdated(payload.last_updated || '');
+          cachedLosersLastUpdated = payload.last_updated || '';
+        } else {
+          const list = Array.isArray(payload) ? payload : [];
+          setLosers(list);
+          cachedLosers = list;
+        }
+        setLosersLoading(false);
+      }
+
+    } catch (err) {
+      // Silent failure — keep showing previous values, don't show error to user
+      console.warn('[StockSense] Live refresh failed silently:', err?.message);
+    }
+  }, [triggerFlash]);
+
   const fetchTopGainers = async () => {
-    setGainersLoading(true);
+    if (cachedGainers.length === 0) setGainersLoading(true);
     setGainersError('');
     try {
       const token = localStorage.getItem('access_token');
       const response = await axios.get('http://127.0.0.1:8000/api/market/top-gainers/', {
         headers: { Authorization: `Bearer ${token}` }
       });
-      setGainers(response.data);
+      const payload = response.data;
+      if (payload && payload.success) {
+        const list = payload.data?.top_gainers || [];
+        setGainers(list);
+        cachedGainers = list;
+        setGainersIsLive(payload.is_live);
+        cachedGainersIsLive = payload.is_live;
+        setGainersLastUpdated(payload.last_updated || '');
+        cachedGainersLastUpdated = payload.last_updated || '';
+      } else {
+        const list = Array.isArray(payload) ? payload : [];
+        setGainers(list);
+        cachedGainers = list;
+      }
     } catch (err) {
       setGainersError('Unable to load Top Gainers.');
     } finally {
@@ -71,14 +286,27 @@ const Dashboard = () => {
   };
 
   const fetchTopLosers = async () => {
-    setLosersLoading(true);
+    if (cachedLosers.length === 0) setLosersLoading(true);
     setLosersError('');
     try {
       const token = localStorage.getItem('access_token');
       const response = await axios.get('http://127.0.0.1:8000/api/market/top-losers/', {
         headers: { Authorization: `Bearer ${token}` }
       });
-      setLosers(response.data);
+      const payload = response.data;
+      if (payload && payload.success) {
+        const list = payload.data?.top_losers || [];
+        setLosers(list);
+        cachedLosers = list;
+        setLosersIsLive(payload.is_live);
+        cachedLosersIsLive = payload.is_live;
+        setLosersLastUpdated(payload.last_updated || '');
+        cachedLosersLastUpdated = payload.last_updated || '';
+      } else {
+        const list = Array.isArray(payload) ? payload : [];
+        setLosers(list);
+        cachedLosers = list;
+      }
     } catch (err) {
       setLosersError('Unable to load Top Losers.');
     } finally {
@@ -86,18 +314,20 @@ const Dashboard = () => {
     }
   };
 
+  // ── Mount effect: initial fetch + start polling intervals ─────────────────
   useEffect(() => {
     fetchDashboardData();
     fetchTopGainers();
     fetchTopLosers();
 
-    // Auto-refresh leaders/laggards every 60 seconds
-    const interval = setInterval(() => {
-      fetchTopGainers();
-      fetchTopLosers();
-    }, 60000);
+    // Live market data — poll every 12 seconds
+    // fetchLiveData itself checks isNSEOpen() and skips if market is closed
+    const liveInterval = setInterval(fetchLiveData, 12000);
 
-    return () => clearInterval(interval);
+    return () => {
+      clearInterval(liveInterval);
+    };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handleSearchChange = (e) => {
@@ -177,25 +407,26 @@ const Dashboard = () => {
         {/* Navigation items */}
         <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
           {[
-            { label: 'Dashboard', active: true },
-            { label: 'Markets' },
-            { label: 'Watchlist' },
-            { label: 'Portfolio' },
-            { label: 'Paper Trading' },
-            { label: 'Orders' },
-            { label: 'Holdings' },
-            { label: 'AI Mentor' },
-            { label: 'AI Simulation' },
-            { label: 'News' },
+            { label: 'Dashboard', active: true,  path: null       },
+            { label: 'Markets',   active: false, path: '/markets' },
+            { label: 'Watchlist'       },
+            { label: 'Portfolio'       },
+            { label: 'Paper Trading'   },
+            { label: 'Orders'          },
+            { label: 'Holdings'        },
+            { label: 'AI Mentor'       },
+            { label: 'AI Simulation'   },
+            { label: 'News'            },
             { label: 'Research Workspace' },
-            { label: 'Alerts' },
-            { label: 'Settings' }
+            { label: 'Alerts'          },
+            { label: 'Settings'        }
           ].map((item, index) => (
             <button
               key={index}
+              onClick={() => item.path && navigate(item.path)}
               className={`w-full text-left px-4 py-3 rounded-xl text-sm font-semibold transition-all flex items-center gap-3 ${
-                item.active 
-                  ? 'bg-emerald-50 text-[#0F766E]' 
+                item.active
+                  ? 'bg-emerald-50 text-[#0F766E]'
                   : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900'
               }`}
             >
@@ -249,18 +480,27 @@ const Dashboard = () => {
         <div className="lg:hidden fixed inset-0 top-16 bg-white z-30 overflow-y-auto p-4 flex flex-col">
           <nav className="space-y-1">
             {[
-              'Dashboard', 'Markets', 'Watchlist', 'Portfolio', 'Paper Trading', 
-              'Orders', 'Holdings', 'AI Mentor', 'AI Simulation', 'News', 
+              { label: 'Dashboard', path: '/dashboard' },
+              { label: 'Markets',   path: '/markets'   },
+              'Watchlist', 'Portfolio', 'Paper Trading',
+              'Orders', 'Holdings', 'AI Mentor', 'AI Simulation', 'News',
               'Research Workspace', 'Alerts', 'Settings'
-            ].map((label, index) => (
-              <button
-                key={index}
-                onClick={() => setMobileMenuOpen(false)}
-                className={`w-full text-left px-4 py-3 rounded-xl text-sm font-semibold text-slate-600 hover:bg-slate-50`}
-              >
-                {label}
-              </button>
-            ))}
+            ].map((item, index) => {
+              const label = typeof item === 'string' ? item : item.label;
+              const path  = typeof item === 'string' ? null : item.path;
+              return (
+                <button
+                  key={index}
+                  onClick={() => {
+                    if (path) navigate(path);
+                    setMobileMenuOpen(false);
+                  }}
+                  className={`w-full text-left px-4 py-3 rounded-xl text-sm font-semibold text-slate-600 hover:bg-slate-50`}
+                >
+                  {label}
+                </button>
+              );
+            })}
           </nav>
         </div>
       )}
@@ -268,43 +508,15 @@ const Dashboard = () => {
       {/* MAIN CONTAINER */}
       <main className="flex-1 lg:ml-72 min-h-screen pt-20 lg:pt-6 pb-24 px-4 lg:px-8">
         
-        {/* TOP BAR / SEARCH */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
+        <div className="mb-8">
           <div>
             <h2 className="text-2xl font-bold text-slate-800">StockSense India</h2>
-            <p className="text-slate-500 text-sm">Timings: 9:15 AM - 3:30 PM (IST)</p>
-          </div>
-          
-          {/* Autocomplete Search Bar */}
-          <div className="relative w-full md:w-96">
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 w-5 h-5" />
-              <input
-                type="text"
-                value={searchQuery}
-                onChange={handleSearchChange}
-                placeholder="Search NSE/BSE stocks..."
-                className="w-full bg-white border border-slate-200 rounded-2xl py-3 pl-10 pr-4 text-sm focus:ring-2 focus:ring-emerald-500/20 focus:border-[#0F766E] outline-none transition-all"
-              />
-            </div>
-            
-            {searchResults.length > 0 && (
-              <div className="absolute top-full left-0 w-full bg-white border border-slate-100 rounded-2xl shadow-xl mt-2 z-50 overflow-hidden divide-y divide-slate-50">
-                {searchResults.map((stock, idx) => (
-                  <button
-                    key={idx}
-                    onClick={() => {
-                      setSearchQuery(stock.symbol);
-                      setSearchResults([]);
-                    }}
-                    className="w-full text-left px-4 py-3 hover:bg-slate-50 transition-colors flex justify-between items-center"
-                  >
-                    <span className="font-bold text-slate-800">{stock.symbol}</span>
-                    <span className="text-xs text-slate-400">{stock.name}</span>
-                  </button>
-                ))}
-              </div>
-            )}
+            <p className="text-slate-500 text-sm">
+              Timings: 9:15 AM - 3:30 PM (IST)
+              {lastRefreshed && (
+                <span className="ml-2 text-slate-400 text-xs">• Updated {lastRefreshed}</span>
+              )}
+            </p>
           </div>
         </div>
 
@@ -314,7 +526,7 @@ const Dashboard = () => {
           {/* Card 1: NIFTY 50 */}
           <div className="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm hover:shadow-md transition-shadow">
             <p className="text-xs font-bold text-slate-400 tracking-wider">NIFTY 50</p>
-            <h3 className="text-lg font-bold text-slate-800 mt-2">{data.summary.nifty_50.value}</h3>
+            <h3 className={`text-lg font-bold text-slate-800 mt-2 ${flashMap['nifty50'] ? `flash-${flashMap['nifty50']}` : ''}`}>{data.summary.nifty_50.value}</h3>
             <div className={`flex items-center gap-1 mt-1 font-bold text-xs ${data.summary.nifty_50.trend === 'up' ? 'text-emerald-600' : 'text-red-500'}`}>
               {data.summary.nifty_50.trend === 'up' ? <TrendingUp className="w-4 h-4" /> : <TrendingDown className="w-4 h-4" />}
               <span>{data.summary.nifty_50.change} ({data.summary.nifty_50.change_percent})</span>
@@ -324,7 +536,7 @@ const Dashboard = () => {
           {/* Card 2: SENSEX */}
           <div className="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm hover:shadow-md transition-shadow">
             <p className="text-xs font-bold text-slate-400 tracking-wider">SENSEX</p>
-            <h3 className="text-lg font-bold text-slate-800 mt-2">{data.summary.sensex.value}</h3>
+            <h3 className={`text-lg font-bold text-slate-800 mt-2 ${flashMap['sensex'] ? `flash-${flashMap['sensex']}` : ''}`}>{data.summary.sensex.value}</h3>
             <div className={`flex items-center gap-1 mt-1 font-bold text-xs ${data.summary.sensex.trend === 'up' ? 'text-emerald-600' : 'text-red-500'}`}>
               {data.summary.sensex.trend === 'up' ? <TrendingUp className="w-4 h-4" /> : <TrendingDown className="w-4 h-4" />}
               <span>{data.summary.sensex.change} ({data.summary.sensex.change_percent})</span>
@@ -334,7 +546,7 @@ const Dashboard = () => {
           {/* Card 3: BANK NIFTY */}
           <div className="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm hover:shadow-md transition-shadow">
             <p className="text-xs font-bold text-slate-400 tracking-wider">BANK NIFTY</p>
-            <h3 className="text-lg font-bold text-slate-800 mt-2">{data.summary.bank_nifty.value}</h3>
+            <h3 className={`text-lg font-bold text-slate-800 mt-2 ${flashMap['bank_nifty'] ? `flash-${flashMap['bank_nifty']}` : ''}`}>{data.summary.bank_nifty.value}</h3>
             <div className={`flex items-center gap-1 mt-1 font-bold text-xs ${data.summary.bank_nifty.trend === 'up' ? 'text-emerald-600' : 'text-red-500'}`}>
               {data.summary.bank_nifty.trend === 'up' ? <TrendingUp className="w-4 h-4" /> : <TrendingDown className="w-4 h-4" />}
               <span>{data.summary.bank_nifty.change} ({data.summary.bank_nifty.change_percent})</span>
@@ -382,7 +594,19 @@ const Dashboard = () => {
             <div className="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm">
               <div className="flex justify-between items-center mb-6">
                 <h3 className="text-lg font-bold text-slate-800">Market Overview</h3>
-                <span className="text-xs font-bold text-emerald-700 bg-emerald-50 px-3 py-1 rounded-full">IST Timings</span>
+                <div className="flex items-center gap-2">
+                  {/* Market open/closed status badge */}
+                  {marketStatus.label && (
+                    <span className={`text-xs font-bold px-3 py-1 rounded-full ${
+                      marketStatus.is_open
+                        ? 'text-emerald-700 bg-emerald-50'
+                        : 'text-amber-700 bg-amber-50'
+                    }`}>
+                      {marketStatus.is_open ? '● ' : '○ '}{marketStatus.label}
+                    </span>
+                  )}
+                  <span className="text-xs font-bold text-slate-400 bg-slate-50 px-3 py-1 rounded-full">IST Timings</span>
+                </div>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 {data.market_overview.map((market, idx) => (
@@ -414,7 +638,8 @@ const Dashboard = () => {
                       </div>
                     </div>
                     <div className="flex justify-between items-baseline mt-4">
-                      <span className="text-sm font-bold">₹{stock.price}</span>
+                      {/* Flash animation applied to price span on change */}
+                      <span className={`text-sm font-bold ${flashMap[stock.symbol] ? `flash-${flashMap[stock.symbol]}` : ''}`}>₹{stock.price}</span>
                       <div className={`flex items-center gap-0.5 text-xs font-bold ${stock.trend === 'up' ? 'text-emerald-600' : 'text-red-500'}`}>
                         {stock.trend === 'up' ? <TrendingUp className="w-3.5 h-3.5" /> : <TrendingDown className="w-3.5 h-3.5" />}
                         <span>{stock.change}</span>
@@ -429,9 +654,20 @@ const Dashboard = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
               {/* Gainers */}
               <div className="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm">
-                <h4 className="text-sm font-bold text-emerald-700 mb-4 tracking-wider flex items-center gap-2">
-                  <span className="w-2 h-2 rounded-full bg-emerald-600"></span> TOP GAINERS
-                </h4>
+                <div className="flex justify-between items-center mb-4">
+                  <h4 className="text-sm font-bold text-emerald-700 tracking-wider flex items-center gap-2">
+                    <span className="w-2 h-2 rounded-full bg-emerald-600"></span> TOP GAINERS
+                  </h4>
+                  {gainersIsLive ? (
+                    <span className="text-[9px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full">
+                      Live
+                    </span>
+                  ) : (
+                    <span className="text-[9px] font-bold text-amber-700 bg-amber-50 px-2 py-0.5 rounded-full">
+                      Closing Data{gainersLastUpdated ? ` • ${gainersLastUpdated}` : ''}
+                    </span>
+                  )}
+                </div>
                 {gainersLoading ? (
                   <div className="space-y-3">
                     {[1, 2, 3, 4, 5].map((n) => (
@@ -440,6 +676,8 @@ const Dashboard = () => {
                   </div>
                 ) : gainersError ? (
                   <p className="text-sm text-slate-400 font-semibold text-center py-4">{gainersError}</p>
+                ) : gainers.length === 0 ? (
+                  <p className="text-sm text-slate-400 font-semibold text-center py-4">No market data available.</p>
                 ) : (
                   <div className="space-y-3">
                     {gainers.map((stock, idx) => (
@@ -466,9 +704,20 @@ const Dashboard = () => {
 
               {/* Losers */}
               <div className="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm">
-                <h4 className="text-sm font-bold text-red-500 mb-4 tracking-wider flex items-center gap-2">
-                  <span className="w-2 h-2 rounded-full bg-red-500"></span> TOP LOSERS
-                </h4>
+                <div className="flex justify-between items-center mb-4">
+                  <h4 className="text-sm font-bold text-red-500 tracking-wider flex items-center gap-2">
+                    <span className="w-2 h-2 rounded-full bg-red-500"></span> TOP LOSERS
+                  </h4>
+                  {losersIsLive ? (
+                    <span className="text-[9px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full">
+                      Live
+                    </span>
+                  ) : (
+                    <span className="text-[9px] font-bold text-amber-700 bg-amber-50 px-2 py-0.5 rounded-full">
+                      Closing Data{losersLastUpdated ? ` • ${losersLastUpdated}` : ''}
+                    </span>
+                  )}
+                </div>
                 {losersLoading ? (
                   <div className="space-y-3">
                     {[1, 2, 3, 4, 5].map((n) => (
@@ -477,6 +726,8 @@ const Dashboard = () => {
                   </div>
                 ) : losersError ? (
                   <p className="text-sm text-slate-400 font-semibold text-center py-4">{losersError}</p>
+                ) : losers.length === 0 ? (
+                  <p className="text-sm text-slate-400 font-semibold text-center py-4">No market data available.</p>
                 ) : (
                   <div className="space-y-3">
                     {losers.map((stock, idx) => (
@@ -609,7 +860,7 @@ const Dashboard = () => {
                       <p className="text-[10px] text-slate-400 truncate w-32">{stock.name}</p>
                     </div>
                     <div className="text-right">
-                      <p className="text-sm font-bold text-slate-800">₹{stock.price}</p>
+                      <p className={`text-sm font-bold text-slate-800 ${flashMap[stock.symbol] ? `flash-${flashMap[stock.symbol]}` : ''}`}>₹{stock.price}</p>
                       <div className={`flex items-center gap-0.5 justify-end text-[10px] font-bold ${stock.trend === 'up' ? 'text-emerald-600' : 'text-red-500'}`}>
                         {stock.trend === 'up' ? <TrendingUp className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />}
                         <span>{stock.change}</span>
