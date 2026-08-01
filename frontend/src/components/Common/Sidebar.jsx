@@ -16,10 +16,7 @@ const Sidebar = ({ activePage = 'dashboard', user = {} }) => {
     { label: 'Portfolio', page: 'portfolio', path: '/portfolio' },
     { label: 'Orders',    page: 'orders',    path: '/orders'    },
     { label: 'AI Mentor'       },
-    { label: 'AI Simulation'   },
     { label: 'News'            },
-    { label: 'Research Workspace' },
-    { label: 'Alerts'          },
     { label: 'Settings'        },
   ];
 
