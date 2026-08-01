@@ -12,10 +12,8 @@ const Sidebar = ({ activePage = 'dashboard', user = {} }) => {
 
   const navItems = [
     { label: 'Dashboard', page: 'dashboard', path: '/dashboard' },
-    { label: 'Markets',   page: 'markets',   path: '/markets'   },
-    { label: 'Watchlist'       },
+    { label: 'Markets',   page: 'market',    path: '/market'    },
     { label: 'Portfolio'       },
-    { label: 'Paper Trading'   },
     { label: 'Orders'          },
     { label: 'Holdings'        },
     { label: 'AI Mentor'       },

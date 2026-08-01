@@ -408,10 +408,9 @@ const Dashboard = () => {
         <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
           {[
             { label: 'Dashboard', active: true,  path: null       },
-            { label: 'Markets',   active: false, path: '/markets' },
+            { label: 'Markets',   active: false, path: '/market'  },
             { label: 'Watchlist'       },
             { label: 'Portfolio'       },
-            { label: 'Paper Trading'   },
             { label: 'Orders'          },
             { label: 'Holdings'        },
             { label: 'AI Mentor'       },
@@ -481,8 +480,8 @@ const Dashboard = () => {
           <nav className="space-y-1">
             {[
               { label: 'Dashboard', path: '/dashboard' },
-              { label: 'Markets',   path: '/markets'   },
-              'Watchlist', 'Portfolio', 'Paper Trading',
+              { label: 'Markets',   path: '/market'    },
+              'Portfolio', { label: 'Paper Trading', path: '/paper-trading' },
               'Orders', 'Holdings', 'AI Mentor', 'AI Simulation', 'News',
               'Research Workspace', 'Alerts', 'Settings'
             ].map((item, index) => {
@@ -629,7 +628,11 @@ const Dashboard = () => {
               <h3 className="text-lg font-bold text-slate-800 mb-6">Trending Stocks</h3>
               <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                 {data.trending_stocks.map((stock, idx) => (
-                  <div key={idx} className="p-4 border border-slate-100 rounded-2xl bg-white hover:border-slate-200 transition-all flex flex-col justify-between">
+                  <div 
+                    key={idx} 
+                    onClick={() => navigate(`/share/${stock.symbol}`)}
+                    className="p-4 border border-slate-100 rounded-2xl bg-white hover:border-slate-200 transition-all flex flex-col justify-between cursor-pointer hover:shadow-sm"
+                  >
                     <div className="flex items-center gap-3">
                       <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-xs ${stock.trend === 'up' ? 'bg-emerald-50 text-emerald-700' : 'bg-red-50 text-red-500'}`}>{stock.logo}</div>
                       <div>
@@ -681,7 +684,11 @@ const Dashboard = () => {
                 ) : (
                   <div className="space-y-3">
                     {gainers.map((stock, idx) => (
-                      <div key={idx} className="flex justify-between items-center p-3 bg-emerald-50/30 rounded-xl border border-emerald-500/10 hover:shadow-sm transition-all duration-200">
+                      <div 
+                        key={idx} 
+                        onClick={() => navigate(`/share/${stock.symbol}`)}
+                        className="flex justify-between items-center p-3 bg-emerald-50/30 rounded-xl border border-emerald-500/10 hover:shadow-sm transition-all duration-200 cursor-pointer hover:bg-emerald-50/60"
+                      >
                         <div className="flex items-center gap-3">
                           <div className="w-8 h-8 rounded-full bg-emerald-50 text-emerald-700 flex items-center justify-center font-bold text-xs">{stock.logo}</div>
                           <div>
@@ -731,7 +738,11 @@ const Dashboard = () => {
                 ) : (
                   <div className="space-y-3">
                     {losers.map((stock, idx) => (
-                      <div key={idx} className="flex justify-between items-center p-3 bg-red-50/30 rounded-xl border border-red-500/10 hover:shadow-sm transition-all duration-200">
+                      <div 
+                        key={idx} 
+                        onClick={() => navigate(`/share/${stock.symbol}`)}
+                        className="flex justify-between items-center p-3 bg-red-50/30 rounded-xl border border-red-500/10 hover:shadow-sm transition-all duration-200 cursor-pointer hover:bg-red-50/60"
+                      >
                         <div className="flex items-center gap-3">
                           <div className="w-8 h-8 rounded-full bg-red-50 text-red-500 flex items-center justify-center font-bold text-xs">{stock.logo}</div>
                           <div>
@@ -854,7 +865,11 @@ const Dashboard = () => {
               </div>
               <div className="space-y-4">
                 {data.watchlist.map((stock, idx) => (
-                  <div key={idx} className="flex justify-between items-center">
+                  <div 
+                    key={idx} 
+                    onClick={() => navigate(`/share/${stock.symbol}`)}
+                    className="flex justify-between items-center cursor-pointer hover:bg-slate-50 p-2 rounded-xl transition-all"
+                  >
                     <div>
                       <p className="font-bold text-sm text-slate-800">{stock.symbol}</p>
                       <p className="text-[10px] text-slate-400 truncate w-32">{stock.name}</p>

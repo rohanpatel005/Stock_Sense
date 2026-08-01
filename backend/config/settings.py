@@ -37,6 +37,7 @@ INSTALLED_APPS = [
     'apps.users',
     'apps.dashboard',
     'apps.market',
+    'apps.stock_card',
 ]
 
 MIDDLEWARE = [
