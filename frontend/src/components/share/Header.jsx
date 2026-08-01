@@ -1,7 +1,7 @@
 import React from 'react';
 import { ArrowUpRight, ArrowDownRight, Activity } from 'lucide-react';
 
-const Header = ({ data }) => {
+const Header = ({ data, onBuyClick, onSellClick }) => {
   if (!data) return null;
 
   const isPositive = data.today_change_percent >= 0;
@@ -28,7 +28,23 @@ const Header = ({ data }) => {
         </div>
       </div>
 
-      <div className="flex flex-wrap items-center gap-6 self-stretch md:self-auto justify-between md:justify-end border-t md:border-t-0 border-slate-50 pt-4 md:pt-0">
+      {/* Trading Actions */}
+      <div className="flex items-center gap-3 w-full md:w-auto mt-2 md:mt-0 order-2 md:order-none">
+        <button 
+          onClick={onBuyClick}
+          className="flex-1 md:flex-none px-8 py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl shadow-sm transition-colors text-sm"
+        >
+          Buy
+        </button>
+        <button 
+          onClick={onSellClick}
+          className="flex-1 md:flex-none px-8 py-3 bg-red-500 hover:bg-red-600 text-white font-bold rounded-xl shadow-sm transition-colors text-sm"
+        >
+          Sell
+        </button>
+      </div>
+
+      <div className="flex flex-wrap items-center gap-6 self-stretch md:self-auto justify-between md:justify-end border-t md:border-t-0 border-slate-50 pt-4 md:pt-0 order-3 md:order-none">
         {/* Price info */}
         <div className="text-left md:text-right">
           <div className="text-3xl font-black text-slate-950">₹{data.live_price.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</div>

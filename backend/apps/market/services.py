@@ -1,10 +1,13 @@
 import logging
+import math
 import requests
 import pytz
+import yfinance as yf
 from datetime import datetime, time as dtime
 from decimal import Decimal
 from django.core.cache import cache
-from .models import TopGainerMarket, TopLoserMarket
+from django.db import transaction
+from apps.users.models import Portfolio, Transaction
 
 logger = logging.getLogger(__name__)
 
@@ -244,29 +247,174 @@ class MarketCacheService:
         cache.set(cls.CACHE_KEY, data, timeout=expiry)
 
         # 2. Update Database Cache
-        try:
-            # Update Gainers
-            TopGainerMarket.objects.all().delete()
-            for s in data.get("top_gainers", []):
-                TopGainerMarket.objects.create(
-                    symbol=s["symbol"],
-                    name=s["name"],
-                    price=Decimal(str(s["price"])),
-                    change_rs=Decimal(str(s["change_rs"])),
-                    change_percent=Decimal(str(s["change_percent"])),
-                    volume=s["volume"]
-                )
+        # (DB Cache logic removed since models don't exist)
+        pass
 
-            # Update Losers
-            TopLoserMarket.objects.all().delete()
-            for s in data.get("top_losers", []):
-                TopLoserMarket.objects.create(
-                    symbol=s["symbol"],
-                    name=s["name"],
-                    price=Decimal(str(s["price"])),
-                    change_rs=Decimal(str(s["change_rs"])),
-                    change_percent=Decimal(str(s["change_percent"])),
-                    volume=s["volume"]
-                )
+
+class TradeService:
+    @staticmethod
+    def get_live_price(symbol: str) -> Decimal:
+        """Fetch real-time stock price from yfinance."""
+        try:
+            ticker = yf.Ticker(f"{symbol}.NS")
+            # fast_info is typically faster and gets the last available price
+            last_price = ticker.fast_info.get("lastPrice")
+            if last_price is None or math.isnan(last_price):
+                # Fallback to history if fast_info fails
+                hist = ticker.history(period="1d")
+                if not hist.empty:
+                    last_price = hist["Close"].iloc[-1]
+                else:
+                    raise ValueError("No price data available.")
+            return Decimal(str(round(last_price, 2)))
         except Exception as e:
-            logger.error("Failed to write to DB cache: %s", e, exc_info=True)
+            logger.error(f"Error fetching live price for {symbol}: {e}")
+            raise ValueError(f"Could not fetch current market price for {symbol}.")
+
+    @classmethod
+    def process_portfolio_metrics(cls, portfolio: Portfolio):
+        """Recalculate portfolio metrics based on quantity and average buy price."""
+        portfolio.invested_amount = portfolio.average_buy_price * portfolio.quantity
+        portfolio.current_value = portfolio.current_price * portfolio.quantity
+        portfolio.profit_loss = portfolio.current_value - portfolio.invested_amount
+        
+        if portfolio.invested_amount > 0:
+            portfolio.profit_loss_percentage = (portfolio.profit_loss / portfolio.invested_amount) * 100
+        else:
+            portfolio.profit_loss_percentage = Decimal("0.00")
+
+    @classmethod
+    def execute_buy(cls, user, data: dict) -> dict:
+        symbol = data["stock_symbol"]
+        qty = data["quantity"]
+        
+        # 1. Fetch live market price
+        market_price = cls.get_live_price(symbol)
+        total_amount = market_price * qty
+        
+        # 2. Check market status
+        is_open = MarketStatusService.is_market_open()
+        order_status = "SUCCESS" if is_open else "PENDING"
+        
+        with transaction.atomic():
+            # Lock the user wallet for update
+            user.refresh_from_db(fields=['wallet'])
+            
+            if user.wallet < total_amount:
+                raise ValueError("Insufficient funds in wallet.")
+                
+            # Create transaction
+            txn = Transaction.objects.create(
+                user=user,
+                stock_symbol=symbol,
+                company_name=data.get("company_name", symbol),
+                transaction_type="BUY",
+                quantity=qty,
+                price=market_price,
+                total_amount=total_amount,
+                order_type=data.get("order_type", "MARKET"),
+                order_status=order_status
+            )
+            
+            if order_status == "SUCCESS":
+                # Deduct from wallet
+                user.wallet -= total_amount
+                user.save(update_fields=["wallet"])
+                
+                # Update or create Portfolio
+                portfolio, created = Portfolio.objects.select_for_update().get_or_create(
+                    user=user, stock_symbol=symbol,
+                    defaults={
+                        "company_name": data.get("company_name", symbol),
+                        "quantity": 0,
+                        "average_buy_price": Decimal("0.00"),
+                        "current_price": market_price,
+                        "invested_amount": Decimal("0.00"),
+                        "current_value": Decimal("0.00"),
+                        "profit_loss": Decimal("0.00"),
+                        "profit_loss_percentage": Decimal("0.00"),
+                    }
+                )
+                
+                # Calculate new average buy price
+                old_qty = portfolio.quantity
+                old_avg_price = portfolio.average_buy_price
+                new_qty = old_qty + qty
+                
+                new_avg_price = ((old_qty * old_avg_price) + (qty * market_price)) / new_qty
+                
+                portfolio.quantity = new_qty
+                portfolio.average_buy_price = new_avg_price
+                portfolio.current_price = market_price
+                
+                cls.process_portfolio_metrics(portfolio)
+                portfolio.save()
+                
+            return {
+                "message": "Order Executed Successfully" if order_status == "SUCCESS" else "Order Queued Successfully",
+                "wallet": user.wallet,
+                "portfolio_updated": order_status == "SUCCESS",
+                "transaction_created": True,
+                "transaction": txn
+            }
+
+    @classmethod
+    def execute_sell(cls, user, data: dict) -> dict:
+        symbol = data["stock_symbol"]
+        sell_qty = data["quantity"]
+        
+        with transaction.atomic():
+            # Verify ownership
+            try:
+                portfolio = Portfolio.objects.select_for_update().get(user=user, stock_symbol=symbol)
+            except Portfolio.DoesNotExist:
+                raise ValueError("You do not own this stock.")
+                
+            if sell_qty > portfolio.quantity:
+                raise ValueError("Requested sell quantity exceeds owned quantity.")
+                
+            # Fetch live market price
+            market_price = cls.get_live_price(symbol)
+            sale_amount = market_price * sell_qty
+            
+            is_open = MarketStatusService.is_market_open()
+            order_status = "SUCCESS" if is_open else "PENDING"
+            
+            # Create transaction
+            txn = Transaction.objects.create(
+                user=user,
+                stock_symbol=symbol,
+                company_name=portfolio.company_name,
+                transaction_type="SELL",
+                quantity=sell_qty,
+                price=market_price,
+                total_amount=sale_amount,
+                order_type=data.get("order_type", "MARKET"),
+                order_status=order_status
+            )
+            
+            if order_status == "SUCCESS":
+                user.refresh_from_db(fields=['wallet'])
+                user.wallet += sale_amount
+                user.save(update_fields=["wallet"])
+                
+                portfolio.quantity -= sell_qty
+                portfolio.current_price = market_price
+                
+                if portfolio.quantity > 0:
+                    cls.process_portfolio_metrics(portfolio)
+                    portfolio.save()
+                else:
+                    portfolio.delete()
+                    
+            return {
+                "message": "Order Executed Successfully" if order_status == "SUCCESS" else "Order Queued Successfully",
+                "wallet": user.wallet,
+                "portfolio_updated": order_status == "SUCCESS",
+                "transaction_created": True,
+                "transaction": txn
+            }
+
+    @classmethod
+    def get_pending_orders(cls, user):
+        return Transaction.objects.filter(user=user, order_status="PENDING").order_by("-created_at")

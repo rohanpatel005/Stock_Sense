@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import User
+from .models import User, Transaction
 
 
 class RegisterSerializer(serializers.Serializer):
@@ -35,3 +35,8 @@ class GoogleRegisterSerializer(serializers.Serializer):
     credential = serializers.CharField(
         help_text="Google ID token received from Google Identity Services."
     )
+
+class TransactionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Transaction
+        fields = '__all__'

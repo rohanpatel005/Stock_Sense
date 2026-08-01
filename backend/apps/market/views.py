@@ -11,6 +11,10 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework import status as drf_status
 
+from .services import TradeService
+from .serializers import BuyOrderSerializer, SellOrderSerializer, OrderPreviewSerializer
+from apps.users.serializers import TransactionSerializer
+
 logger = logging.getLogger(__name__)
 
 # ── Timezone & Market Hours ──────────────────────────────────────────────────
@@ -501,3 +505,76 @@ def live_market_data(request):
             "fetched_at": now_ist.strftime("%d %b %Y, %I:%M:%S %p IST")
         }
     })
+
+@api_view(["POST"])
+@permission_classes([IsAuthenticated])
+def buy_stock(request):
+    serializer = BuyOrderSerializer(data=request.data)
+    if not serializer.is_valid():
+        return Response(serializer.errors, status=drf_status.HTTP_400_BAD_REQUEST)
+        
+    try:
+        result = TradeService.execute_buy(request.user, serializer.validated_data)
+        # Serialize the transaction object for the response
+        txn_data = TransactionSerializer(result.pop("transaction")).data
+        result["transaction"] = txn_data
+        return Response(result, status=drf_status.HTTP_201_CREATED)
+    except ValueError as e:
+        return Response({"error": str(e)}, status=drf_status.HTTP_400_BAD_REQUEST)
+    except Exception as e:
+        logger.error(f"Buy execution error: {e}", exc_info=True)
+        return Response({"error": "An internal error occurred during execution."}, status=drf_status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+@api_view(["POST"])
+@permission_classes([IsAuthenticated])
+def sell_stock(request):
+    serializer = SellOrderSerializer(data=request.data)
+    if not serializer.is_valid():
+        return Response(serializer.errors, status=drf_status.HTTP_400_BAD_REQUEST)
+        
+    try:
+        result = TradeService.execute_sell(request.user, serializer.validated_data)
+        # Serialize the transaction object for the response
+        txn_data = TransactionSerializer(result.pop("transaction")).data
+        result["transaction"] = txn_data
+        return Response(result, status=drf_status.HTTP_201_CREATED)
+    except ValueError as e:
+        return Response({"error": str(e)}, status=drf_status.HTTP_400_BAD_REQUEST)
+    except Exception as e:
+        logger.error(f"Sell execution error: {e}", exc_info=True)
+        return Response({"error": "An internal error occurred during execution."}, status=drf_status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+def pending_orders(request):
+    try:
+        orders = TradeService.get_pending_orders(request.user)
+        serializer = TransactionSerializer(orders, many=True)
+        return Response({"pending_orders": serializer.data})
+    except Exception as e:
+        logger.error(f"Pending orders error: {e}", exc_info=True)
+        return Response({"error": "Failed to fetch pending orders."}, status=drf_status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+def order_preview(request):
+    serializer = OrderPreviewSerializer(data=request.query_params)
+    if not serializer.is_valid():
+        return Response(serializer.errors, status=drf_status.HTTP_400_BAD_REQUEST)
+        
+    try:
+        symbol = serializer.validated_data["stock_symbol"]
+        qty = serializer.validated_data["quantity"]
+        market_price = TradeService.get_live_price(symbol)
+        
+        return Response({
+            "stock_symbol": symbol,
+            "quantity": qty,
+            "estimated_price": market_price,
+            "total_estimated_value": market_price * qty
+        })
+    except ValueError as e:
+        return Response({"error": str(e)}, status=drf_status.HTTP_400_BAD_REQUEST)
+    except Exception as e:
+        logger.error(f"Order preview error: {e}", exc_info=True)
+        return Response({"error": "Failed to generate order preview."}, status=drf_status.HTTP_500_INTERNAL_SERVER_ERROR)

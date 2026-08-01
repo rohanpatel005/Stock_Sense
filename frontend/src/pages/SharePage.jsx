@@ -7,6 +7,7 @@ import Sidebar from '../components/Common/Sidebar';
 import Header from '../components/share/Header';
 import PriceCard from '../components/share/PriceCard';
 import LiveChart from '../components/share/LiveChart';
+import TradeModal from '../components/share/TradeModal';
 import CandlestickChart from '../components/share/CandlestickChart';
 import TechnicalIndicators from '../components/share/TechnicalIndicators';
 import TechnicalSignals from '../components/share/TechnicalSignals';
@@ -25,6 +26,7 @@ const SharePage = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [tradeAction, setTradeAction] = useState(null); // 'BUY' or 'SELL' or null
   const [askAiText, setAskAiText] = useState('');
   const [aiChat, setAiChat] = useState([]);
 
@@ -163,6 +165,20 @@ const SharePage = () => {
       {/* MAIN CONTENT AREA */}
       <main className="flex-1 lg:ml-72 min-h-screen pt-20 lg:pt-6 pb-24 px-4 lg:px-8 space-y-6">
         
+        {/* Render Trade Modal */}
+        <TradeModal 
+          isOpen={!!tradeAction} 
+          onClose={() => setTradeAction(null)} 
+          action={tradeAction} 
+          symbol={symbol} 
+          companyName={data?.company_name} 
+          userWallet={user?.wallet}
+          livePrice={data?.live_price}
+          onTradeSuccess={() => {
+            fetchStockData();
+          }}
+        />
+        
         {/* Navigation Breadcrumb */}
         <div className="flex items-center gap-3">
           <button 
@@ -180,7 +196,15 @@ const SharePage = () => {
         </div>
 
         {/* 1. Header Information */}
-        <Header data={data} />
+          <div className="grid lg:grid-cols-12 gap-6">
+            <div className="lg:col-span-12">
+              <Header 
+                data={data} 
+                onBuyClick={() => setTradeAction('BUY')} 
+                onSellClick={() => setTradeAction('SELL')} 
+              />
+            </div>
+          </div>
 
         {/* 2. Top Metric Cards */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">

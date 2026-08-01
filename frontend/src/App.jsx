@@ -7,6 +7,7 @@ import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
 import Markets from './pages/Markets';
 import SharePage from './pages/SharePage';
+import OrdersPage from './pages/OrdersPage';
 
 function App() {
   const [user, setUser] = useState(null);
@@ -76,6 +77,9 @@ function App() {
         
         {/* Share Page Route */}
         <Route path="/share/:symbol" element={<SharePage user={user} handleLogout={handleLogout} />} />
+
+        {/* Orders Page Route */}
+        <Route path="/orders" element={<OrdersPage user={user} handleLogout={handleLogout} />} />
         
         {/* Redirect unknown routes to home */}
         <Route path="*" element={<Navigate to="/" />} />
