@@ -8,6 +8,7 @@ import Dashboard from './pages/Dashboard';
 import Markets from './pages/Markets';
 import SharePage from './pages/SharePage';
 import OrdersPage from './pages/OrdersPage';
+import PortfolioPage from './pages/PortfolioPage';
 
 function App() {
   const [user, setUser] = useState(null);
@@ -80,6 +81,9 @@ function App() {
 
         {/* Orders Page Route */}
         <Route path="/orders" element={<OrdersPage user={user} handleLogout={handleLogout} />} />
+
+        {/* Portfolio Page Route */}
+        <Route path="/portfolio" element={<PortfolioPage user={user} handleLogout={handleLogout} />} />
         
         {/* Redirect unknown routes to home */}
         <Route path="*" element={<Navigate to="/" />} />
