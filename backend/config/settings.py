@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     'apps.stock_card',
     'apps.orders',
     'apps.portfolio',
+    'apps.news',
 ]
 
 MIDDLEWARE = [

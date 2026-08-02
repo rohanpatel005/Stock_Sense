@@ -17,6 +17,7 @@ from .views import (
     market_status,
     market_stock_detail,
     market_stock_history,
+    market_news_latest,
 
     # Trading Endpoints
     buy_stock,
@@ -45,6 +46,7 @@ urlpatterns = [
     # ── Stock Details & Chart History for Drawer ─────────────────────────────
     path("stock/<str:symbol>", market_stock_detail, name="market_stock_detail"),
     path("stock/<str:symbol>/history", market_stock_history, name="market_stock_history"),
+    path("news/latest/", market_news_latest, name="market_news_latest"),
 
     # ── Trading Endpoints ────────────────────────────────────────────────────
     path("buy/", buy_stock, name="buy_stock"),

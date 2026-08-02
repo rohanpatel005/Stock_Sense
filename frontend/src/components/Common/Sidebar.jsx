@@ -15,9 +15,22 @@ const Sidebar = ({ user = {} }) => {
     if (path.startsWith('/market') || path.startsWith('/share')) return 'market';
     if (path.startsWith('/portfolio')) return 'portfolio';
     if (path.startsWith('/orders')) return 'orders';
+    if (path.startsWith('/news')) return 'news';
     return 'dashboard';
   };
   const activePage = getActivePage();
+
+  let displayUser = user;
+  const storedUserStr = localStorage.getItem('user');
+  if ((!displayUser || !displayUser.full_name || displayUser.full_name === 'StockSense User') && storedUserStr) {
+    try {
+      const parsed = JSON.parse(storedUserStr);
+      const name = [parsed.first_name, parsed.last_name].filter(Boolean).join(' ') || parsed.username || parsed.email?.split('@')[0] || 'StockSense User';
+      displayUser = { ...parsed, full_name: name };
+    } catch (e) {
+      // Ignore
+    }
+  }
 
   const navItems = [
     { label: 'Dashboard', page: 'dashboard', path: '/dashboard' },
@@ -25,7 +38,7 @@ const Sidebar = ({ user = {} }) => {
     { label: 'Portfolio', page: 'portfolio', path: '/portfolio' },
     { label: 'Orders',    page: 'orders',    path: '/orders'    },
     { label: 'AI Mentor'       },
-    { label: 'News'            },
+    { label: 'News',      page: 'news',      path: '/news'      },
     { label: 'Settings'        },
   ];
 
@@ -76,11 +89,11 @@ const Sidebar = ({ user = {} }) => {
       <div className="p-4 border-t border-slate-100 bg-slate-50/50">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-full bg-emerald-700 text-white flex items-center justify-center font-bold text-sm uppercase">
-            {user?.full_name ? user.full_name.charAt(0) : 'U'}
+            {displayUser?.full_name ? displayUser.full_name.charAt(0) : 'U'}
           </div>
           <div className="overflow-hidden flex-1">
             <h4 className="text-sm font-bold text-slate-800 truncate">
-              {user?.full_name || 'StockSense User'}
+              {displayUser?.full_name || 'StockSense User'}
             </h4>
             <p className="text-[10px] text-slate-400 font-semibold uppercase tracking-wider">Pro Trader</p>
           </div>

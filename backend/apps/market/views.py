@@ -483,6 +483,87 @@ def market_stock_history(request, symbol: str):
         }
     return Response(data)
 
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+def market_news_latest(request):
+    """GET /api/market/news/latest/"""
+    # Realistic mock news data for StockSense
+    news_data = [
+        {
+            "title": "Reliance Industries Q3 Results: Profit beats estimates, Jio subscriber growth robust",
+            "summary": "Reliance Industries reported a strong Q3 performance, driven by retail and telecom segments, beating street expectations.",
+            "source": "Moneycontrol",
+            "published": "10 min ago",
+            "link": "https://www.moneycontrol.com/",
+            "image": "https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?auto=format&fit=crop&q=80&w=800",
+            "category": "Stocks"
+        },
+        {
+            "title": "Nifty hits new all-time high as IT and Banking stocks rally",
+            "summary": "The Nifty 50 index touched a fresh record high today amid positive global cues and strong domestic inflows.",
+            "source": "Economic Times",
+            "published": "2 hours ago",
+            "link": "https://economictimes.indiatimes.com/",
+            "image": "https://images.unsplash.com/photo-1590283603385-17ffb3a7f29f?auto=format&fit=crop&q=80&w=800",
+            "category": "Nifty"
+        },
+        {
+            "title": "Upcoming IPOs next week: OLA Electric and Swiggy to hit the market",
+            "summary": "Investors are gearing up for two major IPOs next week with OLA Electric and Swiggy expected to raise over ₹10,000 crore combined.",
+            "source": "CNBC TV18",
+            "published": "3 hours ago",
+            "link": "https://www.cnbctv18.com/",
+            "image": "https://images.unsplash.com/photo-1661956602116-aa6865609028?auto=format&fit=crop&q=80&w=800",
+            "category": "IPO"
+        },
+        {
+            "title": "US Federal Reserve signals potential rate cuts by year-end",
+            "summary": "Fed Chair Powell indicated that if inflation data continues to soften, the central bank might consider cutting rates later this year.",
+            "source": "Reuters",
+            "published": "5 hours ago",
+            "link": "https://www.reuters.com/",
+            "image": "https://images.unsplash.com/photo-1612178991541-b48cc8e92a4d?auto=format&fit=crop&q=80&w=800",
+            "category": "Global"
+        },
+        {
+            "title": "Indian Economy projected to grow at 7.2% in FY26: World Bank",
+            "summary": "The World Bank upgraded India's GDP growth forecast for the upcoming fiscal year, citing strong domestic demand and infrastructure spending.",
+            "source": "Business Standard",
+            "published": "Yesterday",
+            "link": "https://www.business-standard.com/",
+            "image": "https://images.unsplash.com/photo-1526304640581-d334cdbbf45e?auto=format&fit=crop&q=80&w=800",
+            "category": "Economy"
+        },
+        {
+            "title": "Sensex plunges 500 points in early trade on profit-booking",
+            "summary": "The BSE Sensex opened significantly lower today as investors booked profits following a sustained rally over the past week.",
+            "source": "Economic Times",
+            "published": "Yesterday",
+            "link": "https://economictimes.indiatimes.com/",
+            "image": "https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?auto=format&fit=crop&q=80&w=800",
+            "category": "Sensex"
+        },
+        {
+            "title": "TCS announces ₹15,000 crore share buyback program",
+            "summary": "IT major Tata Consultancy Services has approved a share buyback program at ₹4,150 per share to reward its shareholders.",
+            "source": "Moneycontrol",
+            "published": "Yesterday",
+            "link": "https://www.moneycontrol.com/",
+            "image": "https://images.unsplash.com/photo-1518186285589-2f7649de83e0?auto=format&fit=crop&q=80&w=800",
+            "category": "Stocks"
+        },
+        {
+            "title": "SEBI proposes new regulations for algorithmic trading by retail investors",
+            "summary": "The market regulator has issued a consultation paper aiming to regulate the use of APIs and algos by retail traders to prevent systemic risks.",
+            "source": "CNBC TV18",
+            "published": "2 days ago",
+            "link": "https://www.cnbctv18.com/",
+            "image": "https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&q=80&w=800",
+            "category": "Market"
+        }
+    ]
+    return Response(news_data)
+
 # ═════════════════════════════════════════════════════════════════════════════
 # LEGACY ENDPOINTS (FOR DASHBOARD SIDEBAR/LIVE REFRESH COMPATIBILITY)
 # ═════════════════════════════════════════════════════════════════════════════
