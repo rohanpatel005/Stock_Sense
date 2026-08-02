@@ -16,6 +16,7 @@ const Sidebar = ({ user = {} }) => {
     if (path.startsWith('/portfolio')) return 'portfolio';
     if (path.startsWith('/orders')) return 'orders';
     if (path.startsWith('/news')) return 'news';
+    if (path.startsWith('/ai-mentor')) return 'ai_mentor';
     return 'dashboard';
   };
   const activePage = getActivePage();
@@ -25,7 +26,7 @@ const Sidebar = ({ user = {} }) => {
   if ((!displayUser || !displayUser.full_name || displayUser.full_name === 'StockSense User') && storedUserStr) {
     try {
       const parsed = JSON.parse(storedUserStr);
-      const name = [parsed.first_name, parsed.last_name].filter(Boolean).join(' ') || parsed.username || parsed.email?.split('@')[0] || 'StockSense User';
+      const name = parsed.full_name || [parsed.first_name, parsed.last_name].filter(Boolean).join(' ') || parsed.username || parsed.email?.split('@')[0] || 'StockSense User';
       displayUser = { ...parsed, full_name: name };
     } catch (e) {
       // Ignore
@@ -37,7 +38,7 @@ const Sidebar = ({ user = {} }) => {
     { label: 'Markets',   page: 'market',    path: '/market'    },
     { label: 'Portfolio', page: 'portfolio', path: '/portfolio' },
     { label: 'Orders',    page: 'orders',    path: '/orders'    },
-    { label: 'AI Mentor'       },
+    { label: 'AI Mentor', page: 'ai_mentor', path: '/ai-mentor' },
     { label: 'News',      page: 'news',      path: '/news'      },
     { label: 'Settings'        },
   ];

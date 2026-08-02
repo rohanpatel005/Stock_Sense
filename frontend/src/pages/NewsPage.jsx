@@ -5,7 +5,6 @@ import axios from 'axios';
 
 import NewsCard from '../components/News/NewsCard';
 import FeaturedNews from '../components/News/FeaturedNews';
-import NewsSidebar from '../components/News/NewsSidebar';
 
 const API_BASE_URL = 'http://localhost:8000/api/market';
 
@@ -13,8 +12,6 @@ const NewsPage = () => {
   const [news, setNews] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  
-  const [bookmarked, setBookmarked] = useState(new Set());
 
   const fetchNews = async () => {
     setLoading(true);
@@ -37,16 +34,6 @@ const NewsPage = () => {
   useEffect(() => {
     fetchNews();
   }, []);
-
-  const toggleBookmark = (article) => {
-    const newBookmarked = new Set(bookmarked);
-    if (newBookmarked.has(article.title)) {
-      newBookmarked.delete(article.title);
-    } else {
-      newBookmarked.add(article.title);
-    }
-    setBookmarked(newBookmarked);
-  };
 
   const featuredArticle = news.length > 0 ? news[0] : null;
   const gridArticles = news.slice(1);
@@ -148,8 +135,6 @@ const NewsPage = () => {
                   {featuredArticle && (
                     <FeaturedNews 
                       article={featuredArticle} 
-                      isBookmarked={bookmarked.has(featuredArticle.title)}
-                      toggleBookmark={toggleBookmark}
                     />
                   )}
 
@@ -164,8 +149,6 @@ const NewsPage = () => {
                       >
                         <NewsCard 
                           article={article}
-                          isBookmarked={bookmarked.has(article.title)}
-                          toggleBookmark={toggleBookmark}
                         />
                       </motion.div>
                     ))}
@@ -175,14 +158,6 @@ const NewsPage = () => {
             )}
             
           </div>
-
-          {/* Right Sidebar (Hidden on small screens) */}
-          <div className="hidden xl:block w-80 shrink-0">
-            <div className="sticky top-48">
-              <NewsSidebar />
-            </div>
-          </div>
-          
         </div>
       </div>
     </div>

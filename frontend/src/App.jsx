@@ -10,6 +10,7 @@ import SharePage from './pages/SharePage';
 import OrdersPage from './pages/OrdersPage';
 import PortfolioPage from './pages/PortfolioPage';
 import NewsPage from './pages/NewsPage';
+import AIMentor from './pages/AIMentor';
 import Layout from './components/Common/Layout';
 
 function App() {
@@ -80,6 +81,7 @@ function App() {
           <Route path="/orders" element={<OrdersPage user={user} handleLogout={handleLogout} />} />
           <Route path="/portfolio" element={<PortfolioPage user={user} handleLogout={handleLogout} />} />
           <Route path="/news" element={<NewsPage user={user} handleLogout={handleLogout} />} />
+          <Route path="/ai-mentor" element={<AIMentor user={user} handleLogout={handleLogout} />} />
         </Route>
         
         {/* Redirect unknown routes to home */}

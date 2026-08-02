@@ -1,7 +1,7 @@
 import React from 'react';
-import { Bookmark, Share2, ArrowRight } from 'lucide-react';
+import { ArrowRight } from 'lucide-react';
 
-const FeaturedNews = ({ article, isBookmarked, toggleBookmark }) => {
+const FeaturedNews = ({ article }) => {
   if (!article) return null;
 
   return (
@@ -45,30 +45,6 @@ const FeaturedNews = ({ article, isBookmarked, toggleBookmark }) => {
             Read More
             <ArrowRight className="w-5 h-5" />
           </a>
-
-          <div className="flex items-center gap-3">
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-              }}
-              className="p-3 bg-white/10 hover:bg-white/20 backdrop-blur-md text-white rounded-xl transition-all"
-            >
-              <Share2 className="w-5 h-5" />
-            </button>
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                toggleBookmark(article);
-              }}
-              className={`p-3 backdrop-blur-md rounded-xl transition-all ${
-                isBookmarked
-                  ? 'bg-blue-500 text-white shadow-lg'
-                  : 'bg-white/10 hover:bg-white/20 text-white'
-              }`}
-            >
-              <Bookmark className="w-5 h-5" fill={isBookmarked ? 'currentColor' : 'none'} />
-            </button>
-          </div>
         </div>
       </div>
     </div>
