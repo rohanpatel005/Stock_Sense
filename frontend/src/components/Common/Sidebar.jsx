@@ -1,14 +1,23 @@
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { LineChart, LogOut } from 'lucide-react';
 
 /**
- * Shared sidebar component used by both Dashboard and Markets pages.
- * @param {string}  activePage - 'dashboard' | 'markets'
+ * Shared sidebar component used across the app.
  * @param {object}  user       - { full_name: string }
  */
-const Sidebar = ({ activePage = 'dashboard', user = {} }) => {
+const Sidebar = ({ user = {} }) => {
   const navigate = useNavigate();
+  const location = useLocation();
+
+  const getActivePage = () => {
+    const path = location.pathname;
+    if (path.startsWith('/market') || path.startsWith('/share')) return 'market';
+    if (path.startsWith('/portfolio')) return 'portfolio';
+    if (path.startsWith('/orders')) return 'orders';
+    return 'dashboard';
+  };
+  const activePage = getActivePage();
 
   const navItems = [
     { label: 'Dashboard', page: 'dashboard', path: '/dashboard' },
@@ -30,7 +39,7 @@ const Sidebar = ({ activePage = 'dashboard', user = {} }) => {
   };
 
   return (
-    <aside className="w-72 bg-white border-r border-slate-100 hidden lg:flex flex-col fixed h-full z-30">
+    <aside className="font-sans w-72 bg-white border-r border-slate-100 hidden lg:flex flex-col fixed h-full z-30">
       {/* Logo */}
       <div className="p-6 border-b border-slate-50">
         <div className="flex items-center gap-3">

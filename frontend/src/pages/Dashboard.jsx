@@ -390,122 +390,7 @@ const Dashboard = () => {
   }
 
   return (
-    <div className="min-h-screen bg-[#f8f9ff] text-slate-900 flex font-sans">
-      
-      {/* LEFT SIDEBAR (Desktop) */}
-      <aside className="w-72 bg-white border-r border-slate-100 hidden lg:flex flex-col fixed h-full z-30">
-        <div className="p-6 border-b border-slate-50">
-          <div className="flex items-center gap-3">
-            <LineChart className="w-8 h-8 text-[#0F766E]" />
-            <div>
-              <h1 className="text-xl font-bold text-[#0F766E] tracking-tight">StockSense</h1>
-              <p className="text-xs text-slate-400 font-medium">Indian Stock Market AI</p>
-            </div>
-          </div>
-        </div>
-
-        {/* Navigation items */}
-        <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
-          {[
-            { label: 'Dashboard', active: true,  path: null       },
-            { label: 'Markets',   active: false, path: '/market'  },
-            { label: 'Watchlist'       },
-            { label: 'Portfolio'       },
-            { label: 'Orders'          },
-            { label: 'Holdings'        },
-            { label: 'AI Mentor'       },
-            { label: 'AI Simulation'   },
-            { label: 'News'            },
-            { label: 'Research Workspace' },
-            { label: 'Alerts'          },
-            { label: 'Settings'        }
-          ].map((item, index) => (
-            <button
-              key={index}
-              onClick={() => item.path && navigate(item.path)}
-              className={`w-full text-left px-4 py-3 rounded-xl text-sm font-semibold transition-all flex items-center gap-3 ${
-                item.active
-                  ? 'bg-emerald-50 text-[#0F766E]'
-                  : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900'
-              }`}
-            >
-              <span className={`w-1.5 h-1.5 rounded-full ${item.active ? 'bg-[#0F766E]' : 'bg-transparent'}`}></span>
-              {item.label}
-            </button>
-          ))}
-        </nav>
-
-        {/* User profile footer */}
-        <div className="p-4 border-t border-slate-100 bg-slate-50/50">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full bg-emerald-700 text-white flex items-center justify-center font-bold text-sm uppercase">
-              {data.user?.full_name ? data.user.full_name.charAt(0) : 'U'}
-            </div>
-            <div className="overflow-hidden flex-1">
-              <h4 className="text-sm font-bold text-slate-800 truncate">
-                {data.user?.full_name || 'StockSense User'}
-              </h4>
-              <p className="text-[10px] text-slate-400 font-semibold uppercase tracking-wider">Pro Trader</p>
-            </div>
-            <button 
-              onClick={() => {
-                localStorage.clear();
-                window.location.href = '/login';
-              }}
-              className="p-2 text-slate-400 hover:text-red-500 rounded-lg hover:bg-red-50 transition-colors"
-            >
-              <LogOut className="w-5 h-5" />
-            </button>
-          </div>
-        </div>
-      </aside>
-
-      {/* MOBILE HEADER */}
-      <header className="lg:hidden fixed top-0 left-0 w-full h-16 bg-white border-b border-slate-100 flex items-center justify-between px-4 z-40">
-        <div className="flex items-center gap-2">
-          <LineChart className="w-6 h-6 text-[#0F766E]" />
-          <span className="text-lg font-bold text-[#0F766E]">StockSense</span>
-        </div>
-        <button 
-          onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-          className="p-2 text-slate-600 hover:bg-slate-50 rounded-lg"
-        >
-          {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
-        </button>
-      </header>
-
-      {/* MOBILE MENU DRAWER */}
-      {mobileMenuOpen && (
-        <div className="lg:hidden fixed inset-0 top-16 bg-white z-30 overflow-y-auto p-4 flex flex-col">
-          <nav className="space-y-1">
-            {[
-              { label: 'Dashboard', path: '/dashboard' },
-              { label: 'Markets',   path: '/market'    },
-              'Portfolio', { label: 'Paper Trading', path: '/paper-trading' },
-              'Orders', 'Holdings', 'AI Mentor', 'AI Simulation', 'News',
-              'Research Workspace', 'Alerts', 'Settings'
-            ].map((item, index) => {
-              const label = typeof item === 'string' ? item : item.label;
-              const path  = typeof item === 'string' ? null : item.path;
-              return (
-                <button
-                  key={index}
-                  onClick={() => {
-                    if (path) navigate(path);
-                    setMobileMenuOpen(false);
-                  }}
-                  className={`w-full text-left px-4 py-3 rounded-xl text-sm font-semibold text-slate-600 hover:bg-slate-50`}
-                >
-                  {label}
-                </button>
-              );
-            })}
-          </nav>
-        </div>
-      )}
-
-      {/* MAIN CONTAINER */}
-      <main className="flex-1 lg:ml-72 min-h-screen pt-20 lg:pt-6 pb-24 px-4 lg:px-8">
+    <main className="flex-1 pt-20 lg:pt-6 pb-24 px-4 lg:px-8">
         
         <div className="mb-8">
           <div>
@@ -1002,9 +887,7 @@ const Dashboard = () => {
         </div>
 
       </main>
-
-    </div>
-  );
+    );
 };
 
 export default Dashboard;

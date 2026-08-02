@@ -9,6 +9,7 @@ import Markets from './pages/Markets';
 import SharePage from './pages/SharePage';
 import OrdersPage from './pages/OrdersPage';
 import PortfolioPage from './pages/PortfolioPage';
+import Layout from './components/Common/Layout';
 
 function App() {
   const [user, setUser] = useState(null);
@@ -69,21 +70,15 @@ function App() {
           }
         />
 
-        {/* Dashboard Route */}
-        <Route path="/dashboard" element={<Dashboard user={user} handleLogout={handleLogout} />} />
-
-        {/* Markets Route */}
-        <Route path="/market" element={<Markets user={user} handleLogout={handleLogout} />} />
-        <Route path="/market/:symbol" element={<Markets user={user} handleLogout={handleLogout} />} />
-        
-        {/* Share Page Route */}
-        <Route path="/share/:symbol" element={<SharePage user={user} handleLogout={handleLogout} />} />
-
-        {/* Orders Page Route */}
-        <Route path="/orders" element={<OrdersPage user={user} handleLogout={handleLogout} />} />
-
-        {/* Portfolio Page Route */}
-        <Route path="/portfolio" element={<PortfolioPage user={user} handleLogout={handleLogout} />} />
+        {/* Authenticated Routes wrapped in Layout */}
+        <Route element={<Layout user={user} handleLogout={handleLogout} />}>
+          <Route path="/dashboard" element={<Dashboard user={user} handleLogout={handleLogout} />} />
+          <Route path="/market" element={<Markets user={user} handleLogout={handleLogout} />} />
+          <Route path="/market/:symbol" element={<Markets user={user} handleLogout={handleLogout} />} />
+          <Route path="/share/:symbol" element={<SharePage user={user} handleLogout={handleLogout} />} />
+          <Route path="/orders" element={<OrdersPage user={user} handleLogout={handleLogout} />} />
+          <Route path="/portfolio" element={<PortfolioPage user={user} handleLogout={handleLogout} />} />
+        </Route>
         
         {/* Redirect unknown routes to home */}
         <Route path="*" element={<Navigate to="/" />} />

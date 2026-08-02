@@ -2,8 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { ArrowLeft, RefreshCw, AlertCircle, Sparkles, LogOut, Menu, X, LineChart } from 'lucide-react';
-
-import Sidebar from '../components/Common/Sidebar';
 import Header from '../components/share/Header';
 import PriceCard from '../components/share/PriceCard';
 import LiveChart from '../components/share/LiveChart';
@@ -25,7 +23,6 @@ const SharePage = () => {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [tradeAction, setTradeAction] = useState(null); // 'BUY' or 'SELL' or null
   const [askAiText, setAskAiText] = useState('');
   const [aiChat, setAiChat] = useState([]);
@@ -114,56 +111,7 @@ const SharePage = () => {
   }
 
   return (
-    <div className="min-h-screen bg-[#f8f9ff] text-slate-900 flex font-sans">
-      {/* Sidebar navigation */}
-      <Sidebar activePage="market" user={user} />
-
-      {/* MOBILE HEADER */}
-      <header className="lg:hidden fixed top-0 left-0 w-full h-16 bg-white border-b border-slate-100 flex items-center justify-between px-4 z-40">
-        <div className="flex items-center gap-2">
-          <LineChart className="w-6 h-6 text-[#0F766E]" />
-          <span className="text-lg font-bold text-[#0F766E]">StockSense</span>
-        </div>
-        <button 
-          onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-          className="p-2 text-slate-600 hover:bg-slate-50 rounded-lg"
-        >
-          {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
-        </button>
-      </header>
-
-      {/* MOBILE MENU DRAWER */}
-      {mobileMenuOpen && (
-        <div className="lg:hidden fixed inset-0 top-16 bg-white z-30 overflow-y-auto p-4 flex flex-col">
-          <nav className="space-y-1">
-            {[
-              { label: 'Dashboard', path: '/dashboard' },
-              { label: 'Markets',   path: '/market'    },
-              'Portfolio',
-              'Orders', 'Holdings', 'AI Mentor', 'AI Simulation', 'News',
-              'Research Workspace', 'Alerts', 'Settings'
-            ].map((item, index) => {
-              const label = typeof item === 'string' ? item : item.label;
-              const path  = typeof item === 'string' ? null : item.path;
-              return (
-                <button
-                  key={index}
-                  onClick={() => {
-                    if (path) navigate(path);
-                    setMobileMenuOpen(false);
-                  }}
-                  className={`w-full text-left px-4 py-3 rounded-xl text-sm font-semibold text-slate-600 hover:bg-slate-50`}
-                >
-                  {label}
-                </button>
-              );
-            })}
-          </nav>
-        </div>
-      )}
-
-      {/* MAIN CONTENT AREA */}
-      <main className="flex-1 lg:ml-72 min-h-screen pt-20 lg:pt-6 pb-24 px-4 lg:px-8 space-y-6">
+    <main className="flex-1 pt-20 lg:pt-6 pb-24 px-4 lg:px-8 space-y-6">
         
         {/* Render Trade Modal */}
         <TradeModal 
@@ -329,8 +277,7 @@ const SharePage = () => {
         </div>
 
       </main>
-    </div>
-  );
+    );
 };
 
 export default SharePage;

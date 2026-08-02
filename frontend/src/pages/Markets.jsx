@@ -7,7 +7,6 @@ import {
   ArrowUpRight, ArrowDownRight, RefreshCw, BarChart2, Activity,
   Layers, Clock, HelpCircle, Star, Eye, Zap, Flame, Award, ShieldAlert
 } from 'lucide-react';
-import Sidebar from '../components/Common/Sidebar';
 
 const API_BASE = 'http://127.0.0.1:8000/api/market';
 const REFRESH_INTERVAL_MS = 15000; // 15s refresh for live market data
@@ -270,7 +269,7 @@ const Markets = () => {
   // ─── Search Functionality ───────────────────────────────────────────────────
   useEffect(() => {
     if (searchTimeoutRef.current) clearTimeout(searchTimeoutRef.current);
-    if (!searchQ.trim()) {
+    if (!searchQ.trim() || searchQ.trim().length < 2) {
       setSearchResults([]);
       setSearchLoading(false);
       return;
@@ -278,7 +277,7 @@ const Markets = () => {
     setSearchLoading(true);
     searchTimeoutRef.current = setTimeout(async () => {
       try {
-        const results = await fetchAPI(`search?q=${encodeURIComponent(searchQ)}`);
+        const results = await fetchAPI(`search?q=${encodeURIComponent(searchQ.trim())}`);
         setSearchResults(results);
       } catch (err) {
         console.error('Search error:', err);
@@ -351,12 +350,8 @@ const Markets = () => {
     : mostActive;
 
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-900 flex">
-      {/* Sidebar navigation */}
-      <Sidebar activePage="market" user={user} />
-
-      {/* Main Content Area */}
-      <main className="flex-1 lg:ml-72 p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto space-y-6">
+    <>
+      <main className="flex-1 p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto space-y-6 w-full">
         {/* HEADER SECTION */}
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-slate-100 pb-5">
           <div>
@@ -381,9 +376,12 @@ const Markets = () => {
               type="text"
               placeholder="Search any NSE listed company..."
               value={searchQ}
-              onChange={(e) => setSearchQ(e.target.value)}
+              onChange={(e) => {
+                setSearchQ(e.target.value);
+                setSearchIndex(-1);
+              }}
               onFocus={() => setSearchFocused(true)}
-              onBlur={() => setTimeout(() => setSearchFocused(false), 200)}
+              onBlur={() => setSearchFocused(false)}
               onKeyDown={handleKeyDown}
               className="w-full pl-12 pr-10 py-3.5 bg-white border border-slate-200 rounded-2xl shadow-sm text-sm focus:outline-none focus:ring-2 focus:ring-[#0F766E]/20 focus:border-[#0F766E] transition-all font-semibold"
             />
@@ -399,6 +397,7 @@ const Markets = () => {
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: 10 }}
                 className="absolute top-full left-0 right-0 mt-2 bg-white border border-slate-100 rounded-2xl shadow-xl overflow-hidden max-h-80 overflow-y-auto"
+                onMouseDown={(e) => e.preventDefault()}
               >
                 {!searchQ.trim() && recentSearches.length > 0 && (
                   <div className="p-3 border-b border-slate-50 bg-slate-50/50">
@@ -421,21 +420,47 @@ const Markets = () => {
                   <button
                     key={item.symbol}
                     onClick={() => selectStock(item.symbol)}
-                    className={`w-full text-left px-5 py-3 transition-colors flex justify-between items-center ${
+                    className={`w-full text-left px-5 py-4 transition-colors flex items-center gap-4 ${
                       idx === searchIndex ? 'bg-[#0F766E]/5' : 'hover:bg-slate-50'
                     }`}
                   >
-                    <div>
-                      <span className="font-bold text-slate-800 block">{item.symbol}</span>
-                      <span className="text-xs text-slate-400 font-medium">{item.name}</span>
+                    {/* Logo Placeholder */}
+                    <div className="w-10 h-10 rounded-xl bg-slate-100 border border-slate-200 flex items-center justify-center flex-shrink-0 font-bold text-slate-500 text-lg">
+                      {item.name.charAt(0).toUpperCase()}
                     </div>
-                    <ArrowUpRight className="w-4 h-4 text-slate-400" />
+                    
+                    <div className="flex-1 min-w-0">
+                      <div className="font-bold text-slate-800 truncate text-base">{item.name}</div>
+                      <div className="text-xs text-slate-500 font-medium flex items-center gap-1 mt-0.5">
+                        <span className="font-bold text-slate-700">{item.symbol}</span>
+                        <span>•</span>
+                        <span>{item.exchange || 'NSE'}</span>
+                      </div>
+                    </div>
+
+                    {(item.price != null && item.change != null) ? (
+                      <div className="text-right flex-shrink-0">
+                        <div className="font-bold text-slate-800">
+                          ₹{item.price.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                        </div>
+                        <div className={`text-xs font-bold flex items-center justify-end gap-0.5 mt-0.5 ${item.change >= 0 ? 'text-[#10B981]' : 'text-[#EF4444]'}`}>
+                          {item.change >= 0 ? <TrendingUp className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />}
+                          <span>{item.change >= 0 ? '+' : ''}{item.change_percent.toFixed(2)}%</span>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="text-right flex-shrink-0">
+                        <ArrowUpRight className="w-4 h-4 text-[#0F766E] opacity-50" />
+                      </div>
+                    )}
                   </button>
                 ))}
 
-                {searchQ.trim() && searchResults.length === 0 && !searchLoading && (
-                  <div className="p-5 text-center text-slate-400 text-sm">
-                    No companies found matching "{searchQ}"
+                {searchQ.trim().length >= 2 && !searchLoading && searchResults.length === 0 && (
+                  <div className="p-8 text-center text-slate-500">
+                    <Search className="w-8 h-8 mx-auto text-slate-300 mb-3" />
+                    <div className="font-bold text-slate-700">No matching stocks found.</div>
+                    <div className="text-sm mt-1">Try another company name or symbol.</div>
                   </div>
                 )}
               </motion.div>
@@ -885,7 +910,7 @@ const Markets = () => {
           </div>
         )}
       </AnimatePresence>
-    </div>
+    </>
   );
 };
 

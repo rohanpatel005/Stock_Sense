@@ -1,14 +1,12 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
 import { Menu, X, ArrowLeft, ArrowRight } from 'lucide-react';
-import Sidebar from '../components/Common/Sidebar';
 import OrderSummaryCards from '../components/orders/OrderSummaryCards';
 import OrderFilters from '../components/orders/OrderFilters';
 import OrdersTable from '../components/orders/OrdersTable';
 import OrderDetailsDrawer from '../components/orders/OrderDetailsDrawer';
 
 const OrdersPage = () => {
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [data, setData] = useState({ summary: null, orders: [] });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -77,31 +75,7 @@ const OrdersPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#f8f9ff] text-slate-900 flex font-sans">
-      <Sidebar activePage="orders" user={user} />
-
-      {/* MOBILE HEADER */}
-      <header className="lg:hidden fixed top-0 left-0 w-full h-16 bg-white border-b border-slate-100 flex items-center justify-between px-4 z-40">
-        <div className="flex items-center gap-2">
-          <span className="text-lg font-bold text-[#0F766E]">StockSense</span>
-        </div>
-        <button 
-          onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-          className="p-2 text-slate-600 hover:bg-slate-50 rounded-lg"
-        >
-          {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
-        </button>
-      </header>
-
-      {/* MOBILE MENU */}
-      {mobileMenuOpen && (
-        <div className="lg:hidden fixed inset-0 top-16 bg-white z-30 overflow-y-auto p-4 flex flex-col">
-           {/* Add standard mobile menu items if needed, mostly handled by routing */}
-        </div>
-      )}
-
-      {/* MAIN CONTENT AREA */}
-      <main className="flex-1 lg:ml-72 min-h-screen pt-20 lg:pt-6 pb-24 px-4 lg:px-8 space-y-6">
+    <main className="flex-1 pt-20 lg:pt-6 pb-24 px-4 lg:px-8 space-y-6">
         
         {/* Header */}
         <div>
@@ -163,8 +137,7 @@ const OrdersPage = () => {
         />
 
       </main>
-    </div>
-  );
+    );
 };
 
 export default OrdersPage;

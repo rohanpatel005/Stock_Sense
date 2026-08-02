@@ -218,16 +218,63 @@ def market_search(request):
         if resp.status_code == 200:
             quotes = resp.json().get("quotes", [])
             matches = []
+            seen = set()
+            symbols_to_fetch = []
+            
             for item in quotes:
                 symbol = item.get("symbol", "")
                 if not symbol.upper().endswith((".NS", ".BO")):
                     continue
-                # Format to clean up .NS or .BO suffix for India stocks if wanted, or return as is
-                clean_sym = symbol.replace(".NS", "").replace(".BO", "")
+                if symbol in seen:
+                    continue
+                seen.add(symbol)
+                
+                name = item.get("shortname", item.get("longname", symbol))
+                exchange = item.get("exchDisp", item.get("exchange", "NSE"))
+                if exchange == "NSE": exchange = "NSE"
+                elif exchange == "BSE": exchange = "BSE"
+                
                 matches.append({
-                    "symbol": clean_sym,
-                    "name": item.get("shortname", item.get("longname", clean_sym))
+                    "symbol": symbol,
+                    "name": name,
+                    "exchange": exchange,
+                    "price": None,
+                    "change": None,
+                    "change_percent": None
                 })
+                symbols_to_fetch.append(symbol)
+            
+            # Enrich with real-time prices using yfinance for top matches
+            if symbols_to_fetch:
+                try:
+                    tickers = yf.Tickers(" ".join(symbols_to_fetch[:10]))
+                    for match in matches[:10]:
+                        tkr = tickers.tickers.get(match["symbol"])
+                        if tkr:
+                            try:
+                                info = tkr.info
+                                price = info.get("currentPrice", info.get("regularMarketPrice"))
+                                prev = info.get("previousClose")
+                                
+                                # Use yfinance for an accurate name if available
+                                real_name = info.get("longName") or info.get("shortName")
+                                if real_name:
+                                    match["name"] = real_name
+
+                                if price and prev:
+                                    match["price"] = sf(price)
+                                    chg = price - prev
+                                    match["change"] = sf(chg)
+                                    match["change_percent"] = sf(chg / prev * 100)
+                            except Exception as inner_e:
+                                logger.error("Error fetching info for %s: %s", match["symbol"], inner_e)
+                except Exception as e:
+                    logger.error("Error fetching prices for search: %s", e)
+
+            # Strip suffix before returning to keep frontend compatibility
+            for match in matches:
+                match["symbol"] = match["symbol"].replace(".NS", "").replace(".BO", "")
+
             return Response(matches)
     except Exception as e:
         logger.error("Yahoo Search error: %s", e)
@@ -360,7 +407,7 @@ def market_status(request):
 def market_stock_detail(request, symbol: str):
     """GET /api/market/stock/<symbol>"""
     sym = symbol.upper()
-    yf_sym = f"{sym}.NS"
+    yf_sym = sym if sym.endswith((".NS", ".BO")) else f"{sym}.NS"
 
     try:
         ticker = yf.Ticker(yf_sym)
@@ -401,10 +448,10 @@ def market_stock_detail(request, symbol: str):
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])
 def market_stock_history(request, symbol: str):
-    """GET /api/market/stock/<symbol>/history?period="""
+    """GET /api/market/stock/<symbol>/history?period=1mo"""
     sym = symbol.upper()
     period = request.query_params.get("period", "1mo")
-    yf_sym = f"{sym}.NS"
+    yf_sym = sym if sym.endswith((".NS", ".BO")) else f"{sym}.NS"
 
     period_intervals = {
         "1d": "5m", "5d": "30m", "1mo": "1d",
