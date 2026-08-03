@@ -4,7 +4,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from .models import Conversation, Message
 from .serializers import ConversationSerializer, MessageSerializer
-from .services import generate_ai_response
+from .services.groq_service import generate_ai_response
 
 @api_view(['GET', 'DELETE'])
 @permission_classes([IsAuthenticated])
@@ -54,7 +54,7 @@ def chat_view(request):
     
     # Generate AI response
     try:
-        reply_text = generate_ai_response(message_text)
+        reply_text = generate_ai_response(message_text, user=user)
     except Exception as e:
         return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         

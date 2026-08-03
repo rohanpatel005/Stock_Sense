@@ -21,7 +21,10 @@ def clean_ai_response(text: str) -> str:
     
     return text.strip()
 
-def generate_ai_response(user_message: str, messages_history=None) -> str:
+from .portfolio_context import PortfolioContextService
+from .prompt_builder import PromptBuilder
+
+def generate_ai_response(user_message: str, user, messages_history=None) -> str:
     """
     Interface with Groq API to generate an AI response.
     """
@@ -32,10 +35,18 @@ def generate_ai_response(user_message: str, messages_history=None) -> str:
         
     client = Groq(api_key=api_key)
     
+    # Build Context
+    try:
+        user_context = PortfolioContextService.build_portfolio_context(user)
+        system_content = PromptBuilder.build_system_prompt(user_context)
+    except Exception as e:
+        # Fallback to simple prompt if context building fails
+        system_content = "You are StockSense AI Mentor. An error occurred fetching user portfolio data."
+
     # Construct message payload
     system_prompt = {
         "role": "system",
-        "content": "You are a helpful, professional AI Mentor for a stock market application called StockSense. You help users understand financial terms, trading strategies, and analyze markets. Answer in clean Markdown format."
+        "content": system_content
     }
     
     messages = [system_prompt]
@@ -46,13 +57,6 @@ def generate_ai_response(user_message: str, messages_history=None) -> str:
             role = "user" if msg.sender == "USER" else "assistant"
             messages.append({"role": role, "content": msg.text})
             
-    # Append the latest user message
-    # Wait, the views.py saves the user_message BEFORE calling this, 
-    # so messages_history will already contain the latest user message if we pass all messages.
-    # We need to make sure we don't duplicate it. 
-    # To keep it simple, we just pass the history as-is if we pass all messages up to the current one.
-
-    # If views.py doesn't pass history yet, we just append the single message
     if not messages_history:
         messages.append({"role": "user", "content": user_message})
 
