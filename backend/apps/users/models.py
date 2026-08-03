@@ -107,6 +107,15 @@ class User(AbstractBaseUser, PermissionsMixin):
         default=False
     )
 
+    monthly_reset_count = models.IntegerField(
+        default=0
+    )
+
+    last_reset_date = models.DateTimeField(
+        null=True,
+        blank=True
+    )
+
     created_at = models.DateTimeField(
         auto_now_add=True
     )

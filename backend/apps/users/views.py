@@ -3,8 +3,10 @@ from django.core.mail import send_mail
 from django.conf import settings
 from django.core.cache import cache
 from rest_framework.decorators import api_view, permission_classes
-from rest_framework.permissions import AllowAny
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
+from django.db import transaction
+from django.utils import timezone
 from rest_framework import status
 from django.contrib.auth import authenticate
 from .models import User

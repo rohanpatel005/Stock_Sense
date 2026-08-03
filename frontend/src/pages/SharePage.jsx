@@ -221,14 +221,7 @@ const SharePage = () => {
         {/* 10. Business details, news and actions */}
         <CompanyProfile data={data?.profile} />
         
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-          <div className="lg:col-span-8">
-            <News data={data?.news} />
-          </div>
-          <div className="lg:col-span-4">
-            <Events data={data?.events} />
-          </div>
-        </div>
+
 
         {/* Floating Chat Widget */}
         <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end">

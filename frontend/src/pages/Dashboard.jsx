@@ -818,23 +818,7 @@ const Dashboard = () => {
               </div>
             </div>
 
-            {/* Indian Market News */}
-            <div className="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm">
-              <h3 className="text-lg font-bold text-slate-800 mb-6">Market News</h3>
-              <div className="space-y-4">
-                {data.news.map((item, idx) => (
-                  <div key={idx} className="space-y-1">
-                    <div className="flex items-center gap-2">
-                      <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded">{item.source}</span>
-                      <span className="text-[9px] text-slate-400 font-semibold">{item.time}</span>
-                    </div>
-                    <h4 className="text-xs font-bold text-slate-800 leading-snug hover:text-emerald-700 cursor-pointer transition-colors">
-                      {item.title}
-                    </h4>
-                  </div>
-                ))}
-              </div>
-            </div>
+
 
           </div>
 

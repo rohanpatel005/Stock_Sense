@@ -4,6 +4,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.pagination import PageNumberPagination
 from .services import OrderService
 from .serializers import OrderSerializer
+from apps.market.services import TradeService
 
 class OrderPagination(PageNumberPagination):
     page_size = 20
@@ -14,6 +15,12 @@ class OrdersAPIView(APIView):
     permission_classes = [IsAuthenticated]
     
     def get(self, request):
+        # 0. Process pending orders before returning the list
+        try:
+            TradeService.process_pending_orders()
+        except Exception:
+            pass
+
         # 1. Fetch Summary
         summary = OrderService.get_order_summary(request.user)
         

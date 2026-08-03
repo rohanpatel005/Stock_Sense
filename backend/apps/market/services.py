@@ -418,3 +418,92 @@ class TradeService:
     @classmethod
     def get_pending_orders(cls, user):
         return Transaction.objects.filter(user=user, order_status="PENDING").order_by("-created_at")
+
+    @classmethod
+    def process_pending_orders(cls):
+        """Processes all pending orders if the market is open."""
+        if not MarketStatusService.is_market_open():
+            return
+            
+        pending_txns = Transaction.objects.filter(order_status="PENDING")
+        if not pending_txns.exists():
+            return
+
+        for txn in pending_txns:
+            user = txn.user
+            symbol = txn.stock_symbol
+            qty = txn.quantity
+            txn_type = txn.transaction_type
+            
+            try:
+                with transaction.atomic():
+                    # Lock user for update
+                    user.refresh_from_db(fields=['wallet'])
+                    market_price = cls.get_live_price(symbol)
+                    total_amount = market_price * qty
+                    
+                    if txn_type == "BUY":
+                        if user.wallet >= total_amount:
+                            user.wallet -= total_amount
+                            user.save(update_fields=["wallet"])
+                            
+                            portfolio, _ = Portfolio.objects.select_for_update().get_or_create(
+                                user=user, stock_symbol=symbol,
+                                defaults={
+                                    "company_name": txn.company_name,
+                                    "quantity": 0,
+                                    "average_buy_price": Decimal("0.00"),
+                                    "current_price": market_price,
+                                    "invested_amount": Decimal("0.00"),
+                                    "current_value": Decimal("0.00"),
+                                    "profit_loss": Decimal("0.00"),
+                                    "profit_loss_percentage": Decimal("0.00"),
+                                }
+                            )
+                            old_qty = portfolio.quantity
+                            old_avg_price = portfolio.average_buy_price
+                            new_qty = old_qty + qty
+                            new_avg_price = ((old_qty * old_avg_price) + (qty * market_price)) / new_qty
+                            
+                            portfolio.quantity = new_qty
+                            portfolio.average_buy_price = new_avg_price
+                            portfolio.current_price = market_price
+                            cls.process_portfolio_metrics(portfolio)
+                            portfolio.save()
+                            
+                            txn.order_status = "SUCCESS"
+                            txn.price = market_price
+                            txn.total_amount = total_amount
+                            txn.save(update_fields=["order_status", "price", "total_amount"])
+                        else:
+                            txn.order_status = "FAILED"
+                            txn.save(update_fields=["order_status"])
+                            
+                    elif txn_type == "SELL":
+                        try:
+                            portfolio = Portfolio.objects.select_for_update().get(user=user, stock_symbol=symbol)
+                            if portfolio.quantity >= qty:
+                                user.wallet += total_amount
+                                user.save(update_fields=["wallet"])
+                                
+                                portfolio.quantity -= qty
+                                portfolio.current_price = market_price
+                                if portfolio.quantity > 0:
+                                    cls.process_portfolio_metrics(portfolio)
+                                    portfolio.save()
+                                else:
+                                    portfolio.delete()
+                                    
+                                txn.order_status = "SUCCESS"
+                                txn.price = market_price
+                                txn.total_amount = total_amount
+                                txn.save(update_fields=["order_status", "price", "total_amount"])
+                            else:
+                                txn.order_status = "FAILED"
+                                txn.save(update_fields=["order_status"])
+                        except Portfolio.DoesNotExist:
+                            txn.order_status = "FAILED"
+                            txn.save(update_fields=["order_status"])
+                            
+            except Exception as e:
+                logger.error(f"Error processing pending txn {txn.id}: {e}")

@@ -213,7 +213,7 @@ def calculate_technical_indicators(df: pd.DataFrame) -> dict:
     fib_786 = highest_p - 0.786 * diff
 
     # Return latest row values
-    return {
+    res = {
         "ema_20": float(ema_20.iloc[-1] or 0),
         "ema_50": float(ema_50.iloc[-1] or 0),
         "ema_100": float(ema_100.iloc[-1] or 0),
@@ -255,3 +255,10 @@ def calculate_technical_indicators(df: pd.DataFrame) -> dict:
         "fib_618": float(fib_618),
         "fib_786": float(fib_786),
     }
+    
+    # Clean NaN and infinite values before returning
+    for k, v in res.items():
+        if isinstance(v, float) and (np.isnan(v) or np.isinf(v)):
+            res[k] = 0.0
+            
+    return res

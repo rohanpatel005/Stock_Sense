@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     'apps.portfolio',
     'apps.news',
     'apps.ai',
+    'apps.settings',
 ]
 
 MIDDLEWARE = [

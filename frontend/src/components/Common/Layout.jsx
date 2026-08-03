@@ -36,7 +36,7 @@ const Layout = ({ user, handleLogout }) => {
               { label: 'Orders',    path: '/orders'    },
               { label: 'AI Mentor'       },
               { label: 'News'            },
-              { label: 'Settings'        }
+              { label: 'Settings',        path: '/settings' }
             ].map((item, index) => {
               return (
                 <button

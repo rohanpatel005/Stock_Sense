@@ -116,6 +116,7 @@ class StockCardService:
         for period, interval in interval_map.items():
             try:
                 p_hist = ticker.history(period=period, interval=interval) if period != "1y" else hist_1y
+                p_hist = p_hist.dropna(subset=["Close"])
                 chart_key = period.replace("1mo", "1m").replace("3mo", "3m").replace("6mo", "6m")
                 charts[chart_key] = [
                     {"time": int(t.timestamp()), "value": float(row["Close"])}
@@ -134,7 +135,7 @@ class StockCardService:
                 "close": float(row["Close"]),
                 "volume": int(row["Volume"])
             }
-            for t, row in hist_1y.iterrows()
+            for t, row in hist_1y.dropna(subset=["Open", "High", "Low", "Close"]).iterrows()
         ]
 
         # 6. Technical Signals & AI analysis logic

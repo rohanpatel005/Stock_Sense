@@ -53,6 +53,8 @@ def get_live_stock_data(symbol, default_val=100.0):
     }
 
 
+from apps.market.views import market_overview, market_sectors
+
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])
 def dashboard_data(request):
@@ -63,10 +65,28 @@ def dashboard_data(request):
     """
     user = request.user
     
-    # Fetch live values for top indices (Nifty 50, Sensex, Bank Nifty)
-    nifty = get_live_stock_data("^NSEI", 24834.85)
-    sensex = get_live_stock_data("^BSESN", 81332.72)
-    bank_nifty = get_live_stock_data("^NSEBANK", 51295.40)
+    # Fetch live values for top indices (Nifty 50, Sensex, Bank Nifty) from NSE API instead of yfinance
+    overview_res = market_overview(request._request).data
+    sectors_res = market_sectors(request._request).data
+    
+    def get_index(name, default_price):
+        item = next((s for s in overview_res if s["name"] == name), None)
+        if not item:
+            return {"price": default_price, "change": "+0.00", "change_percent": "+0.00%", "trend": "up", "chart": []}
+        change = item["change"]
+        change_pct = item["change_percent"]
+        trend = "up" if change >= 0 else "down"
+        return {
+            "price": item["value"],
+            "change": f"{'+' if change >= 0 else ''}{round(change, 2)}",
+            "change_percent": f"{'+' if change_pct >= 0 else ''}{round(change_pct, 2)}%",
+            "trend": trend,
+            "chart": item.get("sparkline", [])
+        }
+
+    nifty = get_index("Nifty 50", 24834.85)
+    sensex = get_index("Sensex", 81332.72)
+    bank_nifty = get_index("Bank Nifty", 51295.40)
     
     # Fetch user specific database holdings
     total_invested = Portfolio.objects.filter(user=user).aggregate(Sum('invested_amount'))['invested_amount__sum'] or 0.00
@@ -99,21 +119,21 @@ def dashboard_data(request):
         "summary": {
             "nifty_50": {
                 "name": "NIFTY 50",
-                "value": f"{nifty['price']:,}",
+                "value": f"{nifty['price']:,.2f}",
                 "change": nifty['change'],
                 "change_percent": nifty['change_percent'],
                 "trend": nifty['trend']
             },
             "sensex": {
                 "name": "SENSEX",
-                "value": f"{sensex['price']:,}",
+                "value": f"{sensex['price']:,.2f}",
                 "change": sensex['change'],
                 "change_percent": sensex['change_percent'],
                 "trend": sensex['trend']
             },
             "bank_nifty": {
                 "name": "BANK NIFTY",
-                "value": f"{bank_nifty['price']:,}",
+                "value": f"{bank_nifty['price']:,.2f}",
                 "change": bank_nifty['change'],
                 "change_percent": bank_nifty['change_percent'],
                 "trend": bank_nifty['trend']
@@ -136,9 +156,9 @@ def dashboard_data(request):
             }
         },
         "market_overview": [
-            {"symbol": "NIFTY 50", "value": f"{nifty['price']:,}", "change": nifty['change_percent'], "trend": nifty['trend'], "chart": nifty['chart']},
-            {"symbol": "BANK NIFTY", "value": f"{bank_nifty['price']:,}", "change": bank_nifty['change_percent'], "trend": bank_nifty['trend'], "chart": bank_nifty['chart']},
-            {"symbol": "SENSEX", "value": f"{sensex['price']:,}", "change": sensex['change_percent'], "trend": sensex['trend'], "chart": sensex['chart']},
+            {"symbol": "NIFTY 50", "value": f"{nifty['price']:,.2f}", "change": nifty['change_percent'], "trend": nifty['trend'], "chart": nifty['chart']},
+            {"symbol": "BANK NIFTY", "value": f"{bank_nifty['price']:,.2f}", "change": bank_nifty['change_percent'], "trend": bank_nifty['trend'], "chart": bank_nifty['chart']},
+            {"symbol": "SENSEX", "value": f"{sensex['price']:,.2f}", "change": sensex['change_percent'], "trend": sensex['trend'], "chart": sensex['chart']},
             {"symbol": "NIFTY IT", "value": "39,124.50", "change": "+1.45%", "trend": "up", "chart": [38400, 38600, 38800, 39000, 39124]},
             {"symbol": "NIFTY AUTO", "value": "25,482.10", "change": "+0.92%", "trend": "up", "chart": [25100, 25250, 25300, 25400, 25482]},
             {"symbol": "NIFTY FMCG", "value": "57,324.40", "change": "-0.15%", "trend": "down", "chart": [57500, 57450, 57400, 57350, 57324]}
@@ -162,14 +182,11 @@ def dashboard_data(request):
             {"symbol": "INFY", "name": "Infosys Ltd", "price": f"{infy['price']:,}", "change": "-1.85%", "volume": "6.8M"}
         ],
         "sector_performance": [
-            {"sector": "IT", "change": "+1.45%"},
-            {"sector": "BANKING", "change": "+0.45%"},
-            {"sector": "AUTO", "change": "+0.92%"},
-            {"sector": "PHARMA", "change": "-0.24%"},
-            {"sector": "ENERGY", "change": "+0.80%"},
-            {"sector": "METAL", "change": "-1.10%"},
-            {"sector": "REALTY", "change": "+2.35%"}
-        ],
+            {
+                "sector": s["name"].upper(), 
+                "change": f"{'+' if s['change_percent'] >= 0 else ''}{s['change_percent']}%"
+            } for s in sectors_res
+        ][:7],
         "watchlist": [
             {"symbol": "RELIANCE", "name": "Reliance Industries", "price": f"{reliance['price']:,}", "change": reliance['change_percent'], "trend": reliance['trend']},
             {"symbol": "TCS", "name": "Tata Consultancy Services", "price": f"{tcs['price']:,}", "change": tcs['change_percent'], "trend": tcs['trend']},

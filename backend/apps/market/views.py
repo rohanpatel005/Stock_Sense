@@ -175,7 +175,7 @@ def market_overview(request):
     data = []
     if records:
         for r in records:
-            idx_name = r.get("indexName", "").upper()
+            idx_name = r.get("index", "").upper()
             if idx_name in indices_map:
                 price = sf(r.get("last", 0))
                 chg = sf(r.get("percentChange", 0))
@@ -330,7 +330,7 @@ def market_sectors(request):
     data = []
     if records:
         for r in records:
-            idx_name = r.get("indexName", "").upper()
+            idx_name = r.get("index", "").upper()
             if idx_name in sectoral_map:
                 pct = sf(r.get("percentChange", 0))
                 val = sf(r.get("last", 0))
@@ -375,7 +375,7 @@ def market_breadth(request):
     
     advances, declines, unchanged = 28, 20, 2
     for r in records:
-        if r.get("indexName", "").upper() == "NIFTY 50":
+        if r.get("index", "").upper() == "NIFTY 50":
             advances = int(sf(r.get("key", {}).get("advances", 28)))
             declines = int(sf(r.get("key", {}).get("declines", 20)))
             unchanged = int(sf(r.get("key", {}).get("unchanged", 2)))
@@ -395,6 +395,13 @@ def market_breadth(request):
 def market_status(request):
     """GET /api/market/market-status"""
     is_open = is_nse_open_status()
+    
+    if is_open:
+        try:
+            TradeService.process_pending_orders()
+        except Exception as e:
+            logger.error(f"Error processing pending orders in market_status: {e}", exc_info=True)
+            
     now_ist = datetime.now(IST)
     return Response({
         "status": "OPEN" if is_open else "CLOSED",

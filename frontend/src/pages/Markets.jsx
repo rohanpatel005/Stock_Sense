@@ -259,9 +259,10 @@ const Markets = () => {
     const timer = setInterval(() => {
       loadOverview();
       loadMovers();
+      loadSectors();
       loadBreadth();
       loadStatus();
-    }, REFRESH_INTERVAL_MS);
+    }, 12000);
 
     return () => clearInterval(timer);
   }, [loadOverview, loadMovers, loadSectors, loadBreadth, loadStatus]);

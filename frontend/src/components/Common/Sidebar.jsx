@@ -17,6 +17,7 @@ const Sidebar = ({ user = {} }) => {
     if (path.startsWith('/orders')) return 'orders';
     if (path.startsWith('/news')) return 'news';
     if (path.startsWith('/ai-mentor')) return 'ai_mentor';
+    if (path.startsWith('/settings')) return 'settings';
     return 'dashboard';
   };
   const activePage = getActivePage();
@@ -40,7 +41,7 @@ const Sidebar = ({ user = {} }) => {
     { label: 'Orders',    page: 'orders',    path: '/orders'    },
     { label: 'AI Mentor', page: 'ai_mentor', path: '/ai-mentor' },
     { label: 'News',      page: 'news',      path: '/news'      },
-    { label: 'Settings'        },
+    { label: 'Settings',  page: 'settings',  path: '/settings'  },
   ];
 
   const handleNav = (item) => {
