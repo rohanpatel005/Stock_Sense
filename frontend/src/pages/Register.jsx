@@ -44,12 +44,8 @@ const Register = () => {
       alert('Registration Successful!');
       navigate('/dashboard');
     } catch (err) {
-      if (err.response?.status === 409) {
-        alert('An account with this email already exists. Please sign in with Google.');
-      } else {
-        const serverError = err.response?.data?.error || 'Google registration failed. Please try again.';
-        setError(serverError);
-      }
+      const serverError = err.response?.data?.error || 'Google registration failed. Please try again.';
+      setError(serverError);
     } finally {
       setGoogleLoading(false);
     }

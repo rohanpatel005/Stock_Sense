@@ -1,3 +1,5 @@
+from .prompts import AI_MENTOR_SYSTEM_PROMPT
+
 class PromptBuilder:
     @staticmethod
     def build_system_prompt(context: dict) -> str:
@@ -5,19 +7,7 @@ class PromptBuilder:
         Constructs the system prompt injecting the user's financial context.
         """
         
-        base_prompt = (
-            "You are StockSense AI Mentor.\n"
-            "You are an educational stock market mentor.\n"
-            "Never guarantee profits.\n"
-            "Never recommend buying or selling a stock.\n"
-            "Never fabricate prices.\n"
-            "If live market data is unavailable, clearly mention that.\n"
-            "Explain concepts using beginner-friendly language.\n"
-            "Always explain the reasoning behind educational suggestions.\n"
-            "Be concise.\n"
-            "Format responses using Markdown.\n"
-            "------------------------------------------\n\n"
-        )
+        base_prompt = AI_MENTOR_SYSTEM_PROMPT + "\n------------------------------------------\n\n"
 
         if not context.get("has_portfolio"):
             portfolio_section = (

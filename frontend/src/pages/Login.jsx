@@ -50,16 +50,6 @@ const Login = () => {
       alert('Login Successful!');
       navigate('/dashboard');
     } catch (err) {
-      if (err.response?.status === 409) {
-        // If user already exists, we can authenticate or obtain token
-        // Let's see if we can log in with a customized API or if we need a google-login endpoint.
-        // Wait! Let's check if there's any other endpoint, or if we should add one.
-        // Let's look at views.py google_register:
-        // if User.objects.filter(email=email).exists(): return HTTP_409_CONFLICT
-        // Wait, if they are already registered, we should log them in. Let's look at how backend handles google login.
-        // Let's implement Google login backend support if it's missing, or we can look at google_auth.py.
-        // Let's check if there is an existing endpoint.
-      }
       const serverError = err.response?.data?.error || 'Google login failed. Please try again.';
       setError(serverError);
     } finally {

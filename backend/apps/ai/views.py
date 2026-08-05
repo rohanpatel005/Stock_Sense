@@ -4,7 +4,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from .models import Conversation, Message
 from .serializers import ConversationSerializer, MessageSerializer
-from .services.groq_service import generate_ai_response
+from .services.ai_mentor import generate_ai_response
 
 @api_view(['GET', 'DELETE'])
 @permission_classes([IsAuthenticated])

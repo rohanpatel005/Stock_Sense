@@ -22,22 +22,28 @@ def clean_nans(obj):
         return {k: clean_nans(v) for k, v in obj.items()}
     elif isinstance(obj, list):
         return [clean_nans(v) for v in obj]
-    elif isinstance(obj, float):
-        if math.isnan(obj) or math.isinf(obj):
-            return 0.0
+    elif obj is None or isinstance(obj, (str, bool)):
         return obj
-    return obj
+    else:
+        try:
+            if pd.isna(obj):
+                return 0.0
+            val = float(obj)
+            if math.isnan(val) or math.isinf(val):
+                return 0.0
+            if hasattr(obj, 'item'):
+                return obj.item()
+            return obj
+        except (TypeError, ValueError):
+            return obj
 
 class StockCardService:
     @staticmethod
     def get_stock_data(symbol: str) -> dict:
+        print("Fetching:", symbol)
         symbol_upper = symbol.strip().upper()
-        # Add NSE suffix if no suffix exists
-        if "." not in symbol_upper:
-            yf_symbol = f"{symbol_upper}.NS"
-        else:
-            yf_symbol = symbol_upper
-            
+        yf_symbol = symbol_upper
+        
         logger.info(f"Symbol used in yfinance: {yf_symbol}")
 
         now = time.time()

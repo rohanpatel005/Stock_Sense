@@ -291,8 +291,15 @@ const Markets = () => {
     return () => clearTimeout(searchTimeoutRef.current);
   }, [searchQ, fetchAPI]);
 
-  const selectStock = useCallback((sym) => {
-    console.log(`Selected suggestion: ${sym}`);
+  const selectStock = useCallback((selectedStock) => {
+    let sym;
+    if (typeof selectedStock === 'object') {
+      console.log("Selected Stock:", selectedStock);
+      sym = selectedStock.symbol;
+    } else {
+      sym = selectedStock;
+    }
+    console.log("Navigating with:", sym);
     // Add to recent searches
     const updated = [sym, ...recentSearches.filter(s => s !== sym)].slice(0, 5);
     setRecentSearches(updated);
@@ -311,9 +318,9 @@ const Markets = () => {
       setSearchIndex(prev => Math.max(prev - 1, -1));
     } else if (e.key === 'Enter') {
       if (searchIndex >= 0 && searchResults[searchIndex]) {
-        selectStock(searchResults[searchIndex].symbol);
+        selectStock(searchResults[searchIndex]);
       } else if (searchResults.length > 0) {
-        selectStock(searchResults[0].symbol);
+        selectStock(searchResults[0]);
       }
     } else if (e.key === 'Escape') {
       setSearchFocused(false);
@@ -422,7 +429,7 @@ const Markets = () => {
                 {searchResults.map((item, idx) => (
                   <button
                     key={item.symbol}
-                    onClick={() => selectStock(item.symbol)}
+                    onClick={() => selectStock(item)}
                     className={`w-full text-left px-5 py-4 transition-colors flex items-center gap-4 border-b border-white/5 last:border-0 ${
                       idx === searchIndex ? 'bg-[#00E0A4]/10 border-l-4 border-l-[#00E0A4]' : 'hover:bg-white/5'
                     }`}
@@ -573,8 +580,7 @@ const Markets = () => {
                         <td className="px-5 py-3.5 text-xs text-slate-400 font-bold">{stock.sector}</td>
                         <td className="px-5 py-3.5 text-right font-bold text-white">₹{stock.price.toFixed(2)}</td>
                         <td className={`px-5 py-3.5 text-right font-bold ${isPositive ? 'text-[#00E0A4]' : 'text-red-400'}`}>
-                          <span className="block">{isPositive ? '+' : ''}{stock.change.toFixed(2)}</span>
-                          <span className="text-[10px] font-semibold">{isPositive ? '+' : ''}{stock.change_percent.toFixed(2)}%</span>
+                          {isPositive ? '+' : ''}{stock.change_percent.toFixed(2)}%
                         </td>
                         <td className="px-5 py-3.5 text-right text-xs text-slate-400 font-semibold">{(stock.volume/1e5).toFixed(1)} Lakhs</td>
                       </tr>

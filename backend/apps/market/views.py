@@ -123,8 +123,9 @@ def fetch_nse_variations(index_type: str) -> list:
             pct = sf(item.get("perChange", item.get("pChange", 0)))
             vol = sf(item.get("trade_quantity", item.get("totalTradedVolume", item.get("volume", 0))))
 
+            api_sym = sym if "." in sym else f"{sym}.NS"
             results.append({
-                "symbol": sym,
+                "symbol": api_sym,
                 "name": sym.replace("&", " and ") + " Ltd",
                 "sector": "NSE Stock",
                 "price": p,
@@ -339,7 +340,7 @@ def market_sectors(request):
                     "trend": "Bullish" if pct >= 0 else "Bearish",
                     "sparkline": [val * 0.99, val * 0.995, val * 1.002, val],
                     "stocks": [
-                        {"symbol": "TCS" if sectoral_map[idx_name] == "IT" else "HDFCBANK", "name": "Industry Leader", "price": val, "change_percent": pct}
+                        {"symbol": "TCS.NS" if sectoral_map[idx_name] == "IT" else "HDFCBANK.NS", "name": "Industry Leader", "price": val, "change_percent": pct}
                     ]
                 })
 

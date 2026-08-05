@@ -18,6 +18,7 @@ def get_stock_card(request, symbol: str):
     if not symbol:
         return Response({"error": "Symbol parameter is required."}, status=status.HTTP_400_BAD_REQUEST)
         
+    print("Received:", symbol)
     logger.info(f"Symbol received: {symbol}")
         
     try:
