@@ -12,7 +12,7 @@ const API_BASE = 'http://127.0.0.1:8000/api/market';
 const REFRESH_INTERVAL_MS = 15000; // 15s refresh for live market data
 
 // ─── SVG Sparkline Chart ──────────────────────────────────────────────────────
-const SparkLine = ({ data = [], color = '#10B981', height = 36 }) => {
+const SparkLine = ({ data = [], color = '#00E0A4', height = 36 }) => {
   if (!data || data.length < 2) return <div style={{ height }} />;
   const min = Math.min(...data);
   const max = Math.max(...data);
@@ -22,8 +22,8 @@ const SparkLine = ({ data = [], color = '#10B981', height = 36 }) => {
     `${(i / (data.length - 1)) * W},${H - ((v - min) / range) * (H - 4) + 2}`
   ).join(' ');
   return (
-    <svg viewBox={`0 0 ${W} ${H}`} className="w-28 sm:w-36" style={{ height }}>
-      <polyline fill="none" stroke={color} strokeWidth="1.5" points={pts} />
+    <svg viewBox={`0 0 ${W} ${H}`} className="w-20 sm:w-24 overflow-visible" style={{ height }}>
+      <polyline fill="none" stroke={color} strokeWidth="2" points={pts} />
     </svg>
   );
 };
@@ -32,7 +32,7 @@ const SparkLine = ({ data = [], color = '#10B981', height = 36 }) => {
 const PriceChart = ({ closes = [], timestamps = [], isUp = true }) => {
   const [tooltip, setTooltip] = useState(null);
   if (!closes || !closes.length) return (
-    <div className="h-48 flex items-center justify-center text-slate-400 text-sm">
+    <div className="h-48 flex items-center justify-center text-slate-400 text-sm font-semibold">
       No chart data available
     </div>
   );
@@ -49,11 +49,11 @@ const PriceChart = ({ closes = [], timestamps = [], isUp = true }) => {
 
   const pts = closes.map((v, i) => `${toX(i)},${toY(v)}`).join(' ');
   const fillPts = `${PAD.l},${PAD.t + innerH} ${pts} ${toX(closes.length - 1)},${PAD.t + innerH}`;
-  const strokeColor = isUp ? '#10B981' : '#EF4444';
+  const strokeColor = isUp ? '#00E0A4' : '#EF4444';
   const fillId = `drawerChartFill_${Math.random().toString(36).slice(2, 7)}`;
 
   return (
-    <div className="relative w-full bg-slate-900/40 border border-slate-800 rounded-2xl p-4">
+    <div className="relative w-full bg-[#0B1118]/60 border border-white/10 rounded-2xl p-4">
       <svg
         viewBox={`0 0 ${W} ${H}`}
         className="w-full h-48 overflow-visible"
@@ -79,14 +79,14 @@ const PriceChart = ({ closes = [], timestamps = [], isUp = true }) => {
         {tooltip && (
           <>
             <line x1={tooltip.x} y1={PAD.t} x2={tooltip.x} y2={PAD.t + innerH}
-              stroke="#475569" strokeWidth="1" strokeDasharray="3" />
+              stroke="rgba(255,255,255,0.2)" strokeWidth="1" strokeDasharray="3" />
             <circle cx={tooltip.x} cy={tooltip.y} r="5" fill={strokeColor} />
           </>
         )}
       </svg>
       {tooltip && (
         <div
-          className="absolute bg-slate-800 text-white text-xs px-2 py-1 rounded-lg pointer-events-none shadow-xl border border-slate-700"
+          className="absolute bg-[#0A0D14] text-white text-xs px-3 py-1.5 rounded-xl pointer-events-none shadow-2xl border border-white/10 z-20"
           style={{ left: (tooltip.x / W * 100) + '%', top: '10px', transform: 'translateX(-50%)' }}
         >
           <div className="font-bold">₹{tooltip.v.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</div>
@@ -101,7 +101,7 @@ const PriceChart = ({ closes = [], timestamps = [], isUp = true }) => {
 const SkeletonLoader = ({ count = 3, height = 'h-12' }) => (
   <div className="space-y-3">
     {[...Array(count)].map((_, i) => (
-      <div key={i} className={`bg-slate-100 animate-pulse rounded-xl w-full ${height}`} />
+      <div key={i} className={`bg-white/5 border border-white/5 animate-pulse rounded-2xl w-full ${height}`} />
     ))}
   </div>
 );
@@ -352,27 +352,27 @@ const Markets = () => {
 
   return (
     <>
-      <main className="flex-1 p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto space-y-6 w-full">
+      <main className="flex-1 pt-20 lg:pt-6 pb-24 px-4 lg:px-8 relative z-10 space-y-8 max-w-7xl mx-auto w-full">
         {/* HEADER SECTION */}
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-slate-100 pb-5">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pb-2 border-b border-white/5">
           <div>
-            <h1 className="text-3xl font-extrabold tracking-tight text-slate-900 sm:text-4xl">Market Research</h1>
-            <p className="text-sm text-slate-500 font-medium mt-1">Live overview of the Indian stock market</p>
+            <h1 className="text-3xl font-extrabold tracking-tight text-white sm:text-4xl">Market Research</h1>
+            <p className="text-sm text-slate-400 font-semibold mt-1">Live overview of the Indian stock market</p>
           </div>
 
-          <div className="flex items-center gap-2.5 bg-white shadow-sm border border-slate-100 px-4 py-2.5 rounded-2xl">
-            <span className={`w-3 h-3 rounded-full ${status?.status === 'OPEN' ? 'bg-emerald-500 animate-pulse' : 'bg-red-400'}`} />
+          <div className="flex items-center gap-2.5 bg-[#0B1118]/80 backdrop-blur-xl border border-white/10 px-4 py-2.5 rounded-2xl shadow-lg">
+            <span className={`w-2.5 h-2.5 rounded-full ${status?.status === 'OPEN' ? 'bg-[#00E0A4] shadow-[0_0_10px_rgba(0,224,164,0.8)] animate-pulse' : 'bg-red-400 shadow-[0_0_10px_rgba(248,113,113,0.8)]'}`} />
             <div>
-              <div className="text-xs font-bold text-slate-800">{status?.label || 'Loading Status...'}</div>
+              <div className={`text-xs font-bold ${status?.status === 'OPEN' ? 'text-[#00E0A4]' : 'text-slate-300'}`}>{status?.label || 'Loading Status...'}</div>
               <div className="text-[10px] text-slate-400 font-semibold mt-0.5">{status?.last_updated}</div>
             </div>
           </div>
         </div>
 
         {/* SEARCH BOX */}
-        <div className="relative z-40 max-w-2xl">
+        <div className="relative z-40 max-w-2xl group">
           <div className="relative">
-            <Search className="w-5 h-5 absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
+            <Search className="w-5 h-5 absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-[#00E0A4] transition-colors" />
             <input
               type="text"
               placeholder="Search any NSE listed company..."
@@ -384,7 +384,7 @@ const Markets = () => {
               onFocus={() => setSearchFocused(true)}
               onBlur={() => setSearchFocused(false)}
               onKeyDown={handleKeyDown}
-              className="w-full pl-12 pr-10 py-3.5 bg-white border border-slate-200 rounded-2xl shadow-sm text-sm focus:outline-none focus:ring-2 focus:ring-[#0F766E]/20 focus:border-[#0F766E] transition-all font-semibold"
+              className="w-full pl-12 pr-10 py-3.5 bg-[#0B1118]/80 backdrop-blur-xl border border-white/10 rounded-2xl shadow-lg text-sm text-white focus:outline-none focus:border-[#00E0A4]/50 focus:shadow-[0_0_18px_rgba(0,224,164,0.18)] transition-all font-semibold placeholder:text-slate-500"
             />
             {searchLoading && (
               <RefreshCw className="w-4 h-4 animate-spin absolute right-4 top-1/2 -translate-y-1/2 text-slate-400" />
@@ -397,22 +397,22 @@ const Markets = () => {
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: 10 }}
-                className="absolute top-full left-0 right-0 mt-2 bg-white border border-slate-100 rounded-2xl shadow-xl overflow-hidden max-h-80 overflow-y-auto"
+                className="absolute top-full left-0 right-0 mt-2 bg-[#0A0D14]/95 backdrop-blur-2xl border border-white/10 rounded-2xl shadow-2xl overflow-hidden max-h-80 overflow-y-auto text-white z-50"
                 onMouseDown={(e) => e.preventDefault()}
               >
                 {!searchQ.trim() && recentSearches.length > 0 && (
-                  <div className="p-3 border-b border-slate-50 bg-slate-50/50">
+                  <div className="p-3 border-b border-white/5 bg-white/5">
                     <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Recent Searches</span>
                   </div>
                 )}
                 
-                {!searchQ.trim() && recentSearches.map((sym, idx) => (
+                {!searchQ.trim() && recentSearches.map((sym) => (
                   <button
                     key={sym}
                     onClick={() => selectStock(sym)}
-                    className="w-full text-left px-5 py-3 hover:bg-slate-50 transition-colors flex justify-between items-center"
+                    className="w-full text-left px-5 py-3 hover:bg-white/5 transition-colors flex justify-between items-center text-slate-200"
                   >
-                    <span className="font-bold text-slate-800">{sym}</span>
+                    <span className="font-bold text-white">{sym}</span>
                     <Clock className="w-3.5 h-3.5 text-slate-400" />
                   </button>
                 ))}
@@ -421,19 +421,19 @@ const Markets = () => {
                   <button
                     key={item.symbol}
                     onClick={() => selectStock(item.symbol)}
-                    className={`w-full text-left px-5 py-4 transition-colors flex items-center gap-4 ${
-                      idx === searchIndex ? 'bg-[#0F766E]/5' : 'hover:bg-slate-50'
+                    className={`w-full text-left px-5 py-4 transition-colors flex items-center gap-4 border-b border-white/5 last:border-0 ${
+                      idx === searchIndex ? 'bg-[#00E0A4]/10 border-l-4 border-l-[#00E0A4]' : 'hover:bg-white/5'
                     }`}
                   >
                     {/* Logo Placeholder */}
-                    <div className="w-10 h-10 rounded-xl bg-slate-100 border border-slate-200 flex items-center justify-center flex-shrink-0 font-bold text-slate-500 text-lg">
+                    <div className="w-10 h-10 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center flex-shrink-0 font-bold text-[#00E0A4] text-lg">
                       {item.name.charAt(0).toUpperCase()}
                     </div>
                     
                     <div className="flex-1 min-w-0">
-                      <div className="font-bold text-slate-800 truncate text-base">{item.name}</div>
-                      <div className="text-xs text-slate-500 font-medium flex items-center gap-1 mt-0.5">
-                        <span className="font-bold text-slate-700">{item.symbol}</span>
+                      <div className="font-bold text-white truncate text-base">{item.name}</div>
+                      <div className="text-xs text-slate-400 font-medium flex items-center gap-1 mt-0.5">
+                        <span className="font-bold text-slate-300">{item.symbol}</span>
                         <span>•</span>
                         <span>{item.exchange || 'NSE'}</span>
                       </div>
@@ -441,27 +441,27 @@ const Markets = () => {
 
                     {(item.price != null && item.change != null) ? (
                       <div className="text-right flex-shrink-0">
-                        <div className="font-bold text-slate-800">
+                        <div className="font-bold text-white">
                           ₹{item.price.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                         </div>
-                        <div className={`text-xs font-bold flex items-center justify-end gap-0.5 mt-0.5 ${item.change >= 0 ? 'text-[#10B981]' : 'text-[#EF4444]'}`}>
+                        <div className={`text-xs font-bold flex items-center justify-end gap-0.5 mt-0.5 ${item.change >= 0 ? 'text-[#00E0A4]' : 'text-red-400'}`}>
                           {item.change >= 0 ? <TrendingUp className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />}
                           <span>{item.change >= 0 ? '+' : ''}{item.change_percent.toFixed(2)}%</span>
                         </div>
                       </div>
                     ) : (
                       <div className="text-right flex-shrink-0">
-                        <ArrowUpRight className="w-4 h-4 text-[#0F766E] opacity-50" />
+                        <ArrowUpRight className="w-4 h-4 text-[#00E0A4] opacity-50" />
                       </div>
                     )}
                   </button>
                 ))}
 
                 {searchQ.trim().length >= 2 && !searchLoading && searchResults.length === 0 && (
-                  <div className="p-8 text-center text-slate-500">
-                    <Search className="w-8 h-8 mx-auto text-slate-300 mb-3" />
-                    <div className="font-bold text-slate-700">No matching stocks found.</div>
-                    <div className="text-sm mt-1">Try another company name or symbol.</div>
+                  <div className="p-8 text-center text-slate-400">
+                    <Search className="w-8 h-8 mx-auto text-slate-500 mb-3" />
+                    <div className="font-bold text-slate-200">No matching stocks found.</div>
+                    <div className="text-sm text-slate-400 mt-1">Try another company name or symbol.</div>
                   </div>
                 )}
               </motion.div>
@@ -470,10 +470,10 @@ const Markets = () => {
         </div>
 
         {/* MARKET OVERVIEW */}
-        <section className="space-y-3">
+        <section className="space-y-4">
           <div className="flex items-center gap-2">
-            <Activity className="w-5 h-5 text-[#0F766E]" />
-            <h2 className="text-lg font-bold text-slate-900 uppercase tracking-wide">Market Overview</h2>
+            <Activity className="w-5 h-5 text-[#00E0A4]" />
+            <h2 className="text-lg font-bold text-white uppercase tracking-wide">Market Overview</h2>
           </div>
 
           {loading.overview ? (
@@ -481,7 +481,7 @@ const Markets = () => {
               <SkeletonLoader count={5} height="h-28" />
             </div>
           ) : errors.overview ? (
-            <div className="bg-red-50 text-red-600 p-4 rounded-2xl flex items-center gap-2">
+            <div className="bg-red-500/10 border border-red-500/20 text-red-400 p-4 rounded-2xl flex items-center gap-2 text-sm font-semibold">
               <ShieldAlert className="w-5 h-5" /> {errors.overview}
             </div>
           ) : (
@@ -492,19 +492,19 @@ const Markets = () => {
                   <motion.div
                     key={idx.name}
                     whileHover={{ y: -4, scale: 1.01 }}
-                    className="bg-white border border-slate-100 rounded-2xl p-4 shadow-sm hover:shadow-md transition-all cursor-pointer flex flex-col justify-between"
+                    className="bg-[#0B1118]/60 backdrop-blur-md border border-white/5 p-5 rounded-[20px] premium-glass-card hover-lift-card hover-gradient cursor-pointer flex flex-col justify-between group"
                   >
                     <div>
-                      <div className="text-xs font-bold text-slate-400 uppercase tracking-wide">{idx.name}</div>
-                      <div className="text-xl font-black text-slate-950 mt-1">{idx.value.toLocaleString('en-IN')}</div>
+                      <div className="text-xs font-bold text-slate-400 uppercase tracking-wider group-hover:text-slate-300 transition-colors">{idx.name}</div>
+                      <div className="text-xl font-bold text-white mt-1.5">{idx.value.toLocaleString('en-IN')}</div>
                     </div>
                     
-                    <div className="mt-3 flex items-center justify-between gap-2">
-                      <div className={`flex items-center text-xs font-black ${isPositive ? 'text-emerald-500' : 'text-red-500'}`}>
-                        {isPositive ? <ArrowUpRight className="w-4 h-4 mr-0.5" /> : <ArrowDownRight className="w-4 h-4 mr-0.5" />}
+                    <div className="mt-4 flex items-center justify-between gap-2">
+                      <div className={`flex items-center text-xs font-bold ${isPositive ? 'text-[#00E0A4]' : 'text-red-400'}`}>
+                        {isPositive ? <ArrowUpRight className="w-4 h-4 mr-0.5 drop-shadow-[0_0_8px_rgba(0,224,164,0.5)]" /> : <ArrowDownRight className="w-4 h-4 mr-0.5 drop-shadow-[0_0_8px_rgba(248,113,113,0.5)]" />}
                         {isPositive ? '+' : ''}{idx.change_percent.toFixed(2)}%
                       </div>
-                      <SparkLine data={idx.sparkline} color={isPositive ? '#10B981' : '#EF4444'} height={24} />
+                      <SparkLine data={idx.sparkline} color={isPositive ? '#00E0A4' : '#EF4444'} height={24} />
                     </div>
                   </motion.div>
                 );
@@ -517,18 +517,18 @@ const Markets = () => {
         <section className="space-y-4">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div className="flex items-center gap-2">
-              <TrendingUp className="w-5 h-5 text-[#0F766E]" />
-              <h2 className="text-lg font-bold text-slate-900 uppercase tracking-wide">Market Movers</h2>
+              <TrendingUp className="w-5 h-5 text-[#00E0A4]" />
+              <h2 className="text-lg font-bold text-white uppercase tracking-wide">Market Movers</h2>
             </div>
             
             {/* TABS */}
-            <div className="flex bg-slate-200/60 p-1 rounded-xl self-start">
+            <div className="flex bg-white/5 border border-white/10 p-1 rounded-xl self-start">
               {['gainers', 'losers', 'mostActive'].map((tab) => (
                 <button
                   key={tab}
                   onClick={() => setActiveMoverTab(tab)}
                   className={`px-4 py-2 rounded-lg text-xs font-bold transition-all ${
-                    activeMoverTab === tab ? 'bg-white text-slate-950 shadow-sm' : 'text-slate-500 hover:text-slate-800'
+                    activeMoverTab === tab ? 'bg-gradient-to-r from-[#00E0A4] to-[#00B37E] text-[#05070D] font-black shadow-[0_0_15px_rgba(0,224,164,0.4)]' : 'text-slate-400 hover:text-white hover:bg-white/5'
                   }`}
                 >
                   {tab === 'gainers' ? 'Top Gainers' : tab === 'losers' ? 'Top Losers' : 'Most Active'}
@@ -540,41 +540,41 @@ const Markets = () => {
           {loading.movers ? (
             <SkeletonLoader count={5} height="h-14" />
           ) : errors.movers ? (
-            <div className="bg-red-50 text-red-600 p-4 rounded-2xl flex items-center gap-2">
+            <div className="bg-red-500/10 border border-red-500/20 text-red-400 p-4 rounded-2xl flex items-center gap-2 text-sm font-semibold">
               <ShieldAlert className="w-5 h-5" /> {errors.movers}
             </div>
           ) : (
-            <div className="bg-white border border-slate-100 rounded-2xl shadow-sm overflow-x-auto">
+            <div className="bg-[#0B1118]/80 backdrop-blur-xl border border-white/10 rounded-[24px] premium-glass-card shadow-lg overflow-x-auto">
               <table className="w-full text-left border-collapse min-w-[600px]">
                 <thead>
-                  <tr className="border-b border-slate-100 bg-slate-50/50">
-                    <th className="px-5 py-3 text-xs font-bold text-slate-400 uppercase tracking-wider">Company</th>
-                    <th className="px-5 py-3 text-xs font-bold text-slate-400 uppercase tracking-wider">Sector</th>
-                    <th className="px-5 py-3 text-xs font-bold text-slate-400 uppercase tracking-wider text-right">Current Price</th>
-                    <th className="px-5 py-3 text-xs font-bold text-slate-400 uppercase tracking-wider text-right">Today's Change</th>
-                    <th className="px-5 py-3 text-xs font-bold text-slate-400 uppercase tracking-wider text-right">Volume</th>
+                  <tr className="border-b border-white/10 bg-white/5">
+                    <th className="px-5 py-3.5 text-xs font-bold text-slate-400 uppercase tracking-wider">Company</th>
+                    <th className="px-5 py-3.5 text-xs font-bold text-slate-400 uppercase tracking-wider">Sector</th>
+                    <th className="px-5 py-3.5 text-xs font-bold text-slate-400 uppercase tracking-wider text-right">Current Price</th>
+                    <th className="px-5 py-3.5 text-xs font-bold text-slate-400 uppercase tracking-wider text-right">Today's Change</th>
+                    <th className="px-5 py-3.5 text-xs font-bold text-slate-400 uppercase tracking-wider text-right">Volume</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-100">
+                <tbody className="divide-y divide-white/5">
                   {activeMoversList.map((stock) => {
                     const isPositive = stock.change_percent >= 0;
                     return (
                       <tr
                         key={stock.symbol}
                         onClick={() => selectStock(stock.symbol)}
-                        className="hover:bg-slate-50/70 transition-colors cursor-pointer group"
+                        className="hover:bg-white/5 transition-colors cursor-pointer group"
                       >
                         <td className="px-5 py-3.5">
-                          <div className="font-bold text-slate-900 group-hover:text-[#0F766E] transition-colors">{stock.symbol}</div>
+                          <div className="font-bold text-white group-hover:text-[#00E0A4] transition-colors">{stock.symbol}</div>
                           <div className="text-xs text-slate-400 font-medium">{stock.name}</div>
                         </td>
-                        <td className="px-5 py-3.5 text-xs text-slate-500 font-bold">{stock.sector}</td>
-                        <td className="px-5 py-3.5 text-right font-black text-slate-950">₹{stock.price.toFixed(2)}</td>
-                        <td className={`px-5 py-3.5 text-right font-bold ${isPositive ? 'text-emerald-500' : 'text-red-500'}`}>
+                        <td className="px-5 py-3.5 text-xs text-slate-400 font-bold">{stock.sector}</td>
+                        <td className="px-5 py-3.5 text-right font-bold text-white">₹{stock.price.toFixed(2)}</td>
+                        <td className={`px-5 py-3.5 text-right font-bold ${isPositive ? 'text-[#00E0A4]' : 'text-red-400'}`}>
                           <span className="block">{isPositive ? '+' : ''}{stock.change.toFixed(2)}</span>
                           <span className="text-[10px] font-semibold">{isPositive ? '+' : ''}{stock.change_percent.toFixed(2)}%</span>
                         </td>
-                        <td className="px-5 py-3.5 text-right text-xs text-slate-500 font-semibold">{(stock.volume/1e5).toFixed(1)} Lakhs</td>
+                        <td className="px-5 py-3.5 text-right text-xs text-slate-400 font-semibold">{(stock.volume/1e5).toFixed(1)} Lakhs</td>
                       </tr>
                     );
                   })}
@@ -585,10 +585,10 @@ const Markets = () => {
         </section>
 
         {/* SECTOR PERFORMANCE (Full Width Grid: 5 Columns) */}
-        <section className="space-y-3">
+        <section className="space-y-4">
           <div className="flex items-center gap-2">
-            <Layers className="w-5 h-5 text-[#0F766E]" />
-            <h2 className="text-lg font-bold text-slate-900 uppercase tracking-wide">Sector Performance</h2>
+            <Layers className="w-5 h-5 text-[#00E0A4]" />
+            <h2 className="text-lg font-bold text-white uppercase tracking-wide">Sector Performance</h2>
           </div>
 
           {loading.sectors ? (
@@ -596,7 +596,7 @@ const Markets = () => {
               <SkeletonLoader count={15} height="h-20" />
             </div>
           ) : errors.sectors ? (
-            <div className="bg-red-50 text-red-600 p-4 rounded-2xl flex items-center gap-2">
+            <div className="bg-red-500/10 border border-red-500/20 text-red-400 p-4 rounded-2xl flex items-center gap-2 text-sm font-semibold">
               <ShieldAlert className="w-5 h-5" /> {errors.sectors}
             </div>
           ) : (
@@ -606,23 +606,23 @@ const Markets = () => {
                 return (
                   <motion.div
                     key={sec.name}
-                    whileHover={{ scale: 1.01 }}
-                    className={`p-4 rounded-2xl border transition-all ${
-                      isUp ? 'bg-emerald-50/20 border-emerald-100' : 'bg-red-50/10 border-red-100'
+                    whileHover={{ y: -4, scale: 1.01 }}
+                    className={`p-4 rounded-[20px] border backdrop-blur-md transition-all premium-glass-card hover-lift-card group ${
+                      isUp ? 'bg-emerald-500/5 border-emerald-500/20 hover:border-emerald-500/40' : 'bg-red-500/5 border-red-500/20 hover:border-red-500/40'
                     }`}
                   >
                     <div className="flex justify-between items-start">
                       <div>
-                        <div className="font-extrabold text-slate-800 text-xs sm:text-sm truncate max-w-[100px]">{sec.name}</div>
+                        <div className="font-bold text-white text-xs sm:text-sm truncate max-w-[100px] group-hover:text-[#00E0A4] transition-colors">{sec.name}</div>
                         <div className="text-[9px] text-slate-400 font-bold uppercase mt-0.5">{sec.trend}</div>
                       </div>
-                      <div className={`flex items-center text-xs font-black ${isUp ? 'text-emerald-500' : 'text-red-500'}`}>
+                      <div className={`flex items-center text-xs font-bold ${isUp ? 'text-[#00E0A4]' : 'text-red-400'}`}>
                         {isUp ? <ArrowUpRight className="w-3.5 h-3.5 mr-0.5" /> : <ArrowDownRight className="w-3.5 h-3.5 mr-0.5" />}
                         {isUp ? '+' : ''}{sec.change_percent}%
                       </div>
                     </div>
                     <div className="mt-3 flex justify-end items-center">
-                      <SparkLine data={sec.sparkline} color={isUp ? '#10B981' : '#EF4444'} height={18} />
+                      <SparkLine data={sec.sparkline} color={isUp ? '#00E0A4' : '#EF4444'} height={18} />
                     </div>
                   </motion.div>
                 );
@@ -634,59 +634,59 @@ const Markets = () => {
         {/* SIDE-BY-SIDE GRID: BREADTH & QUICK INSIGHTS */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* MARKET BREADTH */}
-          <section className="space-y-3">
+          <section className="space-y-4">
             <div className="flex items-center gap-2">
-              <BarChart2 className="w-5 h-5 text-[#0F766E]" />
-              <h2 className="text-lg font-bold text-slate-900 uppercase tracking-wide">Market Breadth</h2>
+              <BarChart2 className="w-5 h-5 text-[#00E0A4]" />
+              <h2 className="text-lg font-bold text-white uppercase tracking-wide">Market Breadth</h2>
             </div>
 
             {loading.breadth ? (
               <SkeletonLoader count={1} height="h-64" />
             ) : errors.breadth ? (
-              <div className="bg-red-50 text-red-600 p-4 rounded-2xl flex items-center gap-2">
+              <div className="bg-red-500/10 border border-red-500/20 text-red-400 p-4 rounded-2xl flex items-center gap-2 text-sm font-semibold">
                 <ShieldAlert className="w-5 h-5" /> {errors.breadth}
               </div>
             ) : (
-              <div className="bg-white border border-slate-100 rounded-2xl p-5 shadow-sm space-y-5">
-                <div className="grid grid-cols-3 gap-2 text-center">
-                  <div className="bg-emerald-50 rounded-xl p-3 border border-emerald-100">
-                    <span className="text-2xl font-black text-emerald-600 block">{breadth?.advances}</span>
-                    <span className="text-[10px] text-emerald-500 font-bold uppercase tracking-wider">Advances</span>
+              <div className="bg-[#0B1118]/80 backdrop-blur-xl border border-white/10 rounded-[24px] p-6 premium-glass-card shadow-lg space-y-5 relative overflow-hidden">
+                <div className="grid grid-cols-3 gap-3 text-center">
+                  <div className="bg-[#00E0A4]/10 rounded-xl p-3.5 border border-[#00E0A4]/20">
+                    <span className="text-2xl font-extrabold text-[#00E0A4] block drop-shadow-[0_0_10px_rgba(0,224,164,0.3)]">{breadth?.advances}</span>
+                    <span className="text-[10px] text-[#00E0A4] font-bold uppercase tracking-wider">Advances</span>
                   </div>
-                  <div className="bg-slate-50 rounded-xl p-3 border border-slate-200">
-                    <span className="text-2xl font-black text-slate-500 block">{breadth?.unchanged}</span>
+                  <div className="bg-white/5 rounded-xl p-3.5 border border-white/10">
+                    <span className="text-2xl font-extrabold text-slate-300 block">{breadth?.unchanged}</span>
                     <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Unchanged</span>
                   </div>
-                  <div className="bg-red-50 rounded-xl p-3 border border-red-100">
-                    <span className="text-2xl font-black text-red-500 block">{breadth?.declines}</span>
+                  <div className="bg-red-500/10 rounded-xl p-3.5 border border-red-500/20">
+                    <span className="text-2xl font-extrabold text-red-400 block drop-shadow-[0_0_10px_rgba(248,113,113,0.3)]">{breadth?.declines}</span>
                     <span className="text-[10px] text-red-400 font-bold uppercase tracking-wider">Declines</span>
                   </div>
                 </div>
 
                 {/* Progress Bar visual indicator */}
-                <div className="space-y-1.5">
-                  <div className="flex justify-between text-xs font-bold text-slate-500">
-                    <span>AD Ratio: {breadth?.ad_ratio}</span>
-                    <span>Total Traded: {breadth?.total_volume}</span>
+                <div className="space-y-2">
+                  <div className="flex justify-between text-xs font-bold text-slate-400">
+                    <span>AD Ratio: <strong className="text-white">{breadth?.ad_ratio}</strong></span>
+                    <span>Total Traded: <strong className="text-white">{breadth?.total_volume}</strong></span>
                   </div>
                   
                   {/* advances vs declines ratio bar */}
-                  <div className="h-3.5 bg-red-400 rounded-full overflow-hidden flex">
+                  <div className="h-3.5 bg-red-500/20 border border-white/5 rounded-full overflow-hidden flex">
                     <div
-                      className="bg-emerald-500 h-full"
+                      className="bg-gradient-to-r from-[#00E0A4] to-[#00B37E] h-full transition-all duration-500 shadow-[0_0_10px_rgba(0,224,164,0.5)]"
                       style={{ width: `${(breadth?.advances / (breadth?.advances + breadth?.declines || 1)) * 100}%` }}
                     />
                   </div>
                 </div>
 
-                <div className="pt-2 border-t border-slate-100 grid grid-cols-2 gap-4">
+                <div className="pt-3 border-t border-white/10 grid grid-cols-2 gap-4">
                   <div>
                     <span className="text-xs text-slate-400 font-bold block">Total Volume</span>
-                    <span className="font-bold text-slate-800 text-sm">{breadth?.total_volume}</span>
+                    <span className="font-bold text-white text-sm">{breadth?.total_volume}</span>
                   </div>
                   <div>
                     <span className="text-xs text-slate-400 font-bold block">Total Turnover</span>
-                    <span className="font-bold text-slate-800 text-sm">{breadth?.total_value}</span>
+                    <span className="font-bold text-white text-sm">{breadth?.total_value}</span>
                   </div>
                 </div>
               </div>
@@ -694,43 +694,43 @@ const Markets = () => {
           </section>
 
           {/* QUICK INSIGHTS SECTION */}
-          <section className="space-y-3">
+          <section className="space-y-4">
             <div className="flex items-center gap-2">
-              <Zap className="w-5 h-5 text-[#0F766E]" />
-              <h2 className="text-lg font-bold text-slate-900 uppercase tracking-wide">Quick Market Insights</h2>
+              <Zap className="w-5 h-5 text-[#00E0A4]" />
+              <h2 className="text-lg font-bold text-white uppercase tracking-wide">Quick Market Insights</h2>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <div
                 onClick={() => gainers.length && selectStock(gainers[0].symbol)}
-                className="bg-white border border-slate-100 rounded-2xl p-4 shadow-sm hover:shadow-md transition-all cursor-pointer flex justify-between items-center group"
+                className="bg-[#0B1118]/60 backdrop-blur-md border border-white/10 hover:border-[#00E0A4]/40 rounded-[20px] p-4 shadow-lg hover:-translate-y-1 transition-all duration-300 cursor-pointer flex justify-between items-center group relative overflow-hidden"
               >
                 <div className="overflow-hidden">
                   <span className="text-[10px] text-slate-400 font-bold block uppercase tracking-wider truncate">Gainer Today</span>
-                  <span className="font-extrabold text-slate-800 block text-xs sm:text-sm group-hover:text-[#0F766E] transition-colors truncate">{gainers[0]?.symbol || '—'}</span>
+                  <span className="font-extrabold text-white block text-xs sm:text-sm group-hover:text-[#00E0A4] transition-colors truncate">{gainers[0]?.symbol || '—'}</span>
                 </div>
-                <Flame className="w-4 h-4 text-amber-500 flex-shrink-0 ml-1" />
+                <Flame className="w-5 h-5 text-amber-400 flex-shrink-0 ml-1 drop-shadow-[0_0_8px_rgba(251,191,36,0.5)]" />
               </div>
 
               <div
                 onClick={() => losers.length && selectStock(losers[0].symbol)}
-                className="bg-white border border-slate-100 rounded-2xl p-4 shadow-sm hover:shadow-md transition-all cursor-pointer flex justify-between items-center group"
+                className="bg-[#0B1118]/60 backdrop-blur-md border border-white/10 hover:border-red-500/40 rounded-[20px] p-4 shadow-lg hover:-translate-y-1 transition-all duration-300 cursor-pointer flex justify-between items-center group relative overflow-hidden"
               >
                 <div className="overflow-hidden">
                   <span className="text-[10px] text-slate-400 font-bold block uppercase tracking-wider truncate">Loser Today</span>
-                  <span className="font-extrabold text-slate-800 block text-xs sm:text-sm group-hover:text-red-500 transition-colors truncate">{losers[0]?.symbol || '—'}</span>
+                  <span className="font-extrabold text-white block text-xs sm:text-sm group-hover:text-red-400 transition-colors truncate">{losers[0]?.symbol || '—'}</span>
                 </div>
-                <TrendingDown className="w-4 h-4 text-red-500 flex-shrink-0 ml-1" />
+                <TrendingDown className="w-5 h-5 text-red-400 flex-shrink-0 ml-1 drop-shadow-[0_0_8px_rgba(248,113,113,0.5)]" />
               </div>
 
               <div
-                className="bg-white border border-slate-100 rounded-2xl p-4 shadow-sm hover:shadow-md transition-all cursor-pointer flex justify-between items-center"
+                className="bg-[#0B1118]/60 backdrop-blur-md border border-white/10 hover:border-purple-500/40 rounded-[20px] p-4 shadow-lg hover:-translate-y-1 transition-all duration-300 cursor-pointer flex justify-between items-center group relative overflow-hidden"
               >
                 <div className="overflow-hidden">
                   <span className="text-[10px] text-slate-400 font-bold block uppercase tracking-wider truncate">Strong Sector</span>
-                  <span className="font-extrabold text-slate-800 block text-xs sm:text-sm truncate">{sectors[0]?.name || '—'}</span>
+                  <span className="font-extrabold text-white block text-xs sm:text-sm truncate group-hover:text-purple-400 transition-colors">{sectors[0]?.name || '—'}</span>
                 </div>
-                <Award className="w-4 h-4 text-emerald-500 flex-shrink-0 ml-1" />
+                <Award className="w-5 h-5 text-[#00E0A4] flex-shrink-0 ml-1 drop-shadow-[0_0_8px_rgba(0,224,164,0.5)]" />
               </div>
             </div>
           </section>
@@ -740,7 +740,7 @@ const Markets = () => {
       {/* SECTOR STOCKS LIST DRAWER/MODAL */}
       <AnimatePresence>
         {selectedSector && (
-          <div className="fixed inset-0 bg-slate-950/40 backdrop-blur-sm z-50 flex justify-end">
+          <div className="fixed inset-0 bg-[#05070D]/80 backdrop-blur-md z-50 flex justify-end">
             {/* Backdrop close */}
             <div className="absolute inset-0" onClick={() => setSelectedSector(null)} />
             
@@ -749,18 +749,18 @@ const Markets = () => {
               animate={{ x: 0 }}
               exit={{ x: '100%' }}
               transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-              className="relative w-full max-w-md bg-white h-full shadow-2xl z-10 flex flex-col p-6 overflow-y-auto"
+              className="relative w-full max-w-md bg-[#0A0D14] border-l border-white/10 h-full shadow-2xl z-10 flex flex-col p-6 overflow-y-auto text-white"
             >
-              <div className="flex justify-between items-start border-b border-slate-100 pb-4">
+              <div className="flex justify-between items-start border-b border-white/10 pb-4">
                 <div>
-                  <h3 className="text-xl font-extrabold text-slate-900">{selectedSector.name} Sector</h3>
-                  <span className={`text-sm font-bold block mt-1 ${selectedSector.change_percent >= 0 ? 'text-emerald-500' : 'text-red-500'}`}>
+                  <h3 className="text-xl font-extrabold text-white">{selectedSector.name} Sector</h3>
+                  <span className={`text-sm font-bold block mt-1 ${selectedSector.change_percent >= 0 ? 'text-[#00E0A4]' : 'text-red-400'}`}>
                     {selectedSector.change_percent >= 0 ? '+' : ''}{selectedSector.change_percent}% Today
                   </span>
                 </div>
                 <button
                   onClick={() => setSelectedSector(null)}
-                  className="p-1.5 hover:bg-slate-100 rounded-xl text-slate-400 hover:text-slate-600 transition-all"
+                  className="p-1.5 hover:bg-white/10 rounded-xl text-slate-400 hover:text-white transition-all"
                 >
                   <X className="w-5 h-5" />
                 </button>
@@ -774,13 +774,13 @@ const Markets = () => {
                       setSelectedSector(null);
                       selectStock(stk.symbol);
                     }}
-                    className="p-3.5 border border-slate-100 rounded-2xl hover:bg-slate-50 transition-all cursor-pointer flex justify-between items-center group"
+                    className="p-3.5 bg-white/5 border border-white/10 rounded-2xl hover:bg-white/10 hover:border-[#00E0A4]/30 transition-all cursor-pointer flex justify-between items-center group"
                   >
                     <div>
-                      <span className="font-extrabold text-slate-800 block group-hover:text-[#0F766E] transition-colors">{stk.symbol}</span>
+                      <span className="font-extrabold text-white block group-hover:text-[#00E0A4] transition-colors">{stk.symbol}</span>
                       <span className="text-[10px] text-slate-400 font-bold block mt-0.5">{stk.name}</span>
                     </div>
-                    <ArrowUpRight className="w-4 h-4 text-slate-400 group-hover:text-[#0F766E] transition-colors" />
+                    <ArrowUpRight className="w-4 h-4 text-slate-400 group-hover:text-[#00E0A4] transition-colors" />
                   </div>
                 ))}
               </div>
@@ -792,7 +792,7 @@ const Markets = () => {
       {/* STOCK RESEARCH DETAIL DRAWER */}
       <AnimatePresence>
         {symbol && (
-          <div className="fixed inset-0 bg-slate-950/40 backdrop-blur-sm z-50 flex justify-end">
+          <div className="fixed inset-0 bg-[#05070D]/80 backdrop-blur-md z-50 flex justify-end">
             <div className="absolute inset-0" onClick={() => navigate('/market')} />
 
             <motion.div
@@ -800,16 +800,16 @@ const Markets = () => {
               animate={{ x: 0 }}
               exit={{ x: '100%' }}
               transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-              className="relative w-full max-w-xl bg-white h-full shadow-2xl z-10 flex flex-col p-6 overflow-y-auto"
+              className="relative w-full max-w-xl bg-[#0A0D14] border-l border-white/10 h-full shadow-2xl z-10 flex flex-col p-6 overflow-y-auto text-white"
             >
-              <div className="flex justify-between items-start border-b border-slate-100 pb-4">
+              <div className="flex justify-between items-start border-b border-white/10 pb-4">
                 <div>
-                  <h3 className="text-2xl font-black text-slate-950">{drawerDetail?.symbol || symbol}</h3>
+                  <h3 className="text-2xl font-black text-white">{drawerDetail?.symbol || symbol}</h3>
                   <span className="text-xs text-slate-400 font-semibold block mt-0.5">{drawerDetail?.name}</span>
                 </div>
                 <button
                   onClick={() => navigate('/market')}
-                  className="p-1.5 hover:bg-slate-100 rounded-xl text-slate-400 hover:text-slate-600 transition-all"
+                  className="p-1.5 hover:bg-white/10 rounded-xl text-slate-400 hover:text-white transition-all"
                 >
                   <X className="w-5 h-5" />
                 </button>
@@ -822,14 +822,14 @@ const Markets = () => {
               ) : (
                 <div className="mt-5 space-y-6">
                   {/* Stock Price Header */}
-                  <div className="flex justify-between items-center bg-slate-50/50 p-4 border border-slate-100 rounded-2xl">
+                  <div className="flex justify-between items-center bg-white/5 p-4 border border-white/10 rounded-2xl">
                     <div>
                       <span className="text-xs text-slate-400 font-bold block uppercase tracking-wider">Live Price</span>
-                      <span className="text-3xl font-black text-slate-950">₹{drawerDetail?.price?.toFixed(2)}</span>
+                      <span className="text-3xl font-black text-white">₹{drawerDetail?.price?.toFixed(2)}</span>
                     </div>
                     <div className="text-right">
                       <span className="text-xs text-slate-400 font-bold block uppercase tracking-wider">Today</span>
-                      <span className={`text-base font-bold flex items-center justify-end ${drawerDetail?.change >= 0 ? 'text-emerald-500' : 'text-red-500'}`}>
+                      <span className={`text-base font-bold flex items-center justify-end ${drawerDetail?.change >= 0 ? 'text-[#00E0A4]' : 'text-red-400'}`}>
                         {drawerDetail?.change >= 0 ? <ArrowUpRight className="w-4 h-4 mr-0.5" /> : <ArrowDownRight className="w-4 h-4 mr-0.5" />}
                         {drawerDetail?.change_percent?.toFixed(2)}%
                       </span>
@@ -841,7 +841,7 @@ const Markets = () => {
                     <div className="flex justify-between items-center">
                       <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">Performance Chart</span>
                       
-                      <div className="flex bg-slate-100 p-0.5 rounded-lg">
+                      <div className="flex bg-white/5 p-1 border border-white/10 rounded-xl">
                         {['1d', '5d', '1mo', '1y'].map((p) => (
                           <button
                             key={p}
@@ -850,8 +850,8 @@ const Markets = () => {
                               // Refresh history for this period
                               fetchAPI(`stock/${symbol}/history?period=${p}`).then(setDrawerHistory);
                             }}
-                            className={`px-2.5 py-1 rounded-md text-[10px] font-bold uppercase transition-all ${
-                              drawerPeriod === p ? 'bg-white text-slate-950 shadow-sm' : 'text-slate-400 hover:text-slate-700'
+                            className={`px-3 py-1 rounded-lg text-xs font-bold uppercase transition-all ${
+                              drawerPeriod === p ? 'bg-[#00E0A4] text-[#05070D]' : 'text-slate-400 hover:text-white'
                             }`}
                           >
                             {p}
@@ -871,37 +871,37 @@ const Markets = () => {
                   <div className="space-y-3">
                     <span className="text-xs font-bold text-slate-400 uppercase tracking-wider block">Key Statistics</span>
                     <div className="grid grid-cols-2 gap-4">
-                      <div className="bg-slate-50/50 border border-slate-100 p-3 rounded-xl">
+                      <div className="bg-white/5 border border-white/10 p-3.5 rounded-xl">
                         <span className="text-[10px] text-slate-400 font-bold block uppercase tracking-wider">Open</span>
-                        <span className="font-bold text-slate-800 text-sm">₹{drawerDetail?.open?.toFixed(2)}</span>
+                        <span className="font-bold text-white text-sm">₹{drawerDetail?.open?.toFixed(2)}</span>
                       </div>
-                      <div className="bg-slate-50/50 border border-slate-100 p-3 rounded-xl">
+                      <div className="bg-white/5 border border-white/10 p-3.5 rounded-xl">
                         <span className="text-[10px] text-slate-400 font-bold block uppercase tracking-wider">Prev Close</span>
-                        <span className="font-bold text-slate-800 text-sm">₹{drawerDetail?.prev_close?.toFixed(2)}</span>
+                        <span className="font-bold text-white text-sm">₹{drawerDetail?.prev_close?.toFixed(2)}</span>
                       </div>
-                      <div className="bg-slate-50/50 border border-slate-100 p-3 rounded-xl">
+                      <div className="bg-white/5 border border-white/10 p-3.5 rounded-xl">
                         <span className="text-[10px] text-slate-400 font-bold block uppercase tracking-wider">Day High</span>
-                        <span className="font-bold text-slate-800 text-sm">₹{drawerDetail?.high?.toFixed(2)}</span>
+                        <span className="font-bold text-white text-sm">₹{drawerDetail?.high?.toFixed(2)}</span>
                       </div>
-                      <div className="bg-slate-50/50 border border-slate-100 p-3 rounded-xl">
+                      <div className="bg-white/5 border border-white/10 p-3.5 rounded-xl">
                         <span className="text-[10px] text-slate-400 font-bold block uppercase tracking-wider">Day Low</span>
-                        <span className="font-bold text-slate-800 text-sm">₹{drawerDetail?.low?.toFixed(2)}</span>
+                        <span className="font-bold text-white text-sm">₹{drawerDetail?.low?.toFixed(2)}</span>
                       </div>
-                      <div className="bg-slate-50/50 border border-slate-100 p-3 rounded-xl">
+                      <div className="bg-white/5 border border-white/10 p-3.5 rounded-xl">
                         <span className="text-[10px] text-slate-400 font-bold block uppercase tracking-wider">52 Week High</span>
-                        <span className="font-bold text-slate-800 text-sm">₹{drawerDetail?.high_52w?.toFixed(2)}</span>
+                        <span className="font-bold text-white text-sm">₹{drawerDetail?.high_52w?.toFixed(2)}</span>
                       </div>
-                      <div className="bg-slate-50/50 border border-slate-100 p-3 rounded-xl">
+                      <div className="bg-white/5 border border-white/10 p-3.5 rounded-xl">
                         <span className="text-[10px] text-slate-400 font-bold block uppercase tracking-wider">52 Week Low</span>
-                        <span className="font-bold text-slate-800 text-sm">₹{drawerDetail?.low_52w?.toFixed(2)}</span>
+                        <span className="font-bold text-white text-sm">₹{drawerDetail?.low_52w?.toFixed(2)}</span>
                       </div>
-                      <div className="bg-slate-50/50 border border-slate-100 p-3 rounded-xl">
+                      <div className="bg-white/5 border border-white/10 p-3.5 rounded-xl">
                         <span className="text-[10px] text-slate-400 font-bold block uppercase tracking-wider">Volume</span>
-                        <span className="font-bold text-slate-800 text-sm">{drawerDetail?.volume}</span>
+                        <span className="font-bold text-white text-sm">{drawerDetail?.volume}</span>
                       </div>
-                      <div className="bg-slate-50/50 border border-slate-100 p-3 rounded-xl">
+                      <div className="bg-white/5 border border-white/10 p-3.5 rounded-xl">
                         <span className="text-[10px] text-slate-400 font-bold block uppercase tracking-wider">Market Cap</span>
-                        <span className="font-bold text-slate-800 text-sm">{drawerDetail?.market_cap}</span>
+                        <span className="font-bold text-white text-sm">{drawerDetail?.market_cap}</span>
                       </div>
                     </div>
                   </div>

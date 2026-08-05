@@ -20,13 +20,13 @@ export const FinancialHighlights = ({ data }) => {
   ];
 
   return (
-    <div className="bg-white border border-slate-100 rounded-3xl p-6 shadow-sm">
-      <h3 className="text-lg font-bold text-slate-800 mb-6">Financial Highlights</h3>
+    <div className="bg-[#0B1118]/80 backdrop-blur-xl border border-white/10 rounded-[24px] p-6 shadow-lg premium-glass-card hover-lift-card group transition-all duration-300">
+      <h3 className="text-lg font-bold text-white mb-6 group-hover:drop-shadow-[0_0_8px_rgba(255,255,255,0.2)] transition-all">Financial Highlights</h3>
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
         {metrics.map((item, idx) => (
-          <div key={idx} className="p-4 bg-slate-50/50 border border-slate-100 rounded-2xl">
-            <span className="text-xs font-bold text-slate-400 block tracking-wider uppercase">{item.label}</span>
-            <span className="text-sm sm:text-base font-extrabold text-slate-800 block mt-1.5">{item.value}</span>
+          <div key={idx} className="p-4 bg-white/5 border border-white/10 rounded-2xl group/item hover:border-[#00E0A4]/30 hover:bg-white/10 transition-all">
+            <span className="text-xs font-bold text-slate-400 block tracking-wider uppercase group-hover/item:text-slate-300 transition-colors">{item.label}</span>
+            <span className="text-sm sm:text-base font-extrabold text-white block mt-1.5">{item.value}</span>
           </div>
         ))}
       </div>
@@ -38,30 +38,30 @@ export const AIAnalysis = ({ data }) => {
   if (!data) return null;
 
   return (
-    <div className="bg-emerald-950/5 backdrop-blur-xl border border-emerald-500/20 p-6 rounded-3xl space-y-6">
-      <div className="flex items-center gap-2 text-[#0F766E]">
-        <Sparkles className="w-5 h-5 fill-[#0F766E]/10" />
+    <div className="bg-gradient-to-br from-[#0F766E]/20 to-[#0F766E]/5 backdrop-blur-xl border border-[#0F766E]/30 p-6 rounded-[24px] space-y-6 hover-lift-card group shadow-[0_0_15px_rgba(15,118,110,0.15)] transition-all">
+      <div className="flex items-center gap-2 text-[#00E0A4] drop-shadow-[0_0_8px_rgba(0,224,164,0.3)]">
+        <Sparkles className="w-5 h-5 fill-[#00E0A4]/20" />
         <h3 className="font-bold text-sm tracking-wider uppercase">AI Technical Insights</h3>
       </div>
       
       <div className="space-y-3.5">
-        <div className="bg-white/60 p-3.5 rounded-xl border border-white/40 text-xs">
-          <strong className="text-slate-700 block mb-1">Estimated Trend & Strength:</strong>
-          <span className="text-slate-600 font-semibold">{data.strength} {data.trend} Momentum</span>
+        <div className="bg-[#0B1118]/60 p-3.5 rounded-[16px] border border-[#00E0A4]/20 text-xs hover:border-[#00E0A4]/40 transition-colors">
+          <strong className="text-[#00E0A4] block mb-1">Estimated Trend & Strength:</strong>
+          <span className="text-white font-semibold">{data.strength} {data.trend} Momentum</span>
         </div>
-        <div className="bg-white/60 p-3.5 rounded-xl border border-white/40 text-xs">
-          <strong className="text-slate-700 block mb-1">Growth & Volatility Risks:</strong>
-          <span className="text-slate-600 font-semibold">{data.risk} ({data.volatility} Volatility)</span>
+        <div className="bg-[#0B1118]/60 p-3.5 rounded-[16px] border border-[#00E0A4]/20 text-xs hover:border-[#00E0A4]/40 transition-colors">
+          <strong className="text-[#00E0A4] block mb-1">Growth & Volatility Risks:</strong>
+          <span className="text-white font-semibold">{data.risk} ({data.volatility} Volatility)</span>
         </div>
-        <div className="bg-white/60 p-3.5 rounded-xl border border-white/40 text-xs">
-          <strong className="text-slate-700 block mb-1">Key Observation:</strong>
-          <span className="text-slate-600 font-semibold">{data.suggested_observation}</span>
+        <div className="bg-[#0B1118]/60 p-3.5 rounded-[16px] border border-[#00E0A4]/20 text-xs hover:border-[#00E0A4]/40 transition-colors">
+          <strong className="text-[#00E0A4] block mb-1">Key Observation:</strong>
+          <span className="text-white font-semibold">{data.suggested_observation}</span>
         </div>
       </div>
 
-      <div className="border-t border-[#0F766E]/10 pt-4 flex justify-between items-baseline">
-        <span className="text-xs text-slate-500 font-bold">Bullish/Bearish Bias Score</span>
-        <span className="text-lg font-black text-[#0F766E]">{data.bullish_score}% Bullish</span>
+      <div className="border-t border-[#00E0A4]/20 pt-4 flex justify-between items-baseline">
+        <span className="text-xs text-slate-300 font-bold group-hover:text-white transition-colors">Bullish/Bearish Bias Score</span>
+        <span className="text-lg font-black text-[#00E0A4] drop-shadow-[0_0_8px_rgba(0,224,164,0.5)]">{data.bullish_score}% Bullish</span>
       </div>
     </div>
   );

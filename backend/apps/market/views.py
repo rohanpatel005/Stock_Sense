@@ -94,20 +94,33 @@ def fetch_nse_variations(index_type: str) -> list:
     if cached:
         return cached
 
-    res_json = fetch_nse_api(f"live-analysis-variations?index={index_type}")
-    records = res_json.get("NIFTY", {}).get("data", [])
-    if not records:
-        records = res_json.get("FOSec", {}).get("data", []) or res_json.get("allSec", {}).get("data", [])
+    # Map the internal type to the correct NSE API parameter and endpoint
+    api_endpoint = "live-analysis-variations"
+    api_index = index_type
+    
+    if index_type == "losers":
+        api_index = "loosers"
+    elif index_type == "volume":
+        api_endpoint = "live-analysis-most-active-securities"
+
+    res_json = fetch_nse_api(f"{api_endpoint}?index={api_index}")
+    
+    if index_type == "volume":
+        records = res_json.get("data", [])
+    else:
+        records = res_json.get("NIFTY", {}).get("data", [])
+        if not records:
+            records = res_json.get("FOSec", {}).get("data", []) or res_json.get("allSec", {}).get("data", [])
 
     results = []
     for item in records[:10]:
         sym = item.get("symbol", "")
         if not sym:
             continue
-        p = sf(item.get("ltp", 0))
-        chg = sf(item.get("net_price", item.get("netChange", 0)))
+        p = sf(item.get("ltp", item.get("lastPrice", 0)))
+        chg = sf(item.get("net_price", item.get("netChange", item.get("change", 0))))
         pct = sf(item.get("perChange", item.get("pChange", 0)))
-        vol = sf(item.get("trade_quantity", item.get("volume", 0)))
+        vol = sf(item.get("trade_quantity", item.get("totalTradedVolume", item.get("volume", 0))))
 
         results.append({
             "symbol": sym,
@@ -173,6 +186,7 @@ def market_overview(request):
     records = res_json.get("data", [])
     
     data = []
+    found_indices = set()
     if records:
         for r in records:
             idx_name = r.get("index", "").upper()
@@ -189,6 +203,28 @@ def market_overview(request):
                     "sparkline": closes,
                     "trend": "up" if chg >= 0 else "down"
                 })
+                found_indices.add(indices_map[idx_name])
+                
+    # Fetch Sensex via yfinance if not present in NSE response
+    if "Sensex" not in found_indices:
+        try:
+            tkr = yf.Ticker("^BSESN")
+            info = tkr.info
+            price = sf(info.get("currentPrice", info.get("regularMarketPrice")))
+            prev = sf(info.get("previousClose"))
+            if price and prev:
+                chg = price - prev
+                pct = (chg / prev) * 100
+                data.append({
+                    "name": "Sensex",
+                    "value": round(price, 2),
+                    "change": round(chg, 2),
+                    "change_percent": round(pct, 2),
+                    "sparkline": [price * 0.99, price * 0.995, price * 1.002, price * 0.998, price],
+                    "trend": "up" if chg >= 0 else "down"
+                })
+        except Exception as e:
+            logger.error("Error fetching Sensex: %s", e)
 
     # Fallback default values
     if not data:
@@ -376,9 +412,16 @@ def market_breadth(request):
     advances, declines, unchanged = 28, 20, 2
     for r in records:
         if r.get("index", "").upper() == "NIFTY 50":
-            advances = int(sf(r.get("key", {}).get("advances", 28)))
-            declines = int(sf(r.get("key", {}).get("declines", 20)))
-            unchanged = int(sf(r.get("key", {}).get("unchanged", 2)))
+            # The NSE API may return advances/declines directly or within a 'key' structure, so handle both safely
+            key_data = r.get("key")
+            if isinstance(key_data, dict):
+                advances = int(sf(key_data.get("advances", 28)))
+                declines = int(sf(key_data.get("declines", 20)))
+                unchanged = int(sf(key_data.get("unchanged", 2)))
+            else:
+                advances = int(sf(r.get("advances", 28)))
+                declines = int(sf(r.get("declines", 20)))
+                unchanged = int(sf(r.get("unchanged", 2)))
 
     ad_ratio = round(advances / declines, 2) if declines else float(advances)
     return Response({
@@ -575,16 +618,6 @@ def market_news_latest(request):
 # LEGACY ENDPOINTS (FOR DASHBOARD SIDEBAR/LIVE REFRESH COMPATIBILITY)
 # ═════════════════════════════════════════════════════════════════════════════
 
-@api_view(["GET"])
-@permission_classes([IsAuthenticated])
-def market_status_legacy(request):
-    is_open = is_nse_open_status()
-    now_ist = datetime.now(IST)
-    return Response({
-        "is_open": is_open,
-        "label": "Market Open" if is_open else "Market Closed",
-        "checked_at": now_ist.strftime("%d %b %Y, %I:%M %p IST")
-    })
 
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])
@@ -614,6 +647,19 @@ def top_losers(request):
 
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])
+def top_active(request):
+    active = fetch_nse_variations("volume")
+    return Response({
+        "success": True,
+        "is_live": is_nse_open_status(),
+        "market_status": "OPEN" if is_nse_open_status() else "CLOSED",
+        "data": {
+            "top_active": active[:5]
+        }
+    })
+
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
 def live_market_data(request):
     is_open = is_nse_open_status()
     now_ist = datetime.now(IST)
@@ -623,6 +669,46 @@ def live_market_data(request):
     bank_nifty = next((s for s in market_overview(request._request).data if s["name"] == "Bank Nifty"), None)
 
     gainers = fetch_nse_variations("gainers")[:3]
+    
+    # Fetch real-time FII/DII data with 5 PM refresh logic
+    period_key = f"{now_ist.date()}_after_17" if now_ist.time() >= dtime(17, 0) else f"{now_ist.date()}_before_17"
+    cache_key = f"fii_dii_daily_{period_key}"
+    
+    cached_fii = _cache_store.get(cache_key)
+    if cached_fii:
+        fii_dii = cached_fii["data"]
+    else:
+        try:
+            fii_dii_res = fetch_nse_api("fiidiiTradeReact")
+            fii_buy = "N/A"
+            dii_buy = "N/A"
+            net_flow_val = 0.0
+            
+            fii_sell = "N/A"
+            dii_sell = "N/A"
+            for item in fii_dii_res:
+                cat = item.get("category", "")
+                if cat == "DII":
+                    dii_buy = f"₹{float(item.get('buyValue', 0)):,.2f} Cr"
+                    dii_sell = f"₹{float(item.get('sellValue', 0)):,.2f} Cr"
+                    net_flow_val += float(item.get('netValue', 0))
+                elif cat == "FII/FPI":
+                    fii_buy = f"₹{float(item.get('buyValue', 0)):,.2f} Cr"
+                    fii_sell = f"₹{float(item.get('sellValue', 0)):,.2f} Cr"
+                    net_flow_val += float(item.get('netValue', 0))
+            
+            net_flow = f"{'+' if net_flow_val >= 0 else '-'}₹{abs(net_flow_val):,.2f} Cr"
+            fii_dii = {
+                "fii_buy": fii_buy,
+                "fii_sell": fii_sell,
+                "dii_buy": dii_buy,
+                "dii_sell": dii_sell,
+                "net_flow": net_flow
+            }
+            _cache_store[cache_key] = {"data": fii_dii, "time": time.time()}
+        except Exception as e:
+            logger.error(f"Error fetching FII/DII: {e}")
+            fii_dii = None
 
     return Response({
         "indices": {
@@ -634,6 +720,7 @@ def live_market_data(request):
             {"symbol": s["symbol"], "name": s["name"], "price": f"{s['price']:,.2f}", "change": f"{s['change_percent']}%", "trend": "up" if s["change"] >= 0 else "down", "logo": s["symbol"][0], "chart": s["sparkline"]}
             for s in gainers
         ],
+        "fii_dii": fii_dii,
         "market_status": {
             "is_open": is_open,
             "label": "Market Open" if is_open else "Market Closed",

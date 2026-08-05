@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Sparkles, CheckCircle2, Send, ArrowRight } from 'lucide-react';
+import { Sparkles, CheckCircle2, Send, ArrowRight, Bot, Cpu } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const AIInsights = () => {
@@ -59,7 +59,7 @@ const AIInsights = () => {
       
       setMessages((prev) => [...prev, aiMsg]);
       setIsTyping(false);
-    }, 1500);
+    }, 1200);
   };
 
   useEffect(() => {
@@ -69,108 +69,139 @@ const AIInsights = () => {
   }, [messages, isTyping]);
 
   return (
-    <section className="py-32 px-gutter" id="analytics-intro">
-      <div className="max-w-container-max mx-auto bg-inverse-surface rounded-[3rem] p-12 lg:p-20 text-on-primary-fixed overflow-hidden relative">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center relative z-10">
+    <section className="py-24 px-4 sm:px-6 lg:px-8 dark-canvas relative overflow-hidden" id="analytics-intro">
+      <div className="max-w-7xl mx-auto dark-surface-card rounded-3xl p-8 sm:p-12 lg:p-16 border border-white/10 relative overflow-hidden bg-[#0a0f18]/95 backdrop-blur-xl shadow-2xl">
+        
+        {/* Ambient Glows */}
+        <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-violet-500/10 rounded-full blur-[140px] pointer-events-none" />
+        <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-emerald-500/10 rounded-full blur-[120px] pointer-events-none" />
+
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-10 items-center relative z-10">
           
-          {/* Left Text / Prompts */}
-          <div>
-            <h2 className="text-headline-lg font-bold mb-6 text-white">
-              Ask anything. <br />Our AI knows the markets.
+          {/* Left Text & Interactive Prompts Column */}
+          <div className="lg:col-span-6">
+            <div className="badge-ai mb-6 px-3.5 py-1.5 rounded-full border border-violet-500/30 bg-violet-500/10 backdrop-blur-md inline-flex items-center gap-2">
+              <Cpu className="w-3.5 h-3.5 text-violet-400" />
+              <span className="text-xs font-semibold tracking-wide uppercase text-violet-300">
+                Neural Market Copilot
+              </span>
+            </div>
+
+            <h2 className="font-display text-3xl sm:text-4xl lg:text-5xl font-extrabold text-white tracking-tight leading-[1.15] mb-6">
+              Ask Anything.{' '}
+              <span className="text-gradient-ai block mt-1">Our AI Knows the Markets.</span>
             </h2>
-            <p className="text-body-lg text-white/70 mb-8">
-              From analyzing specific tickers to explaining complex derivatives, get human-like responses backed by petabytes of historical data.
+
+            <p className="text-gray-300 text-base sm:text-lg mb-8 leading-relaxed max-w-xl">
+              From analyzing technical support levels to breaking down complex earnings calls, get instant multi-source insights powered by real-time Indian equities data.
             </p>
-            <div className="space-y-4">
+
+            {/* Clickable Sample Prompts */}
+            <div className="space-y-3.5">
+              <div className="text-xs font-semibold uppercase tracking-wider text-gray-400 font-mono mb-2">
+                Click a sample query to simulate analysis:
+              </div>
               {Object.keys(predefinedReplies).map((prompt, index) => (
                 <div
                   key={index}
                   onClick={() => handlePromptClick(prompt)}
-                  className="p-4 bg-white/5 border border-white/10 rounded-2xl cursor-pointer hover:bg-white/10 transition-all flex items-center justify-between group"
+                  className="p-4 bg-white/[0.03] border border-white/10 hover:border-violet-500/40 rounded-xl cursor-pointer hover:bg-white/[0.06] transition-all flex items-center justify-between group"
                 >
-                  <span className="text-body-md text-white">{`"${prompt}"`}</span>
-                  <ArrowRight className="text-white/40 group-hover:text-secondary group-hover:translate-x-1 transition-all w-5 h-5" />
+                  <span className="text-sm font-medium text-gray-200 group-hover:text-white transition-colors">{`"${prompt}"`}</span>
+                  <ArrowRight className="text-gray-500 group-hover:text-violet-400 group-hover:translate-x-1 transition-all w-4 h-4 shrink-0" />
                 </div>
               ))}
             </div>
           </div>
 
-          {/* Right Chat Widget */}
-          <div className="glass-card rounded-3xl p-8 h-[500px] flex flex-col border-white/20 bg-white/10">
-            {/* Header */}
-            <div className="flex items-center gap-4 border-b border-white/10 pb-6 mb-6">
-              <div className="w-12 h-12 rounded-full bg-gradient-to-tr from-primary to-secondary flex items-center justify-center shadow-inner">
-                <Sparkles className="text-white w-6 h-6 fill-white/25 animate-pulse" />
-              </div>
-              <div>
-                <div className="text-body-md font-bold text-white">StonksAI Assistant</div>
-                <div className="text-label-caps text-primary flex items-center gap-1.5 font-bold">
-                  <span className="w-2 h-2 rounded-full bg-primary animate-ping"></span>
-                  ONLINE
-                </div>
-              </div>
-            </div>
-
-            {/* Chat Messages */}
-            <div className="flex-1 space-y-6 overflow-y-auto pr-2 custom-scrollbar">
-              <AnimatePresence initial={false}>
-                {messages.map((msg) => (
-                  <motion.div
-                    key={msg.id}
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.3 }}
-                    className={`flex ${msg.sender === 'user' ? 'justify-end' : 'justify-start'}`}
-                  >
-                    {msg.sender === 'user' ? (
-                      <div className="bg-primary/20 text-white p-4 rounded-2xl rounded-tr-none max-w-[80%] text-body-sm border border-primary/20">
-                        {msg.text}
-                      </div>
-                    ) : (
-                      <div className="glass-card bg-white/95 p-4 rounded-2xl rounded-tl-none max-w-[85%] text-body-sm border-white/40 shadow-sm text-on-background">
-                        <p className="mb-2 font-medium">{msg.text}</p>
-                        {msg.confidence && (
-                          <div className="mt-3 flex items-center gap-2 text-primary font-bold text-xs">
-                            <CheckCircle2 className="w-4 h-4 text-primary fill-primary/10" />
-                            Confidence: {msg.confidence}
-                          </div>
-                        )}
-                      </div>
-                    )}
-                  </motion.div>
-                ))}
-              </AnimatePresence>
-
-              {isTyping && (
-                <div className="flex justify-start">
-                  <div className="glass-card bg-white/95 p-4 rounded-2xl rounded-tl-none text-body-sm border-white/40 shadow-sm text-on-background flex items-center gap-1.5">
-                    <span className="w-2 h-2 bg-secondary rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></span>
-                    <span className="w-2 h-2 bg-secondary rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></span>
-                    <span className="w-2 h-2 bg-secondary rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></span>
+          {/* Right AI Chat Interface Widget */}
+          <div className="lg:col-span-6">
+            <div className="ai-glass-card rounded-2xl p-6 sm:p-7 h-[520px] flex flex-col border border-violet-500/30 bg-[#090d16]/90 shadow-2xl relative">
+              
+              {/* Header */}
+              <div className="flex items-center justify-between border-b border-white/10 pb-4 mb-4">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-violet-600 to-indigo-500 p-0.5 shadow-md shadow-violet-500/20">
+                    <div className="w-full h-full bg-[#0a0f18] rounded-[10px] flex items-center justify-center">
+                      <Sparkles className="text-violet-400 w-5 h-5" />
+                    </div>
+                  </div>
+                  <div>
+                    <div className="text-sm font-bold text-white font-display">StockSense AI Assistant</div>
+                    <div className="text-xs text-emerald-400 flex items-center gap-1.5 font-mono">
+                      <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
+                      ONLINE & READY
+                    </div>
                   </div>
                 </div>
-              )}
-              <div ref={chatEndRef} />
-            </div>
 
-            {/* Input Footer */}
-            <div className="mt-6 flex gap-2">
-              <div className="flex-1 bg-white/5 rounded-xl px-4 py-3 flex items-center text-body-sm text-white/50 border border-white/10">
-                Type your question...
+                <div className="hidden sm:flex items-center gap-1.5 px-3 py-1 bg-violet-500/10 border border-violet-500/20 rounded-full text-xs font-mono text-violet-300">
+                  <Bot className="w-3.5 h-3.5 text-violet-400" />
+                  <span>v2.4 Neural Model</span>
+                </div>
               </div>
-              <button className="w-12 h-12 rounded-xl bg-primary text-white flex items-center justify-center hover:scale-105 active:scale-95 transition-all cursor-pointer">
-                <Send className="w-5 h-5 fill-current" />
-              </button>
+
+              {/* Chat Messages */}
+              <div className="flex-1 space-y-4 overflow-y-auto pr-2 custom-scrollbar">
+                <AnimatePresence initial={false}>
+                  {messages.map((msg) => (
+                    <motion.div
+                      key={msg.id}
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.3 }}
+                      className={`flex ${msg.sender === 'user' ? 'justify-end' : 'justify-start'}`}
+                    >
+                      {msg.sender === 'user' ? (
+                        <div className="bg-emerald-500/15 border border-emerald-500/30 text-emerald-100 p-3.5 rounded-2xl rounded-tr-none max-w-[85%] text-xs sm:text-sm font-medium">
+                          {msg.text}
+                        </div>
+                      ) : (
+                        <div className="bg-white/[0.04] border border-white/10 p-4 rounded-2xl rounded-tl-none max-w-[90%] text-xs sm:text-sm text-gray-200 shadow-sm leading-relaxed">
+                          <p className="mb-3">{msg.text}</p>
+                          {msg.confidence && (
+                            <div className="flex items-center gap-2 pt-2 border-t border-white/10 text-emerald-400 font-mono text-xs font-semibold">
+                              <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
+                              <span>Model Confidence Score: {msg.confidence}</span>
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </motion.div>
+                  ))}
+                </AnimatePresence>
+
+                {isTyping && (
+                  <div className="flex justify-start">
+                    <div className="bg-white/[0.04] border border-white/10 p-3.5 rounded-2xl rounded-tl-none text-xs text-gray-300 flex items-center gap-2">
+                      <Sparkles className="w-3.5 h-3.5 text-violet-400 animate-spin" />
+                      <span className="font-mono text-violet-300">Analyzing market parameters...</span>
+                    </div>
+                  </div>
+                )}
+                <div ref={chatEndRef} />
+              </div>
+
+              {/* Input Bar */}
+              <div className="mt-4 pt-3 border-t border-white/10 flex gap-2">
+                <div className="flex-1 bg-white/[0.03] border border-white/10 rounded-xl px-4 py-2.5 flex items-center text-xs sm:text-sm text-gray-400">
+                  Select a prompt above or ask a question...
+                </div>
+                <button
+                  disabled
+                  className="w-10 h-10 rounded-xl bg-violet-600/50 border border-violet-500/30 text-white/50 flex items-center justify-center cursor-not-allowed"
+                >
+                  <Send className="w-4 h-4" />
+                </button>
+              </div>
             </div>
           </div>
 
         </div>
-
-        {/* Decorative Background Glow */}
-        <div className="absolute -bottom-20 -right-20 w-96 h-96 bg-primary/20 rounded-full blur-[120px] pointer-events-none"></div>
       </div>
     </section>
   );
 };
 
 export default AIInsights;
+

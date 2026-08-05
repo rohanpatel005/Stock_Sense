@@ -95,27 +95,27 @@ const PortfolioPage = () => {
   }, [holdings, filters]);
 
   return (
-    <main className="flex-1 pt-20 lg:pt-6 pb-24 px-4 lg:px-8 space-y-6">
+    <main className="flex-1 pt-20 lg:pt-6 pb-24 px-4 lg:px-8 space-y-6 relative z-10">
         
         {/* Header & Refresh */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
-            <h1 className="text-3xl font-black text-slate-900 tracking-tight">My Portfolio</h1>
-            <p className="text-slate-500 font-medium mt-1">Live tracking of your paper trading investments.</p>
+            <h1 className="text-3xl font-extrabold text-white tracking-tight">My Portfolio</h1>
+            <p className="text-slate-400 font-medium mt-1">Live tracking of your paper trading investments.</p>
           </div>
           <button 
             onClick={() => fetchData(true)}
             disabled={refreshing || loading}
-            className="self-start sm:self-auto px-4 py-2 bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 rounded-xl font-bold flex items-center gap-2 transition-colors disabled:opacity-50"
+            className="self-start sm:self-auto px-4 py-2 bg-[#0B1118]/80 backdrop-blur-md border border-white/10 text-white hover:bg-white/5 rounded-xl font-bold flex items-center gap-2 transition-all disabled:opacity-50 hover:border-[#00E0A4]/30 shadow-[0_0_15px_rgba(0,0,0,0.2)]"
           >
-            <RefreshCw className={`w-4 h-4 ${refreshing ? 'animate-spin text-[#0F766E]' : ''}`} />
+            <RefreshCw className={`w-4 h-4 ${refreshing ? 'animate-spin text-[#00E0A4]' : 'text-[#00E0A4]'}`} />
             {refreshing ? 'Syncing Market...' : 'Refresh Live Prices'}
           </button>
         </div>
 
         {/* Error Alert */}
         {error && (
-          <div className="bg-red-50 text-red-600 p-4 rounded-xl text-sm font-bold border border-red-100">
+          <div className="bg-red-500/10 text-red-400 p-4 rounded-xl text-sm font-bold border border-red-500/20 backdrop-blur-md">
             {error}
           </div>
         )}
@@ -123,11 +123,11 @@ const PortfolioPage = () => {
         {!loading && holdings.length === 0 && !error ? (
           <PortfolioEmptyState />
         ) : (
-          <>
+          <div className="space-y-6">
             <PortfolioSummaryCards summary={summary} />
             <PortfolioFilters filters={filters} setFilters={setFilters} />
             <PortfolioTable holdings={filteredAndSortedHoldings} loading={loading} />
-          </>
+          </div>
         )}
 
       </main>

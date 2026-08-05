@@ -51,7 +51,7 @@ const LiveChart = ({ chartsData }) => {
         ]
       }
     },
-    grid: { borderColor: '#f1f5f9', strokeDashArray: 4 },
+    grid: { borderColor: 'rgba(255,255,255,0.05)', strokeDashArray: 4 },
     xaxis: {
       type: 'datetime',
       labels: {
@@ -68,7 +68,7 @@ const LiveChart = ({ chartsData }) => {
       }
     },
     tooltip: {
-      theme: 'light',
+      theme: 'dark',
       x: { format: 'dd MMM yyyy, hh:mm TT' },
       y: { formatter: (value) => `₹${value.toLocaleString('en-IN', { minimumFractionDigits: 2 })}` },
       style: { fontSize: '12px' }
@@ -76,19 +76,19 @@ const LiveChart = ({ chartsData }) => {
   };
 
   return (
-    <div className="bg-white border border-slate-100 rounded-3xl p-6 shadow-sm">
+    <div className="bg-[#0B1118]/80 backdrop-blur-xl border border-white/10 rounded-[24px] p-6 shadow-[0_8px_30px_rgba(0,0,0,0.12)] premium-glass-card hover-lift-card group transition-all duration-300">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
         <div>
-          <h3 className="text-lg font-bold text-slate-800">Historical Trend</h3>
+          <h3 className="text-lg font-bold text-white group-hover:drop-shadow-[0_0_8px_rgba(255,255,255,0.2)] transition-all">Historical Trend</h3>
           <p className="text-xs text-slate-400 font-semibold mt-0.5">Interactive performance tracker</p>
         </div>
-        <div className="flex bg-slate-100 p-1 rounded-xl self-stretch sm:self-auto overflow-x-auto">
+        <div className="flex bg-[#05070D]/50 border border-white/10 p-1 rounded-xl self-stretch sm:self-auto overflow-x-auto custom-scrollbar">
           {intervals.map((intv) => (
             <button
               key={intv.key}
               onClick={() => setActiveInterval(intv.key)}
               className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
-                activeInterval === intv.key ? 'bg-white text-slate-950 shadow-sm' : 'text-slate-500 hover:text-slate-800'
+                activeInterval === intv.key ? 'bg-gradient-to-r from-[#00E0A4]/20 to-[#00E0A4]/5 text-[#00E0A4] border border-[#00E0A4]/30 shadow-[0_0_10px_rgba(0,224,164,0.15)]' : 'text-slate-400 hover:text-white hover:bg-white/5 border border-transparent'
               }`}
             >
               {intv.label}
@@ -100,7 +100,7 @@ const LiveChart = ({ chartsData }) => {
         {chartSeries.length > 0 ? (
           <Chart options={chartOptions} series={chartSeries} type="area" height={380} />
         ) : (
-          <div className="h-[380px] bg-slate-50 rounded-2xl animate-pulse flex items-center justify-center text-slate-400 font-bold">
+          <div className="h-[380px] bg-white/5 border border-white/5 rounded-2xl animate-pulse flex items-center justify-center text-slate-400 font-bold">
             Generating Chart...
           </div>
         )}

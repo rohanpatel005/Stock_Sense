@@ -28,9 +28,9 @@ const CandlestickChart = ({ data }) => {
     title: {
       text: 'OHLC Candlestick Chart (1 Year Daily)',
       align: 'left',
-      style: { fontSize: '14px', fontWeight: 'bold', color: '#1e293b' }
+      style: { fontSize: '14px', fontWeight: 'bold', color: '#ffffff' }
     },
-    grid: { borderColor: '#f1f5f9', strokeDashArray: 4 },
+    grid: { borderColor: 'rgba(255,255,255,0.05)', strokeDashArray: 4 },
     xaxis: {
       type: 'datetime',
       labels: {
@@ -52,18 +52,18 @@ const CandlestickChart = ({ data }) => {
       }
     },
     tooltip: {
-      theme: 'light',
+      theme: 'dark',
       custom: function({ seriesIndex, dataPointIndex, w }) {
         const ohlc = w.config.series[seriesIndex].data[dataPointIndex].y;
         const rawDate = w.config.series[seriesIndex].data[dataPointIndex].x;
         const dateStr = new Date(rawDate).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
         return `
-          <div class="p-3 bg-white border border-slate-100 rounded-xl shadow-lg text-xs leading-relaxed text-slate-600">
-            <div class="font-bold text-slate-800 border-b border-slate-150 pb-1 mb-1.5">${dateStr}</div>
-            <div><strong>Open:</strong> ₹${ohlc[0].toFixed(2)}</div>
-            <div><strong>High:</strong> ₹${ohlc[1].toFixed(2)}</div>
-            <div><strong>Low:</strong> ₹${ohlc[2].toFixed(2)}</div>
-            <div><strong>Close:</strong> ₹${ohlc[3].toFixed(2)}</div>
+          <div class="p-3 bg-[#0B1118]/90 border border-white/10 rounded-xl shadow-lg text-xs leading-relaxed text-slate-300 backdrop-blur-md">
+            <div class="font-bold text-white border-b border-white/10 pb-1 mb-1.5">${dateStr}</div>
+            <div><strong class="text-slate-400">Open:</strong> <span class="text-white">₹${ohlc[0].toFixed(2)}</span></div>
+            <div><strong class="text-slate-400">High:</strong> <span class="text-[#00E0A4]">₹${ohlc[1].toFixed(2)}</span></div>
+            <div><strong class="text-slate-400">Low:</strong> <span class="text-red-400">₹${ohlc[2].toFixed(2)}</span></div>
+            <div><strong class="text-slate-400">Close:</strong> <span class="text-white">₹${ohlc[3].toFixed(2)}</span></div>
           </div>
         `;
       }
@@ -71,7 +71,7 @@ const CandlestickChart = ({ data }) => {
   };
 
   return (
-    <div className="bg-white border border-slate-100 rounded-3xl p-6 shadow-sm">
+    <div className="bg-[#0B1118]/80 backdrop-blur-xl border border-white/10 rounded-[24px] p-6 shadow-[0_8px_30px_rgba(0,0,0,0.12)] premium-glass-card hover-lift-card group transition-all duration-300">
       <div className="w-full min-h-[350px]">
         <Chart options={options} series={candleSeries} type="candlestick" height={380} />
       </div>

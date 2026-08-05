@@ -14,7 +14,9 @@ from .serializers import (
     RegisterSerializer,
     VerifyOTPSerializer,
     LoginSerializer,
-    GoogleRegisterSerializer
+    GoogleRegisterSerializer,
+    ForgotPasswordSerializer,
+    ResetPasswordSerializer
 )
 from .google_auth import verify_google_token
 
@@ -209,4 +211,94 @@ def google_register(request):
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
 
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(["POST"])
+@permission_classes([AllowAny])
+def forgot_password(request):
+    serializer = ForgotPasswordSerializer(data=request.data)
+    if serializer.is_valid():
+        email = serializer.validated_data["email"]
+        
+        # Check if user exists
+        if not User.objects.filter(email=email).exists():
+            return Response({"error": "No account found with this email."}, status=status.HTTP_404_NOT_FOUND)
+            
+        # Generate OTP
+        otp = f"{random.randint(1000, 9999)}"
+        
+        # Store OTP temporarily in cache (valid for 10 minutes)
+        cache_key = f"reset_otp_{email}"
+        cache.set(cache_key, otp, timeout=600)
+        
+        # Send Email
+        try:
+            send_mail(
+                subject="StockSense Password Reset OTP",
+                message=f"Hello,\n\nYour OTP to reset your password is: {otp}\nThis code is valid for 10 minutes.\n\nThank you!",
+                from_email=getattr(settings, "DEFAULT_FROM_EMAIL", "noreply@stocksense.com"),
+                recipient_list=[email],
+                fail_silently=False,
+            )
+        except Exception as e:
+            return Response(
+                {"message": "OTP generated, but failed to send verification email.", "email": email, "otp": otp},
+                status=status.HTTP_200_OK
+            )
+            
+        return Response({"message": "OTP sent successfully."}, status=status.HTTP_200_OK)
+        
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(["POST"])
+@permission_classes([AllowAny])
+def verify_reset_otp(request):
+    serializer = VerifyOTPSerializer(data=request.data)
+    if serializer.is_valid():
+        email = serializer.validated_data["email"]
+        otp = serializer.validated_data["otp"]
+        
+        cache_key = f"reset_otp_{email}"
+        cached_otp = cache.get(cache_key)
+        
+        if not cached_otp:
+            return Response({"error": "OTP has expired or was not requested."}, status=status.HTTP_400_BAD_REQUEST)
+            
+        if cached_otp != otp:
+            return Response({"error": "Invalid OTP."}, status=status.HTTP_400_BAD_REQUEST)
+            
+        # Clear the OTP cache and set a verified flag
+        cache.delete(cache_key)
+        cache.set(f"reset_verified_{email}", True, timeout=600)
+        
+        return Response({"verified": True, "message": "OTP verified successfully."}, status=status.HTTP_200_OK)
+        
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(["POST"])
+@permission_classes([AllowAny])
+def reset_password(request):
+    serializer = ResetPasswordSerializer(data=request.data)
+    if serializer.is_valid():
+        email = serializer.validated_data["email"]
+        password = serializer.validated_data["password"]
+        
+        verified_key = f"reset_verified_{email}"
+        if not cache.get(verified_key):
+            return Response({"error": "Unauthorized. Please verify OTP first."}, status=status.HTTP_401_UNAUTHORIZED)
+            
+        try:
+            user = User.objects.get(email=email)
+            user.set_password(password)
+            user.save()
+            
+            # Clear verification token
+            cache.delete(verified_key)
+            
+            return Response({"message": "Password reset successfully."}, status=status.HTTP_200_OK)
+        except User.DoesNotExist:
+            return Response({"error": "User not found."}, status=status.HTTP_404_NOT_FOUND)
+            
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

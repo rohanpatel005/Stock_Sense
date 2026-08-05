@@ -20,13 +20,13 @@ const PriceCard = ({ data }) => {
   ];
 
   return (
-    <div className="bg-white border border-slate-100 rounded-3xl p-6 shadow-sm">
-      <h3 className="text-lg font-bold text-slate-800 mb-6">Price & Volume Statistics</h3>
+    <div className="bg-[#0B1118]/80 backdrop-blur-xl border border-white/10 rounded-[24px] p-6 shadow-lg premium-glass-card h-full">
+      <h3 className="text-lg font-bold text-white mb-6">Price & Volume Statistics</h3>
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
         {stats.map((item, idx) => (
-          <div key={idx} className="p-4 bg-slate-50/50 border border-slate-100 rounded-2xl hover:border-slate-200 transition-colors">
-            <span className="text-xs font-bold text-slate-400 block tracking-wider uppercase">{item.label}</span>
-            <span className="text-sm sm:text-base font-extrabold text-slate-800 block mt-1.5">{item.value}</span>
+          <div key={idx} className="p-4 bg-white/5 border border-white/10 rounded-2xl hover:border-[#00E0A4]/30 hover:bg-white/10 transition-all hover-lift-card group">
+            <span className="text-xs font-bold text-slate-400 block tracking-wider uppercase group-hover:text-slate-300 transition-colors">{item.label}</span>
+            <span className="text-sm sm:text-base font-extrabold text-white block mt-1.5">{item.value}</span>
           </div>
         ))}
       </div>

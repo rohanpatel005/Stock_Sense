@@ -36,24 +36,24 @@ const Settings = ({ user, handleLogout }) => {
     if (error) return <div className="p-8 font-semibold text-red-600">{error}</div>;
 
     return (
-        <main className="flex-1 overflow-x-hidden overflow-y-auto bg-slate-50 min-h-screen">
+        <main className="flex-1 overflow-x-hidden overflow-y-auto bg-transparent min-h-screen relative z-10">
             {/* Top Bar */}
-            <header className="bg-white border-b border-slate-100 sticky top-0 z-20 hidden lg:block">
+            <header className="bg-[#0B1118]/80 backdrop-blur-xl border-b border-white/5 sticky top-0 z-20 hidden lg:block shadow-sm">
                 <div className="flex items-center justify-between px-8 py-4">
                     <div className="flex items-center gap-3">
-                        <div className="p-2 bg-emerald-50 rounded-xl">
-                            <SettingsIcon className="w-5 h-5 text-emerald-700" />
+                        <div className="p-2 bg-gradient-to-br from-[#00E0A4]/20 to-[#00E0A4]/5 border border-[#00E0A4]/20 rounded-xl shadow-[0_0_15px_rgba(0,224,164,0.1)]">
+                            <SettingsIcon className="w-5 h-5 text-[#00E0A4] drop-shadow-[0_0_5px_rgba(0,224,164,0.5)]" />
                         </div>
                         <div>
-                            <h1 className="text-xl font-bold text-slate-800 tracking-tight">Settings</h1>
-                            <p className="text-xs font-medium text-slate-500">Manage your profile and paper trading account</p>
+                            <h1 className="text-xl font-bold text-white tracking-tight">Settings</h1>
+                            <p className="text-xs font-medium text-slate-400">Manage your profile and paper trading account</p>
                         </div>
                     </div>
                 </div>
             </header>
 
-            <div className="p-4 lg:p-8 max-w-5xl mx-auto space-y-6">
-                <h1 className="text-2xl font-bold text-slate-800 lg:hidden mb-4">Settings</h1>
+            <div className="p-4 lg:p-8 max-w-5xl mx-auto space-y-6 relative">
+                <h1 className="text-2xl font-bold text-white lg:hidden mb-4">Settings</h1>
                 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-stretch">
                     <ProfileCard profile={profile} />

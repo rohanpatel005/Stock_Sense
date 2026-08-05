@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import BackgroundShader from './components/Common/BackgroundShader';
 import LandingPage from './pages/LandingPage';
 import Register from './pages/Register';
 import Login from './pages/Login';
+import ForgotPassword from './pages/ForgotPassword';
 import Dashboard from './pages/Dashboard';
 import Markets from './pages/Markets';
 import SharePage from './pages/SharePage';
@@ -13,6 +13,8 @@ import NewsPage from './pages/NewsPage';
 import AIMentor from './pages/AIMentor';
 import Settings from './pages/Settings';
 import Layout from './components/Common/Layout';
+import WatchlistPage from './pages/WatchlistPage';
+import { WatchlistProvider } from './context/WatchlistContext';
 
 function App() {
   const [user, setUser] = useState(null);
@@ -38,14 +40,14 @@ function App() {
   };
 
   return (
-    <Router>
-      <Routes>
+    <WatchlistProvider>
+      <Router>
+        <Routes>
         {/* Main Landing Page Route */}
         <Route
           path="/"
           element={
             <>
-              <BackgroundShader />
               <LandingPage />
             </>
           }
@@ -56,7 +58,6 @@ function App() {
           path="/register"
           element={
             <>
-              <BackgroundShader />
               <Register />
             </>
           }
@@ -67,8 +68,17 @@ function App() {
           path="/login"
           element={
             <>
-              <BackgroundShader />
               <Login />
+            </>
+          }
+        />
+
+        {/* Forgot Password Route */}
+        <Route
+          path="/forgot-password"
+          element={
+            <>
+              <ForgotPassword />
             </>
           }
         />
@@ -81,6 +91,7 @@ function App() {
           <Route path="/share/:symbol" element={<SharePage user={user} handleLogout={handleLogout} />} />
           <Route path="/orders" element={<OrdersPage user={user} handleLogout={handleLogout} />} />
           <Route path="/portfolio" element={<PortfolioPage user={user} handleLogout={handleLogout} />} />
+          <Route path="/watchlist" element={<WatchlistPage />} />
           <Route path="/news" element={<NewsPage user={user} handleLogout={handleLogout} />} />
           <Route path="/ai-mentor" element={<AIMentor user={user} handleLogout={handleLogout} />} />
           <Route path="/settings" element={<Settings user={user} handleLogout={handleLogout} />} />
@@ -89,7 +100,8 @@ function App() {
         {/* Redirect unknown routes to home */}
         <Route path="*" element={<Navigate to="/" />} />
       </Routes>
-    </Router>
+      </Router>
+    </WatchlistProvider>
   );
 }
 

@@ -3,8 +3,8 @@ from .views import (
     # Dashboard live polling
     top_gainers,
     top_losers,
+    top_active,
     live_market_data,
-    market_status_legacy,
 
     # Markets page exact REST contract
     market_overview,
@@ -30,8 +30,8 @@ urlpatterns = [
     # ── Legacy Dashboard Endpoints ──────────────────────────────────────────
     path("top-gainers/", top_gainers, name="top_gainers"),
     path("top-losers/", top_losers, name="top_losers"),
+    path("top-active/", top_active, name="top_active"),
     path("live/", live_market_data, name="live_market_data"),
-    path("status/", market_status_legacy, name="market_status_legacy"),
 
     # ── New Redesigned Market Page Endpoints (Exactly as requested) ──────────
     path("overview", market_overview, name="market_overview"),

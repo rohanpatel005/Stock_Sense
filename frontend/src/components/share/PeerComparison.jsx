@@ -7,34 +7,34 @@ export const PeerComparison = ({ data }) => {
   if (!data || data.length === 0) return null;
 
   return (
-    <div className="bg-white border border-slate-100 rounded-3xl p-6 shadow-sm overflow-hidden">
-      <h3 className="text-lg font-bold text-slate-800 mb-4">Peer Comparison</h3>
-      <div className="overflow-x-auto">
-        <table className="w-full text-left">
-          <thead className="bg-slate-50 text-slate-400">
+    <div className="bg-[#0B1118]/80 backdrop-blur-xl border border-white/10 rounded-[24px] p-6 shadow-lg premium-glass-card overflow-hidden hover-lift-card group transition-all duration-300">
+      <h3 className="text-lg font-bold text-white mb-4 group-hover:drop-shadow-[0_0_8px_rgba(255,255,255,0.2)] transition-all">Peer Comparison</h3>
+      <div className="overflow-x-auto custom-scrollbar">
+        <table className="w-full text-left border-collapse">
+          <thead className="bg-white/5 text-slate-400">
             <tr>
-              <th className="px-6 py-3 text-xs font-bold uppercase tracking-wider">Company</th>
-              <th className="px-6 py-3 text-xs font-bold uppercase tracking-wider text-right">PE Ratio</th>
-              <th className="px-6 py-3 text-xs font-bold uppercase tracking-wider text-right">ROE</th>
-              <th className="px-6 py-3 text-xs font-bold uppercase tracking-wider text-right">ROCE</th>
-              <th className="px-6 py-3 text-xs font-bold uppercase tracking-wider text-right">Market Cap</th>
+              <th className="px-6 py-3 text-xs font-bold uppercase tracking-wider group-hover:text-slate-300 transition-colors">Company</th>
+              <th className="px-6 py-3 text-xs font-bold uppercase tracking-wider text-right group-hover:text-slate-300 transition-colors">PE Ratio</th>
+              <th className="px-6 py-3 text-xs font-bold uppercase tracking-wider text-right group-hover:text-slate-300 transition-colors">ROE</th>
+              <th className="px-6 py-3 text-xs font-bold uppercase tracking-wider text-right group-hover:text-slate-300 transition-colors">ROCE</th>
+              <th className="px-6 py-3 text-xs font-bold uppercase tracking-wider text-right group-hover:text-slate-300 transition-colors">Market Cap</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-slate-50">
+          <tbody className="divide-y divide-white/5">
             {data.map((peer, idx) => (
               <tr 
                 key={idx} 
                 onClick={() => navigate(`/share/${peer.symbol}`)}
-                className="hover:bg-slate-50/50 cursor-pointer transition-colors group"
+                className="hover:bg-white/5 cursor-pointer transition-colors group/row"
               >
                 <td className="px-6 py-4">
-                  <span className="font-bold text-sm text-slate-800 group-hover:text-[#0F766E] block">{peer.symbol}</span>
+                  <span className="font-bold text-sm text-white group-hover/row:text-[#00E0A4] transition-colors block">{peer.symbol}</span>
                   <span className="text-[10px] text-slate-400 font-semibold">{peer.name}</span>
                 </td>
-                <td className="px-6 py-4 text-sm text-slate-600 font-semibold text-right">{peer.pe}</td>
-                <td className="px-6 py-4 text-sm text-slate-600 font-semibold text-right">{peer.roe}%</td>
-                <td className="px-6 py-4 text-sm text-slate-600 font-semibold text-right">{peer.roce}%</td>
-                <td className="px-6 py-4 text-sm text-slate-800 font-bold text-right">{peer.market_cap}</td>
+                <td className="px-6 py-4 text-sm text-slate-300 font-semibold text-right">{peer.pe}</td>
+                <td className="px-6 py-4 text-sm text-slate-300 font-semibold text-right">{peer.roe}%</td>
+                <td className="px-6 py-4 text-sm text-slate-300 font-semibold text-right">{peer.roce}%</td>
+                <td className="px-6 py-4 text-sm text-white font-bold text-right">{peer.market_cap}</td>
               </tr>
             ))}
           </tbody>
@@ -49,20 +49,20 @@ export const RelatedStocks = ({ data }) => {
   if (!data || data.length === 0) return null;
 
   return (
-    <div className="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm">
-      <h3 className="text-lg font-bold text-slate-800 mb-6">Related Peers</h3>
+    <div className="bg-[#0B1118]/80 backdrop-blur-xl border border-white/10 p-6 rounded-[24px] shadow-lg premium-glass-card hover-lift-card group transition-all duration-300">
+      <h3 className="text-lg font-bold text-white mb-6 group-hover:drop-shadow-[0_0_8px_rgba(255,255,255,0.2)] transition-all">Related Peers</h3>
       <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
         {data.map((sym) => (
           <div
             key={sym}
             onClick={() => navigate(`/share/${sym}`)}
-            className="p-4 border border-slate-100 rounded-2xl bg-white hover:border-slate-200 hover:shadow-sm transition-all cursor-pointer flex justify-between items-center group"
+            className="p-4 border border-white/10 rounded-[16px] bg-white/5 hover:border-[#00E0A4]/30 hover:bg-white/10 transition-all cursor-pointer flex justify-between items-center group/item hover-lift-card"
           >
             <div>
-              <span className="font-extrabold text-sm text-slate-800 group-hover:text-[#0F766E] transition-colors block">{sym}</span>
-              <span className="text-[10px] text-slate-400 font-bold block mt-0.5">NSE Listed</span>
+              <span className="font-extrabold text-sm text-white group-hover/item:text-[#00E0A4] transition-colors block">{sym}</span>
+              <span className="text-[10px] text-slate-400 font-bold block mt-0.5 group-hover/item:text-slate-300">NSE Listed</span>
             </div>
-            <ArrowUpRight className="w-4 h-4 text-slate-400 group-hover:text-[#0F766E] transition-colors" />
+            <ArrowUpRight className="w-4 h-4 text-slate-400 group-hover/item:text-[#00E0A4] transition-colors" />
           </div>
         ))}
       </div>

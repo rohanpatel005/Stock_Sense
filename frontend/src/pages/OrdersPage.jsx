@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
-import { Menu, X, ArrowLeft, ArrowRight } from 'lucide-react';
+import { ArrowLeft, ArrowRight } from 'lucide-react';
 import OrderSummaryCards from '../components/orders/OrderSummaryCards';
 import OrderFilters from '../components/orders/OrderFilters';
 import OrdersTable from '../components/orders/OrdersTable';
@@ -52,8 +52,6 @@ const OrdersPage = () => {
         orders: fetchedOrders
       });
       
-      // DRF PageNumberPagination doesn't always return total_pages by default unless customized,
-      // but it does return `count` (total items). Assuming 20 per page:
       const totalItems = response.data.count || fetchedOrders.length;
       setTotalPages(Math.max(1, Math.ceil(totalItems / 20)));
       
@@ -75,58 +73,60 @@ const OrdersPage = () => {
   };
 
   return (
-    <main className="flex-1 pt-20 lg:pt-6 pb-24 px-4 lg:px-8 space-y-6">
+    <main className="flex-1 pt-20 lg:pt-6 pb-24 px-4 lg:px-8 space-y-6 relative z-10">
         
         {/* Header */}
         <div>
-          <h1 className="text-3xl font-black text-slate-900 tracking-tight">Order Book</h1>
-          <p className="text-slate-500 font-medium mt-1">Manage and track all your transactions.</p>
+          <h1 className="text-3xl font-extrabold text-white tracking-tight">Order Book</h1>
+          <p className="text-slate-400 font-medium mt-1">Manage and track all your transactions.</p>
         </div>
 
         {/* Error Alert */}
         {error && (
-          <div className="bg-red-50 text-red-600 p-4 rounded-xl text-sm font-bold border border-red-100">
+          <div className="bg-red-500/10 text-red-400 p-4 rounded-xl text-sm font-bold border border-red-500/20 backdrop-blur-md">
             {error}
           </div>
         )}
 
-        {/* Summary Cards */}
-        <OrderSummaryCards summary={data.summary} />
+        <div className="space-y-6">
+          {/* Summary Cards */}
+          <OrderSummaryCards summary={data.summary} />
 
-        {/* Filters */}
-        <OrderFilters filters={filters} setFilters={setFilters} />
+          {/* Filters */}
+          <OrderFilters filters={filters} setFilters={setFilters} />
 
-        {/* Orders Table */}
-        <OrdersTable 
-          orders={data.orders} 
-          loading={loading} 
-          onRowClick={(order) => setSelectedOrder(order)} 
-        />
+          {/* Orders Table */}
+          <OrdersTable 
+            orders={data.orders} 
+            loading={loading} 
+            onRowClick={(order) => setSelectedOrder(order)} 
+          />
 
-        {/* Pagination */}
-        {!loading && data.orders.length > 0 && (
-          <div className="flex items-center justify-between px-4 bg-white p-4 rounded-2xl border border-slate-100 shadow-sm">
-            <span className="text-sm font-semibold text-slate-500">
-              Page {filters.page} of {totalPages}
-            </span>
-            <div className="flex items-center gap-2">
-              <button 
-                onClick={() => handlePageChange(filters.page - 1)}
-                disabled={filters.page === 1}
-                className="p-2 bg-slate-50 text-slate-600 hover:bg-slate-100 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center justify-center"
-              >
-                <ArrowLeft className="w-4 h-4" />
-              </button>
-              <button 
-                onClick={() => handlePageChange(filters.page + 1)}
-                disabled={filters.page === totalPages}
-                className="p-2 bg-slate-50 text-slate-600 hover:bg-slate-100 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center justify-center"
-              >
-                <ArrowRight className="w-4 h-4" />
-              </button>
+          {/* Pagination */}
+          {!loading && data.orders.length > 0 && (
+            <div className="flex items-center justify-between px-4 bg-[#0B1118]/80 backdrop-blur-xl p-4 rounded-2xl border border-white/10 shadow-[0_4px_20px_rgba(0,0,0,0.3)]">
+              <span className="text-sm font-semibold text-slate-400">
+                Page {filters.page} of {totalPages}
+              </span>
+              <div className="flex items-center gap-2">
+                <button 
+                  onClick={() => handlePageChange(filters.page - 1)}
+                  disabled={filters.page === 1}
+                  className="p-2 bg-white/5 text-slate-300 hover:bg-white/10 hover:text-white rounded-lg disabled:opacity-30 disabled:cursor-not-allowed transition-colors flex items-center justify-center border border-white/5"
+                >
+                  <ArrowLeft className="w-4 h-4" />
+                </button>
+                <button 
+                  onClick={() => handlePageChange(filters.page + 1)}
+                  disabled={filters.page === totalPages}
+                  className="p-2 bg-white/5 text-slate-300 hover:bg-white/10 hover:text-white rounded-lg disabled:opacity-30 disabled:cursor-not-allowed transition-colors flex items-center justify-center border border-white/5"
+                >
+                  <ArrowRight className="w-4 h-4" />
+                </button>
+              </div>
             </div>
-          </div>
-        )}
+          )}
+        </div>
 
         {/* Order Details Drawer */}
         <OrderDetailsDrawer 

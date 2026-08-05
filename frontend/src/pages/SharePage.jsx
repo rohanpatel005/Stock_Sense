@@ -77,30 +77,30 @@ const SharePage = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center gap-4">
-        <div className="w-12 h-12 border-4 border-emerald-600 border-t-transparent rounded-full animate-spin"></div>
-        <p className="text-slate-600 font-semibold">Aggregating real-time insights for {symbol}...</p>
+      <div className="min-h-screen bg-transparent flex flex-col items-center justify-center gap-4 relative z-10">
+        <div className="w-12 h-12 border-4 border-[#00E0A4] border-t-transparent rounded-full animate-spin drop-shadow-[0_0_10px_rgba(0,224,164,0.5)]"></div>
+        <p className="text-slate-400 font-bold">Aggregating real-time insights for {symbol}...</p>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4">
-        <div className="bg-white p-8 rounded-3xl shadow-xl max-w-md w-full text-center space-y-4 border border-slate-100">
-          <AlertCircle className="w-16 h-16 text-red-500 mx-auto" />
-          <h2 className="text-2xl font-bold text-slate-800">Aggregation Error</h2>
-          <p className="text-slate-500 font-semibold text-sm leading-relaxed">{error}</p>
-          <div className="flex gap-3">
+      <div className="min-h-screen bg-transparent flex items-center justify-center p-4 relative z-10">
+        <div className="bg-[#0B1118]/80 backdrop-blur-xl p-8 rounded-[24px] shadow-2xl max-w-md w-full text-center space-y-4 border border-white/10 premium-glass-card">
+          <AlertCircle className="w-16 h-16 text-red-500 mx-auto drop-shadow-[0_0_10px_rgba(239,68,68,0.5)]" />
+          <h2 className="text-2xl font-bold text-white">Aggregation Error</h2>
+          <p className="text-slate-400 font-semibold text-sm leading-relaxed">{error}</p>
+          <div className="flex gap-3 mt-6">
             <button 
               onClick={() => navigate('/dashboard')}
-              className="flex-1 bg-slate-100 text-slate-700 font-bold py-3 rounded-xl hover:bg-slate-200 transition-colors text-sm"
+              className="flex-1 bg-white/5 text-slate-300 font-bold py-3 rounded-[16px] hover:bg-white/10 hover:text-white border border-white/10 transition-all text-sm focus:outline-none"
             >
               Back to Dashboard
             </button>
             <button 
               onClick={fetchStockData}
-              className="flex-1 bg-emerald-700 text-white font-bold py-3 rounded-xl hover:bg-emerald-800 transition-colors text-sm"
+              className="flex-1 bg-gradient-to-r from-[#00E0A4] to-[#00B37E] text-[#05070D] font-bold py-3 rounded-[16px] hover:from-[#00E0A4] hover:to-[#00E0A4] transition-all text-sm shadow-[0_0_15px_rgba(0,224,164,0.4)] hover:shadow-[0_0_25px_rgba(0,224,164,0.6)] focus:outline-none"
             >
               Retry
             </button>
@@ -111,7 +111,7 @@ const SharePage = () => {
   }
 
   return (
-    <main className="flex-1 pt-20 lg:pt-6 pb-24 px-4 lg:px-8 space-y-6">
+    <main className="flex-1 pt-20 lg:pt-6 pb-24 px-4 lg:px-8 space-y-8 relative z-10 max-w-[1600px] mx-auto w-full animate-in fade-in slide-in-from-bottom-4 duration-500 fill-mode-forwards">
         
         {/* Render Trade Modal */}
         <TradeModal 
@@ -131,13 +131,13 @@ const SharePage = () => {
         <div className="flex items-center gap-3">
           <button 
             onClick={() => navigate(-1)} 
-            className="p-2 hover:bg-white border border-transparent hover:border-slate-100 rounded-xl transition-all text-slate-500 hover:text-slate-800"
+            className="p-2.5 bg-white/5 border border-white/10 hover:bg-white/10 hover:border-white/20 rounded-[12px] transition-all text-slate-400 hover:text-white shadow-sm"
           >
-            <ArrowLeft className="w-5 h-5" />
+            <ArrowLeft className="w-5 h-5 transition-transform hover:-translate-x-0.5" />
           </button>
-          <span className="text-sm font-bold text-slate-400">Share / {symbol}</span>
+          <span className="text-sm font-bold text-slate-400 uppercase tracking-wider">Share / <span className="text-white">{symbol}</span></span>
           {data?.data_stale && (
-            <span className="text-[10px] font-bold text-amber-700 bg-amber-50 border border-amber-100 px-2 py-0.5 rounded-full">
+            <span className="text-[10px] font-bold text-amber-500 bg-amber-500/10 border border-amber-500/20 px-2 py-0.5 rounded-full drop-shadow-[0_0_2px_rgba(251,191,36,0.5)]">
               Stale Data (Connection issues)
             </span>
           )}
@@ -226,31 +226,31 @@ const SharePage = () => {
         {/* Floating Chat Widget */}
         <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end">
           {aiChat.length > 0 && (
-            <div className="w-80 bg-white border border-slate-100 rounded-3xl shadow-2xl mb-4 overflow-hidden flex flex-col max-h-96">
-              <div className="bg-emerald-800 text-white p-4 font-bold text-sm flex items-center gap-2">
-                <Sparkles className="w-4 h-4 fill-white/10" />
+            <div className="w-80 bg-[#0B1118]/90 backdrop-blur-xl border border-white/10 rounded-[24px] shadow-[0_12px_40px_rgba(0,0,0,0.5)] mb-4 overflow-hidden flex flex-col max-h-96 animate-in fade-in slide-in-from-bottom-2 duration-200">
+              <div className="bg-gradient-to-r from-[#00E0A4]/20 to-[#00E0A4]/5 border-b border-white/5 text-white p-4 font-bold text-sm flex items-center gap-2">
+                <Sparkles className="w-4 h-4 text-[#00E0A4] drop-shadow-[0_0_5px_rgba(0,224,164,0.5)]" />
                 Ask StockSense AI
               </div>
-              <div className="flex-1 p-4 overflow-y-auto space-y-3 max-h-64 custom-scrollbar bg-slate-50/50">
+              <div className="flex-1 p-4 overflow-y-auto space-y-3 max-h-64 custom-scrollbar bg-transparent">
                 {aiChat.map((msg, idx) => (
-                  <div key={idx} className={`p-3 rounded-2xl text-xs max-w-[85%] ${
+                  <div key={idx} className={`p-3 rounded-2xl text-xs max-w-[85%] font-medium ${
                     msg.sender === 'user' 
-                      ? 'bg-emerald-700 text-white self-end ml-auto' 
-                      : 'bg-white text-slate-800 border border-slate-100'
+                      ? 'bg-gradient-to-r from-[#00E0A4] to-[#00B37E] text-[#05070D] self-end ml-auto shadow-[0_0_10px_rgba(0,224,164,0.2)]' 
+                      : 'bg-white/5 text-slate-300 border border-white/10'
                   }`}>
                     {msg.text}
                   </div>
                 ))}
               </div>
-              <form onSubmit={handleAskAI} className="p-3 border-t border-slate-100 flex gap-2">
+              <form onSubmit={handleAskAI} className="p-3 border-t border-white/5 flex gap-2 bg-[#05070D]/50">
                 <input
                   type="text"
                   value={askAiText}
                   onChange={(e) => setAskAiText(e.target.value)}
                   placeholder="Ask stock queries..."
-                  className="flex-1 text-xs border border-slate-200 rounded-xl px-3 py-2 outline-none focus:border-emerald-700"
+                  className="flex-1 text-xs bg-white/5 border border-white/10 text-white placeholder-slate-500 rounded-xl px-3 py-2 outline-none focus:border-[#00E0A4]/50 focus:ring-1 focus:ring-[#00E0A4]/30 transition-all"
                 />
-                <button type="submit" className="bg-emerald-700 text-white text-xs font-bold px-3 py-2 rounded-xl">Send</button>
+                <button type="submit" className="bg-white/10 hover:bg-[#00E0A4]/20 text-[#00E0A4] border border-white/10 hover:border-[#00E0A4]/30 text-xs font-bold px-4 py-2 rounded-xl transition-all">Send</button>
               </form>
             </div>
           )}
@@ -263,9 +263,9 @@ const SharePage = () => {
                 setAiChat([]);
               }
             }}
-            className="bg-[#0F766E] text-white w-14 h-14 rounded-full shadow-2xl flex items-center justify-center hover:bg-emerald-800 transition-all transform active:scale-95 z-50"
+            className="bg-[#0B1118]/80 backdrop-blur-xl border border-white/10 hover:border-[#00E0A4]/50 text-[#00E0A4] w-14 h-14 rounded-full shadow-[0_0_20px_rgba(0,224,164,0.15)] hover:shadow-[0_0_30px_rgba(0,224,164,0.3)] flex items-center justify-center transition-all transform hover:-translate-y-1 active:scale-95 z-50 group"
           >
-            <Sparkles className="w-6 h-6" />
+            <Sparkles className="w-6 h-6 group-hover:drop-shadow-[0_0_8px_rgba(0,224,164,0.8)] transition-all" />
           </button>
         </div>
 

@@ -9,7 +9,7 @@ import Footer from '../components/Footer/Footer';
 
 const LandingPage = () => {
   return (
-    <div className="min-h-screen text-on-surface bg-transparent relative z-10">
+    <div className="min-h-screen bg-[#04070d] text-white relative z-10">
       <Navbar />
       <Hero />
       <MarketPreview />

@@ -25,22 +25,22 @@ const AIMentor = () => {
   };
 
   return (
-    <div className="flex flex-col h-screen bg-white">
+    <div className="flex flex-col flex-1 h-[calc(100vh-64px)] lg:h-screen w-full relative z-10 bg-transparent">
       <ChatHeader onClearChat={() => setShowClearModal(true)} />
 
       {/* Main Chat Area */}
-      <div className="flex-1 overflow-y-auto px-4 py-6 scroll-smooth bg-slate-50/50">
+      <div className="flex-1 overflow-y-auto px-4 py-6 scroll-smooth relative z-0">
         <div className="max-w-4xl mx-auto flex flex-col gap-6">
           
           {error && (
-            <div className="bg-red-50 text-red-600 p-3 rounded-xl text-center text-sm font-semibold border border-red-100">
+            <div className="bg-red-500/10 text-red-400 p-3 rounded-[16px] text-center text-sm font-bold border border-red-500/20 shadow-[0_0_15px_rgba(239,68,68,0.1)]">
               {error}
             </div>
           )}
 
           {isLoading && messages.length === 0 ? (
             <div className="flex justify-center items-center py-20">
-              <div className="w-8 h-8 border-4 border-emerald-500 border-t-transparent rounded-full animate-spin"></div>
+              <div className="w-10 h-10 border-4 border-[#00E0A4] border-t-transparent rounded-full animate-spin shadow-[0_0_15px_rgba(0,224,164,0.5)]"></div>
             </div>
           ) : messages.length === 0 ? (
             <SuggestedQuestions onSelect={sendMessage} />
@@ -64,22 +64,22 @@ const AIMentor = () => {
 
       {/* Clear Confirmation Modal */}
       {showClearModal && (
-        <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl p-6 max-w-sm w-full shadow-xl">
-            <h3 className="text-xl font-bold text-slate-800 mb-2">Clear Conversation?</h3>
-            <p className="text-slate-500 mb-6 text-sm">
+        <div className="fixed inset-0 bg-[#05070D]/80 backdrop-blur-md flex items-center justify-center z-50 p-4">
+          <div className="bg-[#0B1118]/80 backdrop-blur-xl border border-white/10 rounded-[24px] p-6 max-w-sm w-full shadow-[0_8px_32px_rgba(0,0,0,0.5)] premium-glass-card">
+            <h3 className="text-xl font-bold text-white mb-2 tracking-tight">Clear Conversation?</h3>
+            <p className="text-slate-400 mb-6 text-sm font-medium">
               This will permanently delete your chat history. This action cannot be undone.
             </p>
             <div className="flex justify-end gap-3">
               <button
                 onClick={() => setShowClearModal(false)}
-                className="px-4 py-2 text-slate-600 hover:bg-slate-50 rounded-xl font-semibold transition-colors"
+                className="px-5 py-2.5 text-slate-300 hover:bg-white/5 border border-transparent hover:border-white/10 rounded-xl font-bold transition-all"
               >
                 Cancel
               </button>
               <button
                 onClick={handleClearConfirm}
-                className="px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-xl font-semibold transition-colors shadow-sm"
+                className="px-5 py-2.5 bg-gradient-to-r from-red-500 to-red-600 text-white rounded-xl font-bold transition-all shadow-[0_0_15px_rgba(239,68,68,0.3)] hover:shadow-[0_0_25px_rgba(239,68,68,0.5)] hover:-translate-y-0.5"
               >
                 Clear Chat
               </button>
