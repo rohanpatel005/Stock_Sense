@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useInView } from 'framer-motion';
 
 const Counter = ({ target, suffix }) => {
@@ -9,7 +9,7 @@ const Counter = ({ target, suffix }) => {
   useEffect(() => {
     if (!isInView) return;
 
-    let start = 0;
+    let _start = 0;
     const duration = 2000; // 2 seconds animation
     const startTime = performance.now();
 

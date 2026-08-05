@@ -1,23 +1,10 @@
-import React, { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import {
   TrendingUp,
   TrendingDown,
-  ArrowUpRight,
-  Search,
-  Settings,
-  Bell,
   Sparkles,
-  HelpCircle,
-  LogOut,
-  Menu,
-  X,
-  LineChart,
-  PieChart,
-  Clock,
-  Layers,
-  BookOpen,
   AlertCircle,
   Star,
 } from "lucide-react";
@@ -72,7 +59,7 @@ let cachedActiveLastUpdated = "";
 
 const Dashboard = () => {
   const navigate = useNavigate();
-  const { watchlist, watchlistData, toggleWatchlist } = useWatchlist();
+  const { watchlist, watchlistData, toggleWatchlist, fetchWatchlist } = useWatchlist();
   const [data, setData] = useState(cachedDashboardData);
   const [loading, setLoading] = useState(!cachedDashboardData);
   const [error, setError] = useState("");
@@ -107,17 +94,17 @@ const Dashboard = () => {
     cachedLosersLastUpdated,
   );
 
-  const [active, setActive] = useState(cachedActive);
-  const [activeLoading, setActiveLoading] = useState(cachedActive.length === 0);
-  const [activeError, setActiveError] = useState("");
-  const [activeIsLive, setActiveIsLive] = useState(cachedActiveIsLive);
-  const [activeLastUpdated, setActiveLastUpdated] = useState(
+  const [_active, setActive] = useState(cachedActive);
+  const [_activeLoading, setActiveLoading] = useState(cachedActive.length === 0);
+  const [_activeError, setActiveError] = useState("");
+  const [_activeIsLive, setActiveIsLive] = useState(cachedActiveIsLive);
+  const [_activeLastUpdated, setActiveLastUpdated] = useState(
     cachedActiveLastUpdated,
   );
 
-  const [searchQuery, setSearchQuery] = useState("");
-  const [searchResults, setSearchResults] = useState([]);
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [_searchQuery, setSearchQuery] = useState("");
+  const [_searchResults, setSearchResults] = useState([]);
+  const [_mobileMenuOpen, _setMobileMenuOpen] = useState(false);
   const [askAiText, setAskAiText] = useState("");
   const [aiChat, setAiChat] = useState([]);
 
@@ -170,7 +157,7 @@ const Dashboard = () => {
           return acc;
         }, {}),
       };
-    } catch (err) {
+    } catch (_err) {
       setError("Failed to fetch dashboard data. Please log in again.");
     } finally {
       setLoading(false);
@@ -348,7 +335,7 @@ const Dashboard = () => {
         setGainers(list);
         cachedGainers = list;
       }
-    } catch (err) {
+    } catch (_err) {
       setGainersError("Unable to load Top Gainers.");
     } finally {
       setGainersLoading(false);
@@ -380,7 +367,7 @@ const Dashboard = () => {
         setActive(list);
         cachedActive = list;
       }
-    } catch (err) {
+    } catch (_err) {
       setActiveError("Unable to load Active Movers.");
     } finally {
       setActiveLoading(false);
@@ -412,7 +399,7 @@ const Dashboard = () => {
         setLosers(list);
         cachedLosers = list;
       }
-    } catch (err) {
+    } catch (_err) {
       setLosersError("Unable to load Top Losers.");
     } finally {
       setLosersLoading(false);
@@ -425,6 +412,7 @@ const Dashboard = () => {
     fetchTopGainers();
     fetchTopLosers();
     fetchTopActive();
+    fetchWatchlist();
 
     // Live market data — poll every 12 seconds
     // fetchLiveData itself checks isNSEOpen() and skips if market is closed
@@ -433,10 +421,10 @@ const Dashboard = () => {
     return () => {
       clearInterval(liveInterval);
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+     
   }, []);
 
-  const handleSearchChange = (e) => {
+  const _handleSearchChange = (e) => {
     const query = e.target.value;
     setSearchQuery(query);
     if (query.trim() === "") {
@@ -454,7 +442,7 @@ const Dashboard = () => {
           { headers: { Authorization: `Bearer ${token}` } }
         );
         setSearchResults(response.data.results || []);
-      } catch (err) {
+      } catch (_err) {
         setSearchResults([]);
       }
     }, 300);
@@ -482,7 +470,7 @@ const Dashboard = () => {
           text: response.data.reply || "I'm sorry, I couldn't process that request.",
         },
       ]);
-    } catch (err) {
+    } catch (_err) {
       setAiChat([
         ...newChat,
         {
@@ -719,7 +707,7 @@ const Dashboard = () => {
               {data.trending_stocks.map((stock, idx) => (
                 <div
                   key={idx}
-                  onClick={() => navigate(`/share/${stock.symbol}`)}
+                  onClick={() => navigate(`/share/${encodeURIComponent(stock.symbol)}`)}
                   className="p-4 rounded-[16px] bg-white/5 premium-glass-card hover-lift-card glow-trending flex flex-col justify-between cursor-pointer group relative"
                 >
                   <button
@@ -808,7 +796,7 @@ const Dashboard = () => {
                   {gainers.map((stock, idx) => (
                     <div
                       key={idx}
-                      onClick={() => navigate(`/share/${stock.symbol}`)}
+                      onClick={() => navigate(`/share/${encodeURIComponent(stock.symbol)}`)}
                       className="flex justify-between items-center p-3 bg-[#00E0A4]/5 rounded-xl border border-[#00E0A4]/20 hover:shadow-[0_4px_15px_rgba(0,224,164,0.1)] transition-all duration-300 cursor-pointer hover:bg-[#00E0A4]/10 hover:border-[#00E0A4]/40 relative group"
                     >
                       <div className="flex items-center gap-2 flex-1 min-w-0">
@@ -884,7 +872,7 @@ const Dashboard = () => {
                   {losers.map((stock, idx) => (
                     <div
                       key={idx}
-                      onClick={() => navigate(`/share/${stock.symbol}`)}
+                      onClick={() => navigate(`/share/${encodeURIComponent(stock.symbol)}`)}
                       className="flex justify-between items-center p-3 bg-red-500/5 rounded-xl border border-red-500/20 hover:shadow-[0_4px_15px_rgba(239,68,68,0.1)] transition-all duration-300 cursor-pointer hover:bg-red-500/10 hover:border-red-500/40 relative group"
                     >
                       <div className="flex items-center gap-2 flex-1 min-w-0">
@@ -1011,7 +999,7 @@ const Dashboard = () => {
                     return (
                       <div
                         key={idx}
-                        onClick={() => navigate(`/share/${symbol}`)}
+                        onClick={() => navigate(`/share/${encodeURIComponent(symbol)}`)}
                         className="bg-[#0B1118]/60 backdrop-blur-md p-5 rounded-[20px] border border-white/5 shadow-sm hover:shadow-[0_4px_20px_rgba(0,224,164,0.1)] hover:border-white/20 hover:bg-white/5 transition-all cursor-pointer relative group duration-300"
                       >
                         <button

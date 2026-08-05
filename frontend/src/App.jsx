@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import LandingPage from './pages/LandingPage';
 import Register from './pages/Register';
@@ -28,7 +28,7 @@ function App() {
     }
   }, []);
 
-  const handleLoginSuccess = () => {
+  const _handleLoginSuccess = () => {
     // This will be called after successful login/signup
     setUser({ full_name: "StockSense User" }); // Simplified for now
   };

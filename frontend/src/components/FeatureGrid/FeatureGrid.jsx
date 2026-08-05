@@ -1,5 +1,4 @@
-import React from 'react';
-import { LineChart, FlaskConical, Zap, Sparkles, ArrowUpRight, Cpu, Activity, ShieldCheck, CheckCircle2 } from 'lucide-react';
+import { LineChart, FlaskConical, Zap, Sparkles, ArrowUpRight, Cpu, CheckCircle2 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 

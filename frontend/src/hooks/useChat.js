@@ -8,22 +8,22 @@ export const useChat = () => {
   const [error, setError] = useState(null);
   const chatEndRef = useRef(null);
 
-  useEffect(() => {
-    loadHistory();
-  }, []);
-
   const loadHistory = async () => {
     setIsLoading(true);
     try {
       const history = await aiService.getHistory();
       // Assume history is an array of messages sorted by timestamp
       setMessages(history);
-    } catch (err) {
+    } catch (_err) {
       setError('Failed to load chat history. Please try again later.');
     } finally {
       setIsLoading(false);
     }
   };
+
+  useEffect(() => {
+    loadHistory();
+  }, []);
 
   const scrollToBottom = () => {
     chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -56,7 +56,7 @@ export const useChat = () => {
         timestamp: response.timestamp,
       };
       setMessages((prev) => [...prev, aiMessage]);
-    } catch (err) {
+    } catch (_err) {
       setError('Failed to send message. Please try again.');
       // Remove the optimistic user message if failed? Or keep it and let user retry.
       // Usually keeping it and showing error is better, but this is simple.
@@ -70,7 +70,7 @@ export const useChat = () => {
     try {
       await aiService.clearHistory();
       setMessages([]);
-    } catch (err) {
+    } catch (_err) {
       setError('Failed to clear chat history.');
     } finally {
       setIsLoading(false);

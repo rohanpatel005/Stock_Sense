@@ -1,4 +1,3 @@
-import React from 'react';
 import { CheckCircle2, Check } from 'lucide-react';
 
 const SuccessModal = ({ onContinue }) => {

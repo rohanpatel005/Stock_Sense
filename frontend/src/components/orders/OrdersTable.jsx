@@ -1,5 +1,4 @@
-import React from 'react';
-import { ArrowUpRight, ArrowDownRight, Clock, CheckCircle, AlertCircle, Info } from 'lucide-react';
+import { Clock, CheckCircle, AlertCircle, Info } from 'lucide-react';
 import dayjs from 'dayjs';
 import { motion } from 'framer-motion';
 

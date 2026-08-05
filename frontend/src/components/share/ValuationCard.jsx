@@ -1,4 +1,3 @@
-import React from 'react';
 
 const ValuationCard = ({ data }) => {
   if (!data) return null;

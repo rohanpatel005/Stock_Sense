@@ -1,4 +1,3 @@
-import React from 'react';
 import { X, TrendingUp, TrendingDown, Receipt } from 'lucide-react';
 import dayjs from 'dayjs';
 import { getStatusBadge } from './OrdersTable';

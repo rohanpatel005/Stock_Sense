@@ -1,4 +1,3 @@
-import React from 'react';
 import { Bot, Trash2 } from 'lucide-react';
 
 const ChatHeader = ({ onClearChat }) => {

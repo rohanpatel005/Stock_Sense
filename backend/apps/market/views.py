@@ -274,10 +274,6 @@ def market_search(request):
                 except Exception as e:
                     logger.error("Error fetching prices for search: %s", e)
 
-            # Strip suffix before returning to keep frontend compatibility
-            for match in matches:
-                match["symbol"] = match["symbol"].replace(".NS", "").replace(".BO", "")
-
             return Response(matches)
     except Exception as e:
         logger.error("Yahoo Search error: %s", e)

@@ -1,4 +1,3 @@
-import React from 'react';
 import { User, Mail } from 'lucide-react';
 
 const ProfileCard = ({ profile }) => {

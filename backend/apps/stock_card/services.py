@@ -4,6 +4,7 @@ import threading
 import yfinance as yf
 import pandas as pd
 import numpy as np
+import math
 from datetime import datetime, timedelta, time as dtime
 import pytz
 from .utils import calculate_technical_indicators
@@ -16,6 +17,17 @@ _mem_cache = {}
 _cache_lock = threading.Lock()
 CACHE_TTL = 15.0  # seconds
 
+def clean_nans(obj):
+    if isinstance(obj, dict):
+        return {k: clean_nans(v) for k, v in obj.items()}
+    elif isinstance(obj, list):
+        return [clean_nans(v) for v in obj]
+    elif isinstance(obj, float):
+        if math.isnan(obj) or math.isinf(obj):
+            return 0.0
+        return obj
+    return obj
+
 class StockCardService:
     @staticmethod
     def get_stock_data(symbol: str) -> dict:
@@ -25,6 +37,8 @@ class StockCardService:
             yf_symbol = f"{symbol_upper}.NS"
         else:
             yf_symbol = symbol_upper
+            
+        logger.info(f"Symbol used in yfinance: {yf_symbol}")
 
         now = time.time()
         
@@ -372,9 +386,39 @@ class StockCardService:
         events = []
 
         # Performance cards
-        performance = {}
+        try:
+            hist_5y = ticker.history(period="5y")
+            def get_return(days_ago):
+                if hist_5y.empty or len(hist_5y) < 2: return 0.0
+                current = float(hist_5y["Close"].iloc[-1])
+                idx = max(0, len(hist_5y) - days_ago - 1)
+                past = float(hist_5y["Close"].iloc[idx])
+                if past == 0: return 0.0
+                return float(round(((current - past) / past) * 100, 2))
+            
+            performance = {
+                "today": float(round(change_pct, 2)),
+                "weekly": get_return(5),
+                "monthly": get_return(21),
+                "three_month": get_return(63),
+                "six_month": get_return(126),
+                "one_year": get_return(252),
+                "three_year": get_return(756),
+                "five_year": get_return(1260)
+            }
+            current_year = datetime.now().year
+            ytd_data = hist_5y[hist_5y.index.year == current_year]
+            if not ytd_data.empty:
+                ytd_start = float(ytd_data["Close"].iloc[0])
+                current = float(hist_5y["Close"].iloc[-1])
+                performance["ytd"] = float(round(((current - ytd_start) / ytd_start) * 100, 2))
+            else:
+                performance["ytd"] = performance["today"]
+        except Exception as e:
+            logger.error(f"Error calculating performance for {symbol}: {e}")
+            performance = {}
 
-        return {
+        result = {
             "symbol": symbol,
             "company_name": info.get("longName") or info.get("shortName") or symbol,
             "exchange": "NSE",
@@ -428,6 +472,7 @@ class StockCardService:
                 "free_float": info.get("floatShares") or (info.get("sharesOutstanding", 1e9) * 0.5)
             }
         }
+        return clean_nans(result)
 
 def is_market_open_ist() -> bool:
     tz = pytz.timezone("Asia/Kolkata")

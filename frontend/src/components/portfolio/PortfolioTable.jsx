@@ -1,4 +1,3 @@
-import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { TrendingUp, TrendingDown, Eye } from 'lucide-react';
 import { motion } from 'framer-motion';
@@ -100,7 +99,7 @@ const PortfolioTable = ({ holdings, loading }) => {
                   {/* Actions */}
                   <td className="py-4 px-6 text-center whitespace-nowrap">
                     <button 
-                      onClick={() => navigate(`/share/${h.stock_symbol.replace('.NS', '')}`)}
+                      onClick={() => navigate(`/share/${encodeURIComponent(h.stock_symbol)}`)}
                       className="px-3 py-1.5 bg-white/5 border border-white/10 text-white hover:text-[#00E0A4] hover:border-[#00E0A4]/50 hover:bg-[#00E0A4]/10 rounded-lg text-xs font-bold transition-all shadow-[0_2px_10px_rgba(0,0,0,0.2)] hover:shadow-[0_0_15px_rgba(0,224,164,0.2)] hover:-translate-y-0.5 flex items-center gap-1 mx-auto"
                     >
                       <Eye className="w-3 h-3" /> View

@@ -1,5 +1,4 @@
-import React from 'react';
-import { Calendar, Award } from 'lucide-react';
+import { Calendar } from 'lucide-react';
 
 export const CompanyProfile = ({ data }) => {
   if (!data) return null;

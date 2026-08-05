@@ -1,14 +1,13 @@
-import React from 'react';
 
 const PriceCard = ({ data }) => {
   if (!data) return null;
 
   const stats = [
-    { label: 'Open', value: `₹${data.technical_indicators?.pivot.toLocaleString('en-IN', { maximumFractionDigits: 2 })}` || '—' },
-    { label: 'High', value: `₹${data.technical_indicators?.r1.toLocaleString('en-IN', { maximumFractionDigits: 2 })}` || '—' },
-    { label: 'Low', value: `₹${data.technical_indicators?.s1.toLocaleString('en-IN', { maximumFractionDigits: 2 })}` || '—' },
+    { label: 'Open', value: data.technical_indicators?.pivot ? `₹${data.technical_indicators.pivot.toLocaleString('en-IN', { maximumFractionDigits: 2 })}` : '—' },
+    { label: 'High', value: data.technical_indicators?.r1 ? `₹${data.technical_indicators.r1.toLocaleString('en-IN', { maximumFractionDigits: 2 })}` : '—' },
+    { label: 'Low', value: data.technical_indicators?.s1 ? `₹${data.technical_indicators.s1.toLocaleString('en-IN', { maximumFractionDigits: 2 })}` : '—' },
     { label: 'Previous Close', value: `₹${(data.live_price - data.today_change).toLocaleString('en-IN', { minimumFractionDigits: 2 })}` },
-    { label: 'VWAP', value: `₹${data.technical_indicators?.vwap.toLocaleString('en-IN', { maximumFractionDigits: 2 })}` || '—' },
+    { label: 'VWAP', value: data.technical_indicators?.vwap ? `₹${data.technical_indicators.vwap.toLocaleString('en-IN', { maximumFractionDigits: 2 })}` : '—' },
     { label: '52 Week High', value: `₹${(data.live_price * 1.35).toLocaleString('en-IN', { maximumFractionDigits: 2 })}` }, // Approximation / Fallback
     { label: '52 Week Low', value: `₹${(data.live_price * 0.70).toLocaleString('en-IN', { maximumFractionDigits: 2 })}` },
     { label: 'Upper Circuit (10%)', value: `₹${(data.live_price * 1.10).toLocaleString('en-IN', { maximumFractionDigits: 2 })}` },
@@ -16,7 +15,7 @@ const PriceCard = ({ data }) => {
     { label: 'Face Value', value: '₹10.00' },
     { label: 'Tick Size', value: '₹0.05' },
     { label: 'Lot Size', value: '1 Share' },
-    { label: 'Delivery %', value: `${data.delivery_statistics?.delivery_percent}%` || '—' }
+    { label: 'Delivery %', value: data.delivery_statistics?.delivery_percent ? `${data.delivery_statistics.delivery_percent}%` : '—' }
   ];
 
   return (

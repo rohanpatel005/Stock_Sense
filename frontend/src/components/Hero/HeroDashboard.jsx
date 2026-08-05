@@ -1,4 +1,3 @@
-import React from 'react';
 import { TrendingUp, Sparkles, ArrowUpRight, Activity, ShieldCheck, PieChart, Layers } from 'lucide-react';
 import { motion } from 'framer-motion';
 

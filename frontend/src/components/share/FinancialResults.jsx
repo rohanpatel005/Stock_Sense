@@ -1,4 +1,3 @@
-import React from 'react';
 
 export const QuarterlyResults = ({ data }) => {
   if (!data || data.length === 0) return null;

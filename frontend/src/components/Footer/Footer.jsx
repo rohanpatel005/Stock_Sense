@@ -1,4 +1,3 @@
-import React from 'react';
 import { Globe, MessageSquare, TrendingUp, Sparkles, ShieldCheck, ArrowRight, Share2, ExternalLink } from 'lucide-react';
 import { Link } from 'react-router-dom';
 

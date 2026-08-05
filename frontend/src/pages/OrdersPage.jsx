@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
 import { ArrowLeft, ArrowRight } from 'lucide-react';
 import OrderSummaryCards from '../components/orders/OrderSummaryCards';
@@ -21,11 +21,11 @@ const OrdersPage = () => {
   const [totalPages, setTotalPages] = useState(1);
   const [selectedOrder, setSelectedOrder] = useState(null);
 
-  const [user, setUser] = useState(() => {
+  const [user, _setUser] = useState(() => {
     try {
       const storedUser = localStorage.getItem('user');
       return storedUser ? JSON.parse(storedUser) : { full_name: 'StockSense User', email: '' };
-    } catch (e) {
+    } catch (_e) {
       return { full_name: 'StockSense User', email: '' };
     }
   });
@@ -55,7 +55,7 @@ const OrdersPage = () => {
       const totalItems = response.data.count || fetchedOrders.length;
       setTotalPages(Math.max(1, Math.ceil(totalItems / 20)));
       
-    } catch (err) {
+    } catch (_err) {
       setError('Failed to fetch orders. Please try again.');
     } finally {
       setLoading(false);

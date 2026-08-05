@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import { ArrowLeft, RefreshCw, AlertCircle, Sparkles, LogOut, Menu, X, LineChart } from 'lucide-react';
+import { ArrowLeft, AlertCircle, Sparkles } from 'lucide-react';
 import Header from '../components/share/Header';
 import PriceCard from '../components/share/PriceCard';
 import LiveChart from '../components/share/LiveChart';
@@ -15,7 +15,7 @@ import SupportResistance from '../components/share/SupportResistance';
 import { FinancialHighlights, AIAnalysis } from '../components/share/FinancialsAndAI';
 import { QuarterlyResults, AnnualResults } from '../components/share/FinancialResults';
 import { PeerComparison, RelatedStocks } from '../components/share/PeerComparison';
-import { CompanyProfile, Ownership, PerformanceCards, News, Events } from '../components/share/ProfileNewsEvents';
+import { CompanyProfile, Ownership, PerformanceCards } from '../components/share/ProfileNewsEvents';
 
 const SharePage = () => {
   const { symbol } = useParams();
@@ -28,11 +28,11 @@ const SharePage = () => {
   const [aiChat, setAiChat] = useState([]);
 
   // Local storage logged-in user parser
-  const [user, setUser] = useState(() => {
+  const [user, _setUser] = useState(() => {
     try {
       const storedUser = localStorage.getItem('user');
       return storedUser ? JSON.parse(storedUser) : { full_name: 'StockSense User' };
-    } catch (e) {
+    } catch (_e) {
       return { full_name: 'StockSense User' };
     }
   });
@@ -41,8 +41,10 @@ const SharePage = () => {
     setLoading(true);
     setError('');
     try {
+      console.log(`Symbol sent: ${symbol}`);
       const token = localStorage.getItem('access_token');
-      const response = await axios.get(`http://127.0.0.1:8000/api/share/${symbol}/`, {
+      const encodedSymbol = encodeURIComponent(symbol);
+      const response = await axios.get(`http://127.0.0.1:8000/api/share/${encodedSymbol}/`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setData(response.data);
@@ -82,7 +84,7 @@ const SharePage = () => {
           text: response.data.reply || "I'm sorry, I couldn't process that request.",
         },
       ]);
-    } catch (err) {
+    } catch (_err) {
       setAiChat([
         ...newChat,
         {

@@ -1,13 +1,17 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Star, TrendingUp, TrendingDown, ArrowRight } from 'lucide-react';
+import { Star, TrendingUp, TrendingDown } from 'lucide-react';
 import { useWatchlist } from '../context/WatchlistContext';
 import { motion } from 'framer-motion';
 
 const WatchlistPage = () => {
   const navigate = useNavigate();
-  const { watchlist, watchlistData, toggleWatchlist } = useWatchlist();
+  const { watchlist, watchlistData, toggleWatchlist, fetchWatchlist } = useWatchlist();
   const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchWatchlist();
+  }, [fetchWatchlist]);
 
   useEffect(() => {
     if (watchlist.length > 0 && Object.keys(watchlistData).length === 0) {
@@ -104,7 +108,7 @@ const WatchlistPage = () => {
               <motion.div 
                 variants={itemVariants}
                 key={idx}
-                onClick={() => navigate(`/share/${stock.symbol}`)}
+                onClick={() => navigate(`/share/${encodeURIComponent(stock.symbol)}`)}
                 className="bg-[#0B1118]/80 backdrop-blur-xl p-6 rounded-3xl border border-white/10 hover:border-[#00E0A4]/35 hover:shadow-[0_0_0_1px_rgba(0,224,164,0.15),0_10px_30px_rgba(0,224,164,0.08)] transition-all duration-300 hover:-translate-y-1 cursor-pointer group relative text-left w-full flex flex-col justify-between overflow-hidden"
               >
                 {/* Very subtle glow inside the card on hover */}

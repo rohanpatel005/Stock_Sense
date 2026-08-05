@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Lock, Loader2, Eye, EyeOff } from 'lucide-react';
 
 const PasswordModal = ({ onCancel, onVerify }) => {

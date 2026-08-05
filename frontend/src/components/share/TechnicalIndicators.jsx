@@ -1,4 +1,3 @@
-import React from 'react';
 
 const TechnicalIndicators = ({ data }) => {
   if (!data) return null;

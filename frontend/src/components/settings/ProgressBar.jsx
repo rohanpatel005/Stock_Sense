@@ -1,4 +1,3 @@
-import React from 'react';
 
 const ProgressBar = ({ remaining, total }) => {
     let colorClass = 'bg-slate-300';

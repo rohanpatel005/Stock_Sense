@@ -1,21 +1,25 @@
-import React from 'react';
 import { Sparkles } from 'lucide-react';
 
 export const FinancialHighlights = ({ data }) => {
   if (!data) return null;
 
+  const formatNum = (val) => {
+    const num = Number(val);
+    return isNaN(num) ? '—' : num.toFixed(2);
+  };
+
   const metrics = [
-    { label: 'Revenue', value: data.revenue ? `₹${(data.revenue / 1e7).toFixed(1)} Cr` : '—' },
-    { label: 'Net Profit', value: data.net_profit ? `₹${(data.net_profit / 1e7).toFixed(1)} Cr` : '—' },
-    { label: 'EBITDA', value: data.ebitda ? `₹${(data.ebitda / 1e7).toFixed(1)} Cr` : '—' },
+    { label: 'Revenue', value: data.revenue ? `₹${(Number(data.revenue) / 1e7).toFixed(1)} Cr` : '—' },
+    { label: 'Net Profit', value: data.net_profit ? `₹${(Number(data.net_profit) / 1e7).toFixed(1)} Cr` : '—' },
+    { label: 'EBITDA', value: data.ebitda ? `₹${(Number(data.ebitda) / 1e7).toFixed(1)} Cr` : '—' },
     { label: 'ROE', value: `${data.roe}%` },
     { label: 'ROCE', value: `${data.roce}%` },
-    { label: 'EPS', value: `₹${data.eps.toFixed(2)}` },
-    { label: 'PE Ratio', value: data.pe ? data.pe.toFixed(2) : '—' },
-    { label: 'PB Ratio', value: data.pb ? data.pb.toFixed(2) : '—' },
-    { label: 'PEG Ratio', value: data.peg ? data.peg.toFixed(2) : '—' },
-    { label: 'Debt to Equity', value: data.debt_to_equity.toFixed(2) },
-    { label: 'Current Ratio', value: data.current_ratio.toFixed(2) },
+    { label: 'EPS', value: `₹${formatNum(data.eps)}` },
+    { label: 'PE Ratio', value: formatNum(data.pe) },
+    { label: 'PB Ratio', value: formatNum(data.pb) },
+    { label: 'PEG Ratio', value: formatNum(data.peg) },
+    { label: 'Debt to Equity', value: formatNum(data.debt_to_equity) },
+    { label: 'Current Ratio', value: formatNum(data.current_ratio) },
     { label: 'Operating Margin', value: `${data.operating_margin}%` }
   ];
 

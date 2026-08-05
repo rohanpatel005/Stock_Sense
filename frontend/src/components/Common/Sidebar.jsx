@@ -1,4 +1,3 @@
-import React from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { LineChart, LogOut, Star } from 'lucide-react';
 import { useWatchlist } from '../../context/WatchlistContext';
@@ -32,7 +31,7 @@ const Sidebar = ({ user = {} }) => {
       const parsed = JSON.parse(storedUserStr);
       const name = parsed.full_name || [parsed.first_name, parsed.last_name].filter(Boolean).join(' ') || parsed.username || parsed.email?.split('@')[0] || 'StockSense User';
       displayUser = { ...parsed, full_name: name };
-    } catch (e) {
+    } catch (_e) {
       // Ignore
     }
   }

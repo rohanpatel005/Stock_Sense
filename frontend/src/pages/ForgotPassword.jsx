@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { motion, AnimatePresence } from 'framer-motion';
 import { LineChart, Mail, Lock, Key, Eye, EyeOff, ArrowRight, TrendingUp, Bot, Briefcase, CheckCircle2, ChevronLeft } from 'lucide-react';
@@ -62,7 +62,7 @@ const ForgotPassword = () => {
     }
   };
 
-  const handleOtpKeyDown = (e, index) => {
+  const handleOtpKeyDown = (e, _index) => {
     if (e.key === 'Backspace' && !e.target.value && e.target.previousSibling) {
       e.target.previousSibling.focus();
     }
@@ -129,7 +129,7 @@ const ForgotPassword = () => {
       await axios.post('http://127.0.0.1:8000/api/users/forgot-password/', { email });
       setTimer(30);
       setSuccessMessage('OTP resent successfully!');
-    } catch (err) {
+    } catch (_err) {
       setError('Failed to resend OTP.');
     }
   };

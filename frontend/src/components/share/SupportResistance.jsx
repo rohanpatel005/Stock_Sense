@@ -1,4 +1,3 @@
-import React from 'react';
 
 const SupportResistance = ({ data }) => {
   if (!data) return null;

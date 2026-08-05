@@ -1,4 +1,4 @@
-import React, { createContext, useState, useEffect, useCallback, useContext } from 'react';
+import { createContext, useState, useEffect, useCallback, useContext } from 'react';
 import axios from 'axios';
 
 const WatchlistContext = createContext();
@@ -22,7 +22,7 @@ export const WatchlistProvider = ({ children }) => {
       // Fetch live data for each symbol
       const fetchPromises = symbols.map(async (symbol) => {
         try {
-          const response = await axios.get(`http://127.0.0.1:8000/api/share/${symbol}/`);
+          const response = await axios.get(`http://127.0.0.1:8000/api/share/${encodeURIComponent(symbol)}/`);
           const data = response.data;
           return {
             symbol: data.symbol,
@@ -31,7 +31,7 @@ export const WatchlistProvider = ({ children }) => {
             change: `${data.today_change_percent > 0 ? '+' : ''}${data.today_change_percent}%`,
             trend: data.today_change_percent >= 0 ? "up" : "down"
           };
-        } catch (e) {
+        } catch (_e) {
           return {
             symbol,
             name: "Data Unavailable",
@@ -71,7 +71,7 @@ export const WatchlistProvider = ({ children }) => {
 
     try {
       if (isWatchlisted) {
-        await axios.delete(`http://127.0.0.1:8000/api/watchlist/${symbol}/`, {
+        await axios.delete(`http://127.0.0.1:8000/api/watchlist/${encodeURIComponent(symbol)}/`, {
           headers: { Authorization: `Bearer ${token}` }
         });
       } else {
@@ -84,13 +84,15 @@ export const WatchlistProvider = ({ children }) => {
       setWatchlist(prev => 
         isWatchlisted ? [...prev, symbol] : prev.filter(s => s !== symbol)
       );
-      // We could add a toast here in the future
       console.error("Failed to update watchlist", err);
     }
+    
+    // Always re-fetch to ensure watchlistData has the latest live data for newly added stocks
+    fetchWatchlist();
   };
 
   return (
-    <WatchlistContext.Provider value={{ watchlist, watchlistData, toggleWatchlist }}>
+    <WatchlistContext.Provider value={{ watchlist, watchlistData, toggleWatchlist, fetchWatchlist }}>
       {children}
     </WatchlistContext.Provider>
   );

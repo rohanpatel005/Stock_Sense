@@ -1,9 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import axios from 'axios';
-import { X, AlertCircle, CheckCircle, Minus, Plus, TrendingUp, TrendingDown, RefreshCw } from 'lucide-react';
+import { X, AlertCircle, CheckCircle, Minus, Plus, TrendingUp, TrendingDown } from 'lucide-react';
 
 const TradeModal = ({ isOpen, onClose, action, symbol, companyName, userWallet, livePrice, onTradeSuccess }) => {
-  const [productType, setProductType] = useState('DELIVERY');
+  const [_productType, setProductType] = useState('DELIVERY');
   const [orderType, setOrderType] = useState('MARKET');
   const [quantity, setQuantity] = useState(1);
   const [limitPrice, setLimitPrice] = useState('');
@@ -13,7 +13,7 @@ const TradeModal = ({ isOpen, onClose, action, symbol, companyName, userWallet, 
   const [showConfirm, setShowConfirm] = useState(false);
 
   const isBuy = action === 'BUY';
-  const themeColor = isBuy ? 'emerald' : 'red';
+  const _themeColor = isBuy ? 'emerald' : 'red';
   const themeHex = isBuy ? '#059669' : '#dc2626';
 
   useEffect(() => {

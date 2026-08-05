@@ -3,13 +3,13 @@ import { useNavigate, useParams } from 'react-router-dom';
 import axios from 'axios';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
-  TrendingUp, TrendingDown, Search, X, ChevronUp, ChevronDown,
+  TrendingUp, TrendingDown, Search, X,
   ArrowUpRight, ArrowDownRight, RefreshCw, BarChart2, Activity,
-  Layers, Clock, HelpCircle, Star, Eye, Zap, Flame, Award, ShieldAlert
+  Layers, Clock, Zap, Flame, Award, ShieldAlert
 } from 'lucide-react';
 
 const API_BASE = 'http://127.0.0.1:8000/api/market';
-const REFRESH_INTERVAL_MS = 15000; // 15s refresh for live market data
+const _REFRESH_INTERVAL_MS = 15000; // 15s refresh for live market data
 
 // ─── SVG Sparkline Chart ──────────────────────────────────────────────────────
 const SparkLine = ({ data = [], color = '#00E0A4', height = 36 }) => {
@@ -31,6 +31,7 @@ const SparkLine = ({ data = [], color = '#00E0A4', height = 36 }) => {
 // ─── SVG Detailed Drawer Chart ────────────────────────────────────────────────
 const PriceChart = ({ closes = [], timestamps = [], isUp = true }) => {
   const [tooltip, setTooltip] = useState(null);
+  const reactId = React.useId();
   if (!closes || !closes.length) return (
     <div className="h-48 flex items-center justify-center text-slate-400 text-sm font-semibold">
       No chart data available
@@ -50,7 +51,7 @@ const PriceChart = ({ closes = [], timestamps = [], isUp = true }) => {
   const pts = closes.map((v, i) => `${toX(i)},${toY(v)}`).join(' ');
   const fillPts = `${PAD.l},${PAD.t + innerH} ${pts} ${toX(closes.length - 1)},${PAD.t + innerH}`;
   const strokeColor = isUp ? '#00E0A4' : '#EF4444';
-  const fillId = `drawerChartFill_${Math.random().toString(36).slice(2, 7)}`;
+  const fillId = `drawerChartFill_${reactId.replace(/:/g, '')}`;
 
   return (
     <div className="relative w-full bg-[#0B1118]/60 border border-white/10 rounded-2xl p-4">
@@ -156,11 +157,11 @@ const Markets = () => {
   const [drawerLoading, setDrawerLoading] = useState(false);
 
   // User details
-  const [user, setUser] = useState(() => {
+  const [_user, _setUser] = useState(() => {
     try {
       const storedUser = localStorage.getItem('user');
       return storedUser ? JSON.parse(storedUser) : { full_name: 'StockSense User' };
-    } catch (e) {
+    } catch (_e) {
       return { full_name: 'StockSense User' };
     }
   });
@@ -181,7 +182,7 @@ const Markets = () => {
       const data = await fetchAPI('overview');
       setOverview(data);
       cachedMarketData.overview = data;
-    } catch (err) {
+    } catch (_err) {
       setErrors(prev => ({ ...prev, overview: 'Failed to load indexes' }));
     } finally {
       setLoading(prev => ({ ...prev, overview: false }));
@@ -202,7 +203,7 @@ const Markets = () => {
       cachedMarketData.gainers = g;
       cachedMarketData.losers = l;
       cachedMarketData.mostActive = ma;
-    } catch (err) {
+    } catch (_err) {
       setErrors(prev => ({ ...prev, movers: 'Failed to load market movers' }));
     } finally {
       setLoading(prev => ({ ...prev, movers: false }));
@@ -215,7 +216,7 @@ const Markets = () => {
       const data = await fetchAPI('sectors');
       setSectors(data);
       cachedMarketData.sectors = data;
-    } catch (err) {
+    } catch (_err) {
       setErrors(prev => ({ ...prev, sectors: 'Failed to load sector metrics' }));
     } finally {
       setLoading(prev => ({ ...prev, sectors: false }));
@@ -228,7 +229,7 @@ const Markets = () => {
       const data = await fetchAPI('breadth');
       setBreadth(data);
       cachedMarketData.breadth = data;
-    } catch (err) {
+    } catch (_err) {
       setErrors(prev => ({ ...prev, breadth: 'Failed to load breadth' }));
     } finally {
       setLoading(prev => ({ ...prev, breadth: false }));
@@ -291,13 +292,14 @@ const Markets = () => {
   }, [searchQ, fetchAPI]);
 
   const selectStock = useCallback((sym) => {
+    console.log(`Selected suggestion: ${sym}`);
     // Add to recent searches
     const updated = [sym, ...recentSearches.filter(s => s !== sym)].slice(0, 5);
     setRecentSearches(updated);
     localStorage.setItem('recent_searches', JSON.stringify(updated));
     setSearchQ('');
     setSearchFocused(false);
-    navigate(`/share/${sym}`);
+    navigate(`/share/${encodeURIComponent(sym)}`);
   }, [recentSearches, navigate]);
 
   const handleKeyDown = (e) => {
@@ -319,12 +321,12 @@ const Markets = () => {
   };
 
   // ─── Detail Drawer Fetcher ──────────────────────────────────────────────────
-  const loadDrawerData = useCallback(async (sym) => {
+  const _loadDrawerData = useCallback(async (sym) => {
     setDrawerLoading(true);
     try {
       const [detail, history] = await Promise.all([
-        fetchAPI(`stock/${sym}`),
-        fetchAPI(`stock/${sym}/history?period=${drawerPeriod}`)
+        fetchAPI(`stock/${encodeURIComponent(sym)}`),
+        fetchAPI(`stock/${encodeURIComponent(sym)}/history?period=${drawerPeriod}`)
       ]);
       setDrawerDetail(detail);
       setDrawerHistory(history);
@@ -848,7 +850,7 @@ const Markets = () => {
                             onClick={() => {
                               setDrawerPeriod(p);
                               // Refresh history for this period
-                              fetchAPI(`stock/${symbol}/history?period=${p}`).then(setDrawerHistory);
+                              fetchAPI(`stock/${encodeURIComponent(symbol)}/history?period=${p}`).then(setDrawerHistory);
                             }}
                             className={`px-3 py-1 rounded-lg text-xs font-bold uppercase transition-all ${
                               drawerPeriod === p ? 'bg-[#00E0A4] text-[#05070D]' : 'text-slate-400 hover:text-white'

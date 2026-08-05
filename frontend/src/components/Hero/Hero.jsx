@@ -1,4 +1,3 @@
-import React from 'react';
 import HeroDashboard from './HeroDashboard';
 import { Sparkles, ArrowRight, ShieldCheck, Zap, BarChart3 } from 'lucide-react';
 import { Link } from 'react-router-dom';

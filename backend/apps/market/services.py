@@ -69,7 +69,9 @@ class TradeService:
     def get_live_price(symbol: str) -> Decimal:
         """Fetch real-time stock price from yfinance."""
         try:
-            ticker = yf.Ticker(f"{symbol}.NS")
+            symbol_upper = symbol.strip().upper()
+            yf_symbol = symbol_upper if "." in symbol_upper else f"{symbol_upper}.NS"
+            ticker = yf.Ticker(yf_symbol)
             # fast_info is typically faster and gets the last available price
             last_price = ticker.fast_info.get("lastPrice")
             if last_price is None or math.isnan(last_price):

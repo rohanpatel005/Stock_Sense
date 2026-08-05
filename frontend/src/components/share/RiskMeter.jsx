@@ -1,4 +1,3 @@
-import React from 'react';
 
 const RiskMeter = ({ data }) => {
   if (!data) return null;

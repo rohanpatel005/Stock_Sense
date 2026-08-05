@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import ProfileCard from '../components/settings/ProfileCard';
 import PaperTradingCard from '../components/settings/PaperTradingCard';
 import WarningModal from '../components/settings/WarningModal';
@@ -7,7 +7,7 @@ import SuccessModal from '../components/settings/SuccessModal';
 import { useSettings } from '../hooks/useSettings';
 import { Settings as SettingsIcon } from 'lucide-react';
 
-const Settings = ({ user, handleLogout }) => {
+const Settings = ({ _user, _handleLogout }) => {
     const { profile, loading, error, fetchProfile, resetAccount } = useSettings();
     
     const [isWarningOpen, setWarningOpen] = useState(false);

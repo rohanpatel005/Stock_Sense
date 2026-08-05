@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import { useEffect, useRef } from 'react';
 import { AlertTriangle, X, CheckCircle2, Info, AlertCircle } from 'lucide-react';
 
 const WarningModal = ({ onCancel, onUnderstand }) => {

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Sparkles, CheckCircle2, Send, ArrowRight, Bot, Cpu } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import axios from 'axios';
@@ -13,7 +13,7 @@ const AIInsights = () => {
     if (isTyping) return;
     
     // Add User Message
-    const userMsg = { id: Date.now(), sender: 'user', text: prompt };
+    const userMsg = { id: crypto.randomUUID(), sender: 'user', text: prompt };
     setMessages((prev) => [...prev, userMsg]);
     setIsTyping(true);
 
@@ -26,18 +26,18 @@ const AIInsights = () => {
       );
       
       const aiMsg = {
-        id: Date.now() + 1,
+        id: crypto.randomUUID(),
         sender: 'ai',
         text: response.data.reply || "I'm sorry, I couldn't process that request.",
         confidence: 'High',
       };
       
       setMessages((prev) => [...prev, aiMsg]);
-    } catch (err) {
+    } catch (_err) {
       setMessages((prev) => [
         ...prev,
         {
-          id: Date.now() + 1,
+          id: crypto.randomUUID(),
           sender: 'ai',
           text: "I'm having trouble connecting right now. Please try again later.",
           confidence: 'Low'

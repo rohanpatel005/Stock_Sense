@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import axios from 'axios';
 import { motion } from 'framer-motion';
@@ -177,7 +177,7 @@ const Register = () => {
     }
   };
 
-  const handleOtpKeyDown = (e, index) => {
+  const handleOtpKeyDown = (e, _index) => {
     if (e.key === 'Backspace' && !e.target.value && e.target.previousSibling) {
       e.target.previousSibling.focus();
     }

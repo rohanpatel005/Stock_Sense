@@ -1,5 +1,4 @@
-import React from 'react';
-import { ArrowUpRight, ArrowDownRight, Activity, Star } from 'lucide-react';
+import { ArrowUpRight, ArrowDownRight, Star } from 'lucide-react';
 import { useWatchlist } from '../../context/WatchlistContext';
 
 const Header = ({ data, onBuyClick, onSellClick }) => {

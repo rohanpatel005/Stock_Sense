@@ -1,4 +1,3 @@
-import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowUpRight } from 'lucide-react';
 
@@ -24,7 +23,7 @@ export const PeerComparison = ({ data }) => {
             {data.map((peer, idx) => (
               <tr 
                 key={idx} 
-                onClick={() => navigate(`/share/${peer.symbol}`)}
+                onClick={() => navigate(`/share/${encodeURIComponent(peer.symbol)}`)}
                 className="hover:bg-white/5 cursor-pointer transition-colors group/row"
               >
                 <td className="px-6 py-4">
@@ -55,7 +54,7 @@ export const RelatedStocks = ({ data }) => {
         {data.map((sym) => (
           <div
             key={sym}
-            onClick={() => navigate(`/share/${sym}`)}
+            onClick={() => navigate(`/share/${encodeURIComponent(sym)}`)}
             className="p-4 border border-white/10 rounded-[16px] bg-white/5 hover:border-[#00E0A4]/30 hover:bg-white/10 transition-all cursor-pointer flex justify-between items-center group/item hover-lift-card"
           >
             <div>

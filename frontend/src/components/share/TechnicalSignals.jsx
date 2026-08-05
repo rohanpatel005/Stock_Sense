@@ -1,4 +1,3 @@
-import React from 'react';
 
 const TechnicalSignals = ({ data }) => {
   if (!data) return null;

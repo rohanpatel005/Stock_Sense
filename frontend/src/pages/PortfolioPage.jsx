@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import axios from 'axios';
 import { RefreshCw } from 'lucide-react';
 import PortfolioSummaryCards from '../components/portfolio/PortfolioSummaryCards';
@@ -7,7 +7,7 @@ import PortfolioTable from '../components/portfolio/PortfolioTable';
 import PortfolioEmptyState from '../components/portfolio/PortfolioEmptyState';
 
 const PortfolioPage = () => {
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [_mobileMenuOpen, _setMobileMenuOpen] = useState(false);
   const [holdings, setHoldings] = useState([]);
   const [summary, setSummary] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -20,11 +20,11 @@ const PortfolioPage = () => {
     sort: 'value_desc',
   });
 
-  const [user, setUser] = useState(() => {
+  const [_user, _setUser] = useState(() => {
     try {
       const storedUser = localStorage.getItem('user');
       return storedUser ? JSON.parse(storedUser) : { full_name: 'StockSense User', email: '' };
-    } catch (e) {
+    } catch (_e) {
       return { full_name: 'StockSense User', email: '' };
     }
   });
@@ -46,7 +46,7 @@ const PortfolioPage = () => {
 
       setHoldings(holdingsRes.data);
       setSummary(summaryRes.data);
-    } catch (err) {
+    } catch (_err) {
       setError('Failed to fetch portfolio data. Please try again.');
     } finally {
       setLoading(false);

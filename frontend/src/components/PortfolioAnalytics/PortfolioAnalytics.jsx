@@ -1,4 +1,3 @@
-import React from 'react';
 import { PieChart, Gauge, Activity, BarChart3 } from 'lucide-react';
 import { motion } from 'framer-motion';
 
