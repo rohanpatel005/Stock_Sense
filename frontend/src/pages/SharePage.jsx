@@ -60,19 +60,37 @@ const SharePage = () => {
     }
   }, [symbol]);
 
-  const handleAskAI = (e) => {
+  const handleAskAI = async (e) => {
     e.preventDefault();
     if (!askAiText.trim()) return;
-    const newChat = [...aiChat, { sender: 'user', text: askAiText }];
+    const currentQuery = askAiText;
+    const newChat = [...aiChat, { sender: 'user', text: currentQuery }];
     setAiChat(newChat);
     setAskAiText('');
     
-    setTimeout(() => {
+    try {
+      const token = localStorage.getItem("access_token");
+      const response = await axios.post(
+        "http://127.0.0.1:8000/api/ai/chat/",
+        { message: currentQuery },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
       setAiChat([
         ...newChat,
-        { sender: 'ai', text: `Analyzing your query regarding ${symbol}: Support is at ₹${data?.support_resistance?.s1.toFixed(2)}, and overall recommendation is ${data?.technical_signals?.recommendation}.` }
+        {
+          sender: "ai",
+          text: response.data.reply || "I'm sorry, I couldn't process that request.",
+        },
       ]);
-    }, 1000);
+    } catch (err) {
+      setAiChat([
+        ...newChat,
+        {
+          sender: "ai",
+          text: "I'm having trouble connecting right now. Please try again later.",
+        },
+      ]);
+    }
   };
 
   if (loading) {

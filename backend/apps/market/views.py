@@ -103,64 +103,41 @@ def fetch_nse_variations(index_type: str) -> list:
     elif index_type == "volume":
         api_endpoint = "live-analysis-most-active-securities"
 
-    res_json = fetch_nse_api(f"{api_endpoint}?index={api_index}")
-    
-    if index_type == "volume":
-        records = res_json.get("data", [])
-    else:
-        records = res_json.get("NIFTY", {}).get("data", [])
-        if not records:
-            records = res_json.get("FOSec", {}).get("data", []) or res_json.get("allSec", {}).get("data", [])
+    try:
+        res_json = fetch_nse_api(f"{api_endpoint}?index={api_index}")
+        
+        if index_type == "volume":
+            records = res_json.get("data", [])
+        else:
+            records = res_json.get("NIFTY", {}).get("data", [])
+            if not records:
+                records = res_json.get("FOSec", {}).get("data", []) or res_json.get("allSec", {}).get("data", [])
 
-    results = []
-    for item in records[:10]:
-        sym = item.get("symbol", "")
-        if not sym:
-            continue
-        p = sf(item.get("ltp", item.get("lastPrice", 0)))
-        chg = sf(item.get("net_price", item.get("netChange", item.get("change", 0))))
-        pct = sf(item.get("perChange", item.get("pChange", 0)))
-        vol = sf(item.get("trade_quantity", item.get("totalTradedVolume", item.get("volume", 0))))
+        results = []
+        for item in records[:10]:
+            sym = item.get("symbol", "")
+            if not sym:
+                continue
+            p = sf(item.get("ltp", item.get("lastPrice", 0)))
+            chg = sf(item.get("net_price", item.get("netChange", item.get("change", 0))))
+            pct = sf(item.get("perChange", item.get("pChange", 0)))
+            vol = sf(item.get("trade_quantity", item.get("totalTradedVolume", item.get("volume", 0))))
 
-        results.append({
-            "symbol": sym,
-            "name": sym.replace("&", " and ") + " Ltd",
-            "sector": "NSE Stock",
-            "price": p,
-            "change": chg,
-            "change_percent": pct,
-            "volume": vol,
-            "sparkline": [p * 0.98, p * 0.99, p * 0.97, p * 1.01, p],
-            "trend": "Bullish" if chg >= 0 else "Bearish"
-        })
-
-    # Fallback to realistic mock if API fails
-    if not results:
-        mocks = {
-            "gainers": [
-                {"symbol": "RELIANCE", "name": "Reliance Industries Ltd", "price": 2984.50, "change": 42.70, "change_percent": 1.45, "volume": 2400000},
-                {"symbol": "TCS", "name": "Tata Consultancy Services Ltd", "price": 4125.20, "change": 45.60, "change_percent": 1.12, "volume": 1100000},
-                {"symbol": "INFY", "name": "Infosys Ltd", "price": 1568.90, "change": 13.20, "change_percent": 0.85, "volume": 3800000},
-            ],
-            "losers": [
-                {"symbol": "SBIN", "name": "State Bank of India Ltd", "price": 834.50, "change": -10.55, "change_percent": -1.25, "volume": 8900000},
-                {"symbol": "BHARTIARTL", "name": "Bharti Airtel Ltd", "price": 1420.10, "change": -13.60, "change_percent": -0.95, "volume": 1500000},
-            ],
-            "volume": [
-                {"symbol": "HDFCBANK", "name": "HDFC Bank Ltd", "price": 1610.45, "change": 10.40, "change_percent": 0.65, "volume": 5200000},
-            ]
-        }
-        fallback_list = mocks.get(index_type, mocks["gainers"])
-        results = [
-            {
-                **item, "sector": "NSE Stock",
-                "sparkline": [item["price"] * 0.98, item["price"] * 1.01, item["price"]],
-                "trend": "Bullish" if item["change"] >= 0 else "Bearish"
-            }
-            for item in fallback_list
-        ]
-
-    return set_cached_data(cache_key, results)
+            results.append({
+                "symbol": sym,
+                "name": sym.replace("&", " and ") + " Ltd",
+                "sector": "NSE Stock",
+                "price": p,
+                "change": chg,
+                "change_percent": pct,
+                "volume": vol,
+                "sparkline": [p * 0.98, p * 0.99, p * 0.97, p * 1.01, p],
+                "trend": "Bullish" if chg >= 0 else "Bearish"
+            })
+        return set_cached_data(cache_key, results)
+    except Exception as e:
+        logger.error(f"Error fetching {index_type}: {e}")
+        return []
 
 # ═════════════════════════════════════════════════════════════════════════════
 # ENDPOINTS
@@ -225,16 +202,6 @@ def market_overview(request):
                 })
         except Exception as e:
             logger.error("Error fetching Sensex: %s", e)
-
-    # Fallback default values
-    if not data:
-        data = [
-            {"name": "Nifty 50", "value": 24834.85, "change": 125.40, "change_percent": 0.51, "sparkline": [24600, 24650, 24700, 24800, 24834], "trend": "up"},
-            {"name": "Sensex", "value": 81332.72, "change": 412.10, "change_percent": 0.51, "sparkline": [80500, 80700, 81000, 81100, 81332], "trend": "up"},
-            {"name": "Bank Nifty", "value": 51295.40, "change": -220.15, "change_percent": -0.43, "sparkline": [51500, 51600, 51400, 51350, 51295], "trend": "down"},
-            {"name": "Nifty Midcap", "value": 16120.30, "change": 85.50, "change_percent": 0.53, "sparkline": [15900, 16000, 16050, 16080, 16120], "trend": "up"},
-            {"name": "Nifty Smallcap", "value": 18240.10, "change": 140.20, "change_percent": 0.78, "sparkline": [18000, 18050, 18120, 18180, 18240], "trend": "up"},
-        ]
 
     return Response(set_cached_data("market_overview", data))
 
@@ -380,25 +347,6 @@ def market_sectors(request):
                     ]
                 })
 
-    if not data:
-        data = [
-            {"name": "IT", "change_percent": 1.45, "trend": "Bullish", "sparkline": [100, 101, 100.5, 101.45], "stocks": []},
-            {"name": "Banking", "change_percent": -0.65, "trend": "Bearish", "sparkline": [100, 99.5, 99.1, 99.35], "stocks": []},
-            {"name": "Auto", "change_percent": 0.85, "trend": "Bullish", "sparkline": [100, 100.2, 100.5, 100.85], "stocks": []},
-            {"name": "Pharma", "change_percent": 0.32, "trend": "Bullish", "sparkline": [100, 99.8, 100.1, 100.32], "stocks": []},
-            {"name": "FMCG", "change_percent": 0.25, "trend": "Bullish", "sparkline": [100, 100.1, 100.3, 100.25], "stocks": []},
-            {"name": "Realty", "change_percent": 1.78, "trend": "Bullish", "sparkline": [100, 101.2, 101.5, 101.78], "stocks": []},
-            {"name": "Metal", "change_percent": -1.10, "trend": "Bearish", "sparkline": [100, 99.2, 98.8, 98.90], "stocks": []},
-            {"name": "Infrastructure", "change_percent": 0.45, "trend": "Bullish", "sparkline": [100, 99.9, 100.2, 100.45], "stocks": []},
-            {"name": "Financial Services", "change_percent": -0.22, "trend": "Bearish", "sparkline": [100, 99.7, 99.8, 99.78], "stocks": []},
-            {"name": "Media", "change_percent": 0.60, "trend": "Bullish", "sparkline": [100, 100.3, 100.2, 100.60], "stocks": []},
-            {"name": "PSU Banking", "change_percent": -0.80, "trend": "Bearish", "sparkline": [100, 99.4, 99.0, 99.20], "stocks": []},
-            {"name": "Private Banking", "change_percent": -0.45, "trend": "Bearish", "sparkline": [100, 99.6, 99.3, 99.55], "stocks": []},
-            {"name": "Consumer Durables", "change_percent": 1.15, "trend": "Bullish", "sparkline": [100, 100.8, 101.2, 101.15], "stocks": []},
-            {"name": "Oil & Gas", "change_percent": 0.95, "trend": "Bullish", "sparkline": [100, 100.3, 100.6, 100.95], "stocks": []},
-            {"name": "Healthcare", "change_percent": 0.55, "trend": "Bullish", "sparkline": [100, 100.1, 100.4, 100.55], "stocks": []},
-        ]
-
     return Response(set_cached_data("market_sectors", data))
 
 @api_view(["GET"])
@@ -486,13 +434,8 @@ def market_stock_detail(request, symbol: str):
             "dividend_yield": f"{sf(info.get('dividendYield', 0.0)) * 100:.2f}%" if info.get("dividendYield") else "—",
         }
     except Exception as e:
-        logger.error("Error fetching detail for %s: %s", sym, e)
-        # Fallback
-        data = {
-            "symbol": sym, "name": sym + " Ltd", "sector": "Other", "price": 1000.0, "change": 10.0, "change_percent": 1.0,
-            "open": 990.0, "high": 1015.0, "low": 985.0, "prev_close": 990.0, "high_52w": 1200.0, "low_52w": 800.0,
-            "volume": "1.2M", "market_cap": "50,000 Cr", "pe_ratio": "24.5", "dividend_yield": "1.2%"
-        }
+        logger.error("Stock detail fetch error for %s: %s", sym, e)
+        return Response({"error": "Failed to fetch stock detail"}, status=500)
     return Response(data)
 
 @api_view(["GET"])
@@ -522,97 +465,58 @@ def market_stock_history(request, symbol: str):
             "closes": closes,
             "timestamps": timestamps
         }
+        return Response(data)
     except Exception as e:
         logger.error("History fetch error for %s: %s", sym, e)
-        # fallback
-        data = {
-            "symbol": sym,
-            "period": period,
-            "closes": [950.0, 960.0, 975.0, 970.0, 990.0, 1000.0],
-            "timestamps": ["2026-07-25", "2026-07-26", "2026-07-27", "2026-07-28", "2026-07-29", "2026-07-30"]
-        }
-    return Response(data)
+        return Response({"error": "Failed to fetch stock history"}, status=500)
 
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])
 def market_news_latest(request):
-    """GET /api/market/news/latest/"""
-    # Realistic mock news data for StockSense
-    news_data = [
-        {
-            "title": "Reliance Industries Q3 Results: Profit beats estimates, Jio subscriber growth robust",
-            "summary": "Reliance Industries reported a strong Q3 performance, driven by retail and telecom segments, beating street expectations.",
-            "source": "Moneycontrol",
-            "published": "10 min ago",
-            "link": "https://www.moneycontrol.com/",
-            "image": "https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?auto=format&fit=crop&q=80&w=800",
-            "category": "Stocks"
-        },
-        {
-            "title": "Nifty hits new all-time high as IT and Banking stocks rally",
-            "summary": "The Nifty 50 index touched a fresh record high today amid positive global cues and strong domestic inflows.",
-            "source": "Economic Times",
-            "published": "2 hours ago",
-            "link": "https://economictimes.indiatimes.com/",
-            "image": "https://images.unsplash.com/photo-1590283603385-17ffb3a7f29f?auto=format&fit=crop&q=80&w=800",
-            "category": "Nifty"
-        },
-        {
-            "title": "Upcoming IPOs next week: OLA Electric and Swiggy to hit the market",
-            "summary": "Investors are gearing up for two major IPOs next week with OLA Electric and Swiggy expected to raise over ₹10,000 crore combined.",
-            "source": "CNBC TV18",
-            "published": "3 hours ago",
-            "link": "https://www.cnbctv18.com/",
-            "image": "https://images.unsplash.com/photo-1661956602116-aa6865609028?auto=format&fit=crop&q=80&w=800",
-            "category": "IPO"
-        },
-        {
-            "title": "US Federal Reserve signals potential rate cuts by year-end",
-            "summary": "Fed Chair Powell indicated that if inflation data continues to soften, the central bank might consider cutting rates later this year.",
-            "source": "Reuters",
-            "published": "5 hours ago",
-            "link": "https://www.reuters.com/",
-            "image": "https://images.unsplash.com/photo-1612178991541-b48cc8e92a4d?auto=format&fit=crop&q=80&w=800",
-            "category": "Global"
-        },
-        {
-            "title": "Indian Economy projected to grow at 7.2% in FY26: World Bank",
-            "summary": "The World Bank upgraded India's GDP growth forecast for the upcoming fiscal year, citing strong domestic demand and infrastructure spending.",
-            "source": "Business Standard",
-            "published": "Yesterday",
-            "link": "https://www.business-standard.com/",
-            "image": "https://images.unsplash.com/photo-1526304640581-d334cdbbf45e?auto=format&fit=crop&q=80&w=800",
-            "category": "Economy"
-        },
-        {
-            "title": "Sensex plunges 500 points in early trade on profit-booking",
-            "summary": "The BSE Sensex opened significantly lower today as investors booked profits following a sustained rally over the past week.",
-            "source": "Economic Times",
-            "published": "Yesterday",
-            "link": "https://economictimes.indiatimes.com/",
-            "image": "https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?auto=format&fit=crop&q=80&w=800",
-            "category": "Sensex"
-        },
-        {
-            "title": "TCS announces ₹15,000 crore share buyback program",
-            "summary": "IT major Tata Consultancy Services has approved a share buyback program at ₹4,150 per share to reward its shareholders.",
-            "source": "Moneycontrol",
-            "published": "Yesterday",
-            "link": "https://www.moneycontrol.com/",
-            "image": "https://images.unsplash.com/photo-1518186285589-2f7649de83e0?auto=format&fit=crop&q=80&w=800",
-            "category": "Stocks"
-        },
-        {
-            "title": "SEBI proposes new regulations for algorithmic trading by retail investors",
-            "summary": "The market regulator has issued a consultation paper aiming to regulate the use of APIs and algos by retail traders to prevent systemic risks.",
-            "source": "CNBC TV18",
-            "published": "2 days ago",
-            "link": "https://www.cnbctv18.com/",
-            "image": "https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&q=80&w=800",
-            "category": "Market"
-        }
-    ]
-    return Response(news_data)
+    """Fetch latest real news for Nifty 50 from Yahoo Finance."""
+    try:
+        nifty = yf.Ticker('^NSEI')
+        news_items = nifty.news
+        if not news_items:
+            return Response([])
+
+        formatted_news = []
+        for item in news_items[:10]:
+            title = item.get('title', '')
+            if not title: continue
+            
+            published_ts = item.get('providerPublishTime', 0)
+            if published_ts:
+                dt = datetime.fromtimestamp(published_ts)
+                now = datetime.now()
+                diff = now - dt
+                if diff.days > 0:
+                    published = f"{diff.days} days ago" if diff.days > 1 else "Yesterday"
+                elif diff.seconds // 3600 > 0:
+                    published = f"{diff.seconds // 3600} hours ago"
+                else:
+                    published = f"{diff.seconds // 60} minutes ago"
+            else:
+                published = "Recently"
+                
+            thumbnail = item.get('thumbnail', {})
+            resolutions = thumbnail.get('resolutions', [])
+            image_url = resolutions[0].get('url') if resolutions else ''
+
+            formatted_news.append({
+                "title": title,
+                "summary": item.get('summary', '') or "Latest market update from Yahoo Finance.",
+                "source": item.get('publisher', 'Yahoo Finance'),
+                "published": published,
+                "link": item.get('link', '#'),
+                "image": image_url,
+                "category": "Market"
+            })
+            
+        return Response(formatted_news)
+    except Exception as e:
+        logger.error(f"Error fetching real news: {e}")
+        return Response([])
 
 # ═════════════════════════════════════════════════════════════════════════════
 # LEGACY ENDPOINTS (FOR DASHBOARD SIDEBAR/LIVE REFRESH COMPATIBILITY)

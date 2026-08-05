@@ -121,19 +121,7 @@ const Dashboard = () => {
   const [askAiText, setAskAiText] = useState("");
   const [aiChat, setAiChat] = useState([]);
 
-  // Stocks database for search autocomplete
-  const INDIAN_STOCKS = [
-    { symbol: "RELIANCE", name: "Reliance Industries Ltd" },
-    { symbol: "TCS", name: "Tata Consultancy Services" },
-    { symbol: "INFY", name: "Infosys Limited" },
-    { symbol: "SBIN", name: "State Bank of India" },
-    { symbol: "HDFCBANK", name: "HDFC Bank Limited" },
-    { symbol: "TATAMOTORS", name: "Tata Motors Limited" },
-    { symbol: "ADANIENT", name: "Adani Enterprises" },
-    { symbol: "ICICIBANK", name: "ICICI Bank Limited" },
-    { symbol: "BHARTIARTL", name: "Bharti Airtel Limited" },
-    { symbol: "LT", name: "Larsen & Toubro Limited" },
-  ];
+  const searchTimeoutRef = useRef(null);
 
   // ── Inject flash-animation CSS once ─────────────────────────────────────
   useEffect(() => {
@@ -453,33 +441,56 @@ const Dashboard = () => {
     setSearchQuery(query);
     if (query.trim() === "") {
       setSearchResults([]);
-    } else {
-      const filtered = INDIAN_STOCKS.filter(
-        (stock) =>
-          stock.symbol.toLowerCase().includes(query.toLowerCase()) ||
-          stock.name.toLowerCase().includes(query.toLowerCase()),
-      );
-      setSearchResults(filtered);
+      return;
     }
+    
+    if (searchTimeoutRef.current) clearTimeout(searchTimeoutRef.current);
+    
+    searchTimeoutRef.current = setTimeout(async () => {
+      try {
+        const token = localStorage.getItem("access_token");
+        const response = await axios.get(
+          `http://127.0.0.1:8000/api/market/search?q=${query}`,
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+        setSearchResults(response.data.results || []);
+      } catch (err) {
+        setSearchResults([]);
+      }
+    }, 300);
   };
 
-  const handleAskAI = (e) => {
+  const handleAskAI = async (e) => {
     e.preventDefault();
     if (!askAiText.trim()) return;
-    const newChat = [...aiChat, { sender: "user", text: askAiText }];
+    const currentQuery = askAiText;
+    const newChat = [...aiChat, { sender: "user", text: currentQuery }];
     setAiChat(newChat);
     setAskAiText("");
 
-    // Simulate AI response
-    setTimeout(() => {
+    try {
+      const token = localStorage.getItem("access_token");
+      const response = await axios.post(
+        "http://127.0.0.1:8000/api/ai/chat/",
+        { message: currentQuery },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
       setAiChat([
         ...newChat,
         {
           sender: "ai",
-          text: `Analyzing ${askAiText}... RELIANCE, TCS and NIFTY 50 show bullish sentiment. Indicators suggest holding positions.`,
+          text: response.data.reply || "I'm sorry, I couldn't process that request.",
         },
       ]);
-    }, 1000);
+    } catch (err) {
+      setAiChat([
+        ...newChat,
+        {
+          sender: "ai",
+          text: "I'm having trouble connecting right now. Please try again later.",
+        },
+      ]);
+    }
   };
 
   if (loading) {

@@ -1,41 +1,15 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Sparkles, CheckCircle2, Send, ArrowRight, Bot, Cpu } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import axios from 'axios';
 
 const AIInsights = () => {
-  const [messages, setMessages] = useState([
-    {
-      id: 1,
-      sender: 'user',
-      text: 'Is HDFC Bank a good long-term hold?',
-    },
-    {
-      id: 2,
-      sender: 'ai',
-      text: 'HDFC Bank is showing strong fundamentals with a 24% credit growth YoY. Our AI Research Score for it is 88/100. Current P/E is 18.5, which is slightly below its 5-year average of 22.1. This suggests a potential undervaluation.',
-      confidence: '92%',
-    },
-  ]);
+  const [messages, setMessages] = useState([]);
 
   const [isTyping, setIsTyping] = useState(false);
   const chatEndRef = useRef(null);
 
-  const predefinedReplies = {
-    'Should I buy TCS at current levels?': {
-      text: 'TCS is currently trading at a key support level of ₹3,850. Technical indicators show a bullish divergence on the daily RSI. Support stands firm at ₹3,800, with a near-term target of ₹4,150. Dividend yield remains attractive at 2.1%.',
-      confidence: '89%',
-    },
-    'How does the budget affect infra stocks?': {
-      text: 'The Union Budget has increased capital expenditure by 11.1% to ₹11.11 Lakh Crore. This is highly bullish for infrastructure heavyweights like L&T, IRB Infra, and cement companies. Risk factors include raw material inflation.',
-      confidence: '95%',
-    },
-    'Analyze Reliance Q3 results.': {
-      text: 'Reliance Q3 revenue grew 3.2% YoY, led by strong performance in Jio (ARPU up to ₹181.7) and Retail. Ebitda margins expanded by 40 bps. O2C segment remains stable but cyclical pressure persists.',
-      confidence: '91%',
-    },
-  };
-
-  const handlePromptClick = (prompt) => {
+  const handlePromptClick = async (prompt) => {
     if (isTyping) return;
     
     // Add User Message
@@ -43,23 +17,35 @@ const AIInsights = () => {
     setMessages((prev) => [...prev, userMsg]);
     setIsTyping(true);
 
-    // Simulate AI Reply
-    setTimeout(() => {
-      const replyData = predefinedReplies[prompt] || {
-        text: "I'm analyzing the latest market data for this query. Our systems indicate high interest in this segment.",
-        confidence: '85%',
-      };
+    try {
+      const token = localStorage.getItem("access_token");
+      const response = await axios.post(
+        "http://127.0.0.1:8000/api/ai/chat/",
+        { message: prompt },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
       
       const aiMsg = {
         id: Date.now() + 1,
         sender: 'ai',
-        text: replyData.text,
-        confidence: replyData.confidence,
+        text: response.data.reply || "I'm sorry, I couldn't process that request.",
+        confidence: 'High',
       };
       
       setMessages((prev) => [...prev, aiMsg]);
+    } catch (err) {
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: Date.now() + 1,
+          sender: 'ai',
+          text: "I'm having trouble connecting right now. Please try again later.",
+          confidence: 'Low'
+        }
+      ]);
+    } finally {
       setIsTyping(false);
-    }, 1200);
+    }
   };
 
   useEffect(() => {
@@ -101,7 +87,11 @@ const AIInsights = () => {
               <div className="text-xs font-semibold uppercase tracking-wider text-gray-400 font-mono mb-2">
                 Click a sample query to simulate analysis:
               </div>
-              {Object.keys(predefinedReplies).map((prompt, index) => (
+              {[
+                "What is the short-term outlook for Nifty 50?",
+                "Are IT stocks overvalued right now?",
+                "How will the recent RBI repo rate decision impact bank stocks?"
+              ].map((prompt, index) => (
                 <div
                   key={index}
                   onClick={() => handlePromptClick(prompt)}

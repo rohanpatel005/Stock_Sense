@@ -137,24 +137,6 @@ const TradeModal = ({ isOpen, onClose, action, symbol, companyName, userWallet, 
               
               {/* Toggles Group */}
             <div className="space-y-4">
-              {/* Product Toggle */}
-              <div className="flex p-1 bg-slate-100/80 rounded-xl">
-                <button 
-                  type="button"
-                  onClick={() => setProductType('DELIVERY')}
-                  className={`flex-1 py-2 font-bold text-sm rounded-lg transition-all ${productType === 'DELIVERY' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
-                >
-                  Delivery (CNC)
-                </button>
-                <button 
-                  type="button"
-                  onClick={() => setProductType('INTRADAY')}
-                  className={`flex-1 py-2 font-bold text-sm rounded-lg transition-all ${productType === 'INTRADAY' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
-                >
-                  Intraday (MIS)
-                </button>
-              </div>
-
               {/* Order Type Toggle */}
               <div className="flex p-1 bg-slate-100/80 rounded-xl">
                 <button 

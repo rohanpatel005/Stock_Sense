@@ -14,5 +14,6 @@ urlpatterns = [
     path("api/ai/", include("apps.ai.urls")),
     path("api/settings/", include("apps.settings.urls")),
     path("api/watchlist/", include("apps.watchlist.urls")),
+    path("api/news/", include("apps.news.urls")),
     path("api/", include("apps.dashboard.urls")),
 ]

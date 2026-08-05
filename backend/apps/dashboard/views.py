@@ -4,8 +4,8 @@ from rest_framework.response import Response
 from rest_framework import status
 from django.db.models import Sum
 from apps.users.models import Transaction, Portfolio
+from apps.market.views import is_nse_open_status, _cache_store, IST, dtime
 
-import math
 
 from apps.market.views import market_overview, market_sectors, fetch_nse_api, fetch_nse_variations, get_cached_data, set_cached_data, sf
 
@@ -34,20 +34,13 @@ def get_nse_stock_data(symbol, default_val=100.0):
                 "change": f"{'+' if change >= 0 else ''}{round(change, 2)}",
                 "change_percent": f"{'+' if change_percent >= 0 else ''}{round(change_percent, 2)}%",
                 "trend": "up" if change >= 0 else "down",
-                "chart": [prev_close, price * 0.998, price * 1.001, price * 0.999, price]
             }
             return set_cached_data(cache_key, result)
     except Exception:
         pass
 
-    # Fallback if NSE API fails
-    return {
-        "price": default_val,
-        "change": "+0.00",
-        "change_percent": "+0.00%",
-        "trend": "up",
-        "chart": [default_val - 10, default_val - 5, default_val, default_val + 2, default_val]
-    }
+    # Return None if NSE API fails
+    return None
 
 
 
@@ -68,22 +61,27 @@ def dashboard_data(request):
     
     def get_index(name, default_price):
         item = next((s for s in overview_res if s["name"] == name), None)
-        if not item:
-            return {"price": default_price, "change": "+0.00", "change_percent": "+0.00%", "trend": "up", "chart": []}
-        change = item["change"]
-        change_pct = item["change_percent"]
-        trend = "up" if change >= 0 else "down"
+        if item:
+            change = item.get("change", 0)
+            change_pct = item.get("change_percent", 0)
+            return {
+                "price": f"{item['value']:,.2f}",
+                "change": f"{'+' if change >= 0 else ''}{round(change, 2)}",
+                "change_percent": f"{'+' if change_pct >= 0 else ''}{round(change_pct, 2)}%",
+                "trend": item.get("trend", "up"),
+                "chart": item.get("sparkline", [])
+            }
         return {
-            "price": item["value"],
-            "change": f"{'+' if change >= 0 else ''}{round(change, 2)}",
-            "change_percent": f"{'+' if change_pct >= 0 else ''}{round(change_pct, 2)}%",
-            "trend": trend,
-            "chart": item.get("sparkline", [])
+            "price": f"{default_price:,.2f}",
+            "change": "0.00",
+            "change_percent": "0.00%",
+            "trend": "up",
+            "chart": []
         }
 
-    nifty = get_index("Nifty 50", 24834.85)
-    sensex = get_index("Sensex", 81332.72)
-    bank_nifty = get_index("Bank Nifty", 51295.40)
+    nifty = get_index("Nifty 50", 22000.0)
+    sensex = get_index("Sensex", 73000.0)
+    bank_nifty = get_index("Bank Nifty", 46000.0)
     
     # Fetch user specific database holdings
     total_invested = Portfolio.objects.filter(user=user).aggregate(Sum('invested_amount'))['invested_amount__sum'] or 0.00
@@ -94,13 +92,7 @@ def dashboard_data(request):
     nse_gainers = fetch_nse_variations("gainers")
     nse_losers = fetch_nse_variations("losers")
     
-    # Also fetch specific key stocks via NSE quote API for watchlist/AI insights
-    reliance = get_nse_stock_data("RELIANCE", 2984.50)
-    tcs = get_nse_stock_data("TCS", 4125.20)
-    infy = get_nse_stock_data("INFY", 1568.90)
-    sbin = get_nse_stock_data("SBIN", 834.50)
-    hdfc = get_nse_stock_data("HDFCBANK", 1610.45)
-    icici = get_nse_stock_data("ICICIBANK", 1124.10)
+    # (Watchlist is handled via a separate endpoint/app for actual users)
     
     # Fetch recent transactions
     transactions = Transaction.objects.filter(user=user).order_by('-created_at')[:10]
@@ -118,7 +110,7 @@ def dashboard_data(request):
     
     # Get FII/DII Data
     try:
-        from apps.market.views import is_nse_open_status, _cache_store, IST, dtime
+        
         from datetime import datetime
         now_ist = datetime.now(IST)
         period_key = f"{now_ist.date()}_after_17" if now_ist.time() >= dtime(17, 0) else f"{now_ist.date()}_before_17"
@@ -207,24 +199,24 @@ def dashboard_data(request):
         "summary": {
             "nifty_50": {
                 "name": "NIFTY 50",
-                "value": f"{nifty['price']:,.2f}",
-                "change": nifty['change'],
-                "change_percent": nifty['change_percent'],
-                "trend": nifty['trend']
+                "value": nifty['price'] if nifty else "N/A",
+                "change": nifty['change'] if nifty else "N/A",
+                "change_percent": nifty['change_percent'] if nifty else "N/A",
+                "trend": nifty['trend'] if nifty else "up"
             },
             "sensex": {
                 "name": "SENSEX",
-                "value": f"{sensex['price']:,.2f}",
-                "change": sensex['change'],
-                "change_percent": sensex['change_percent'],
-                "trend": sensex['trend']
+                "value": sensex['price'] if sensex else "N/A",
+                "change": sensex['change'] if sensex else "N/A",
+                "change_percent": sensex['change_percent'] if sensex else "N/A",
+                "trend": sensex['trend'] if sensex else "up"
             },
             "bank_nifty": {
                 "name": "BANK NIFTY",
-                "value": f"{bank_nifty['price']:,.2f}",
-                "change": bank_nifty['change'],
-                "change_percent": bank_nifty['change_percent'],
-                "trend": bank_nifty['trend']
+                "value": bank_nifty['price'] if bank_nifty else "N/A",
+                "change": bank_nifty['change'] if bank_nifty else "N/A",
+                "change_percent": bank_nifty['change_percent'] if bank_nifty else "N/A",
+                "trend": bank_nifty['trend'] if bank_nifty else "up"
             },
             "portfolio": {
                 "invested": float(total_invested),
@@ -239,17 +231,14 @@ def dashboard_data(request):
                 "total_invested": float(total_invested)
             },
             "ai_mood": {
-                "mood": "Bullish" if nifty['trend'] == 'up' else "Bearish",
+                "mood": "Bullish" if (nifty and nifty['trend'] == 'up') else "Bearish",
                 "confidence": 88
             }
         },
         "market_overview": [
-            {"symbol": "NIFTY 50", "value": f"{nifty['price']:,.2f}", "change": nifty['change_percent'], "trend": nifty['trend'], "chart": nifty['chart']},
-            {"symbol": "BANK NIFTY", "value": f"{bank_nifty['price']:,.2f}", "change": bank_nifty['change_percent'], "trend": bank_nifty['trend'], "chart": bank_nifty['chart']},
-            {"symbol": "SENSEX", "value": f"{sensex['price']:,.2f}", "change": sensex['change_percent'], "trend": sensex['trend'], "chart": sensex['chart']},
-            {"symbol": "NIFTY IT", "value": "39,124.50", "change": "+1.45%", "trend": "up", "chart": [38400, 38600, 38800, 39000, 39124]},
-            {"symbol": "NIFTY AUTO", "value": "25,482.10", "change": "+0.92%", "trend": "up", "chart": [25100, 25250, 25300, 25400, 25482]},
-            {"symbol": "NIFTY FMCG", "value": "57,324.40", "change": "-0.15%", "trend": "down", "chart": [57500, 57450, 57400, 57350, 57324]}
+            {"symbol": "NIFTY 50", "value": nifty['price'], "change": nifty['change_percent'], "trend": nifty['trend'], "chart": nifty['chart']} if nifty else None,
+            {"symbol": "BANK NIFTY", "value": bank_nifty['price'], "change": bank_nifty['change_percent'], "trend": bank_nifty['trend'], "chart": bank_nifty['chart']} if bank_nifty else None,
+            {"symbol": "SENSEX", "value": sensex['price'], "change": sensex['change_percent'], "trend": sensex['trend'], "chart": sensex['chart']} if sensex else None
         ],
         "trending_stocks": trending_stocks_data,
         "top_gainers": top_gainers_data,
@@ -260,31 +249,12 @@ def dashboard_data(request):
                 "change": f"{'+' if s['change_percent'] >= 0 else ''}{s['change_percent']}%"
             } for s in sectors_res
         ][:7],
-        "watchlist": [
-            {"symbol": "RELIANCE", "name": "Reliance Industries", "price": f"{reliance['price']:,}", "change": reliance['change_percent'], "trend": reliance['trend']},
-            {"symbol": "TCS", "name": "Tata Consultancy Services", "price": f"{tcs['price']:,}", "change": tcs['change_percent'], "trend": tcs['trend']},
-            {"symbol": "INFY", "name": "Infosys Limited", "price": f"{infy['price']:,}", "change": infy['change_percent'], "trend": infy['trend']},
-            {"symbol": "SBIN", "name": "State Bank of India", "price": f"{sbin['price']:,}", "change": sbin['change_percent'], "trend": sbin['trend']}
-        ],
+        "watchlist": [],
         "fii_dii": fii_dii_data,
-        "options_data": {
-            "pcr": "1.12",
-            "max_pain": "24,800",
-            "open_interest": "24.5M",
-            "iv": "13.4%"
-        },
-        "news": [
-            {"source": "Moneycontrol", "time": "5m ago", "title": "Reliance AGM: Key announcements on retail, 5G and green energy expansion expected soon"},
-            {"source": "Economic Times", "time": "18m ago", "title": "FII buying returns to Indian markets; Nifty IT hits fresh 52-week highs"},
-            {"source": "Business Standard", "time": "1h ago", "title": "Tata Motors commercial vehicle sales grow by 8% YoY; stock hits record high"}
-        ],
+        "options_data": {},
+        "news": [],
         "recent_trades": recent_trades_data,
-        "ai_insights": [
-            f"Reliance Industries showing strong momentum at ₹{reliance['price']:,}.",
-            f"Bank Nifty support remains active around {bank_nifty['price']:,}.",
-            f"TCS price of ₹{tcs['price']:,} indicates moderate oversold levels.",
-            "High institutional buying in HDFC Bank today."
-        ],
+        "ai_insights": [],
         "user": {
             "full_name": user.full_name,
             "email": user.email,

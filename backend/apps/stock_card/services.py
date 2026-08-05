@@ -318,13 +318,7 @@ class StockCardService:
             pass
 
         if not quarterly_results:
-            # Fallback mock results matching company size
-            quarterly_results = [
-                {"period": "Jun 2026", "revenue": cmp * 250000, "net_profit": cmp * 35000, "eps": 15.5, "margin": 14.0},
-                {"period": "Mar 2026", "revenue": cmp * 240000, "net_profit": cmp * 32000, "eps": 14.2, "margin": 13.3},
-                {"period": "Dec 2025", "revenue": cmp * 230000, "net_profit": cmp * 30000, "eps": 13.5, "margin": 13.0},
-                {"period": "Sep 2025", "revenue": cmp * 220000, "net_profit": cmp * 28000, "eps": 12.8, "margin": 12.7}
-            ]
+            quarterly_results = []
 
         annual_results = []
         try:
@@ -345,13 +339,6 @@ class StockCardService:
                     })
         except Exception:
             pass
-
-        if not annual_results:
-            annual_results = [
-                {"year": "2026", "revenue": cmp * 950000, "profit": cmp * 130000, "cash_flow": cmp * 150000, "assets": mcap * 0.8, "liabilities": mcap * 0.4, "net_worth": mcap * 0.4},
-                {"year": "2025", "revenue": cmp * 880000, "profit": cmp * 115000, "cash_flow": cmp * 135000, "assets": mcap * 0.75, "liabilities": mcap * 0.38, "net_worth": mcap * 0.37},
-                {"year": "2024", "revenue": cmp * 800000, "profit": cmp * 100000, "cash_flow": cmp * 120000, "assets": mcap * 0.7, "liabilities": mcap * 0.35, "net_worth": mcap * 0.35}
-            ]
 
         # 14. News (Extract from ticker.news or Yahoo Finance endpoint)
         news = []
@@ -378,41 +365,14 @@ class StockCardService:
         peers = ["RELIANCE", "TCS", "INFY", "HDFCBANK", "TATAMOTORS", "BAJFINANCE"]
         peer_list = [p for p in peers if p != symbol][:5]
         peer_comparison = []
-        for p in peer_list:
-            peer_comparison.append({
-                "symbol": p,
-                "name": f"{p} Industries/Group",
-                "cmp": fair_value * 0.9,
-                "pe": 24.5,
-                "roe": 14.2,
-                "roce": 16.5,
-                "revenue": "₹4.2L Cr",
-                "profit": "₹45K Cr",
-                "market_cap": "₹12.5L Cr"
-            })
 
         # Dividend & Actions History
-        dividend_history = [
-            {"date": "15 Jul 2026", "dividend": 10.0, "yield": 0.8, "bonus": "None", "split": "None", "rights": "None"}
-        ]
+        dividend_history = []
         
-        events = [
-            {"title": "AGM 2026", "date": "28 Aug 2026", "type": "AGM"},
-            {"title": "Q1 Earnings Call", "date": "12 Aug 2026", "type": "Results"}
-        ]
+        events = []
 
         # Performance cards
-        performance = {
-            "today": float(round(change_pct, 2)),
-            "weekly": float(round(change_pct + 1.2, 2)),
-            "monthly": float(round(change_pct + 4.5, 2)),
-            "three_month": float(round(change_pct + 8.2, 2)),
-            "six_month": float(round(change_pct + 14.5, 2)),
-            "ytd": float(round(change_pct + 11.2, 2)),
-            "one_year": float(round(change_pct + 25.4, 2)),
-            "three_year": float(round(change_pct + 78.5, 2)),
-            "five_year": float(round(change_pct + 152.0, 2))
-        }
+        performance = {}
 
         return {
             "symbol": symbol,

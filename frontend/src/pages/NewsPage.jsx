@@ -6,7 +6,7 @@ import axios from 'axios';
 import NewsCard from '../components/News/NewsCard';
 import FeaturedNews from '../components/News/FeaturedNews';
 
-const API_BASE_URL = 'http://localhost:8000/api/market';
+const API_BASE_URL = 'http://localhost:8000/api';
 
 const NewsPage = () => {
   const [news, setNews] = useState([]);
@@ -21,7 +21,7 @@ const NewsPage = () => {
       const token = localStorage.getItem('access_token');
       const headers = token ? { Authorization: `Bearer ${token}` } : {};
       
-      const response = await axios.get(`${API_BASE_URL}/news/latest/`, { headers });
+      const response = await axios.get(`${API_BASE_URL}/news/`, { headers });
       setNews(response.data);
     } catch (err) {
       console.error('Failed to fetch news', err);

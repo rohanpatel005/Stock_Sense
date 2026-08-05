@@ -130,12 +130,14 @@ export const PerformanceCards = ({ data }) => {
       <h3 className="text-lg font-bold text-white mb-6 group-hover:drop-shadow-[0_0_8px_rgba(255,255,255,0.2)] transition-all">Historical Returns</h3>
       <div className="grid grid-cols-3 gap-3">
         {returns.map((item, idx) => {
-          const isPos = item.value >= 0;
+          const val = typeof item.value === 'number' ? item.value : parseFloat(item.value);
+          const isValid = !isNaN(val);
+          const isPos = isValid && val >= 0;
           return (
             <div key={idx} className="p-3 bg-white/5 border border-white/10 rounded-[16px] text-center group/item hover:border-[#00E0A4]/30 hover:bg-white/10 transition-all hover-lift-card">
               <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wider block group-hover/item:text-slate-300 transition-colors">{item.label}</span>
-              <span className={`text-xs sm:text-sm font-extrabold block mt-1.5 ${isPos ? 'text-[#00E0A4] drop-shadow-[0_0_5px_rgba(0,224,164,0.5)]' : 'text-red-400 drop-shadow-[0_0_5px_rgba(239,68,68,0.5)]'}`}>
-                {isPos ? '+' : ''}{item.value.toFixed(1)}%
+              <span className={`text-xs sm:text-sm font-extrabold block mt-1.5 ${!isValid ? 'text-slate-400' : isPos ? 'text-[#00E0A4] drop-shadow-[0_0_5px_rgba(0,224,164,0.5)]' : 'text-red-400 drop-shadow-[0_0_5px_rgba(239,68,68,0.5)]'}`}>
+                {!isValid ? 'N/A' : `${isPos ? '+' : ''}${val.toFixed(1)}%`}
               </span>
             </div>
           );
