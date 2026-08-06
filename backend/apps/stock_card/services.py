@@ -44,7 +44,10 @@ class StockCardService:
     def get_stock_data(symbol: str) -> dict:
         print("Fetching:", symbol)
         symbol_upper = symbol.strip().upper()
-        yf_symbol = symbol_upper
+        if not (symbol_upper.endswith('.NS') or symbol_upper.endswith('.BO') or symbol_upper.endswith('=F')):
+            yf_symbol = f"{symbol_upper}.NS"
+        else:
+            yf_symbol = symbol_upper
         
         logger.info(f"Symbol used in yfinance: {yf_symbol}")
 

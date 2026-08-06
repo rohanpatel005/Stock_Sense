@@ -45,7 +45,7 @@ export const AIAnalysis = ({ data }) => {
     <div className="bg-gradient-to-br from-[#0F766E]/20 to-[#0F766E]/5 backdrop-blur-xl border border-[#0F766E]/30 p-6 rounded-[24px] space-y-6 hover-lift-card group shadow-[0_0_15px_rgba(15,118,110,0.15)] transition-all">
       <div className="flex items-center gap-2 text-[#00E0A4] drop-shadow-[0_0_8px_rgba(0,224,164,0.3)]">
         <Sparkles className="w-5 h-5 fill-[#00E0A4]/20" />
-        <h3 className="font-bold text-sm tracking-wider uppercase">AI Technical Insights</h3>
+        <h3 className="font-bold text-sm tracking-wider uppercase">Technical Insights</h3>
       </div>
       
       <div className="space-y-3.5">
