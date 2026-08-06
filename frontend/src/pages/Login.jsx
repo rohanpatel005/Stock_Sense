@@ -46,8 +46,6 @@ const Login = () => {
       localStorage.setItem('access_token', res.data.access);
       localStorage.setItem('refresh_token', res.data.refresh);
       localStorage.setItem('user', JSON.stringify(res.data.user));
-
-      alert('Login Successful!');
       navigate('/dashboard');
     } catch (err) {
       const serverError = err.response?.data?.error || 'Google login failed. Please try again.';
@@ -139,8 +137,6 @@ const Login = () => {
       localStorage.setItem('access_token', response.data.access);
       localStorage.setItem('refresh_token', response.data.refresh);
       localStorage.setItem('user', JSON.stringify(response.data.user));
-
-      alert('Login Successful!');
       navigate('/dashboard');
     } catch (err) {
       const serverError = err.response?.data?.error || err.response?.data;

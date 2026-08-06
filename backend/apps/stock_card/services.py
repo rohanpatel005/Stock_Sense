@@ -7,7 +7,9 @@ import numpy as np
 import math
 from datetime import datetime, timedelta, time as dtime
 import pytz
+from django.core.cache import cache
 from .utils import calculate_technical_indicators
+from .ai_service import GroqStockAnalystService
 
 logger = logging.getLogger(__name__)
 
@@ -80,6 +82,86 @@ class StockCardService:
             
             # If no cache at all, raise the error so view returns 404
             raise e
+
+    @staticmethod
+    def generate_stock_ai_analysis(symbol: str) -> str:
+        symbol_upper = symbol.strip().upper()
+        cache_key = f"ai_analysis_{symbol_upper}"
+        
+        # 1. Check cache
+        cached_analysis = cache.get(cache_key)
+        if cached_analysis:
+            logger.info("Serving AI analysis from cache for: %s", symbol_upper)
+            return cached_analysis
+            
+        # 2. Get stock data (uses its own memory cache so it's fast)
+        stock_data = StockCardService.get_stock_data(symbol_upper)
+        
+        # 3. Call AI service
+        analysis_markdown = GroqStockAnalystService.generate_analysis(stock_data)
+        
+        # 4. Cache result for 5 minutes
+        cache.set(cache_key, analysis_markdown, timeout=300)
+        
+        return analysis_markdown
+
+    @staticmethod
+    def get_latest_news(symbol: str) -> list:
+        symbol_upper = symbol.strip().upper()
+        cache_key = f"{symbol_upper}_latest_news"
+        
+        cached_news = cache.get(cache_key)
+        if cached_news is not None:
+            return cached_news
+            
+        try:
+            ticker = yf.Ticker(symbol_upper)
+            raw_news = ticker.news
+            
+            news = []
+            if raw_news:
+                for item in raw_news[:4]:
+                    if "content" in item:
+                        content = item["content"]
+                        title = content.get("title")
+                        publisher = content.get("provider", {}).get("displayName", "Yahoo Finance")
+                        
+                        pub_date_str = content.get("pubDate")
+                        if pub_date_str:
+                            try:
+                                dt = datetime.strptime(pub_date_str.replace('Z', '+0000'), "%Y-%m-%dT%H:%M:%S%z")
+                                formatted_time = dt.strftime("%d %b %Y, %I:%M %p")
+                            except Exception:
+                                formatted_time = pub_date_str
+                        else:
+                            formatted_time = "Recent"
+                            
+                        link = content.get("clickThroughUrl", {}).get("url") or content.get("canonicalUrl", {}).get("url")
+                    else:
+                        title = item.get("title")
+                        publisher = item.get("publisher", "Yahoo Finance")
+                        pub_time = item.get("providerPublishTime")
+                        if pub_time:
+                            formatted_time = datetime.fromtimestamp(pub_time).strftime("%d %b %Y, %I:%M %p")
+                        else:
+                            formatted_time = "Recent"
+                        link = item.get("link")
+
+                    if title:
+                        news.append({
+                            "title": title,
+                            "publisher": publisher,
+                            "published_at": formatted_time,
+                            "link": link
+                        })
+                    
+            # Cache for 10 minutes (600 seconds)
+            cache.set(cache_key, news, timeout=600)
+            return news
+            
+        except Exception as e:
+            logger.error("Error fetching latest news for %s: %s", symbol_upper, e)
+            return []
 
     @staticmethod
     def _fetch_and_aggregate(symbol: str, yf_symbol: str) -> dict:
@@ -170,28 +252,31 @@ class StockCardService:
         sell_votes = 0
         reasons = []
 
-        if rsi_val < 30:
-            buy_votes += 2
-            reasons.append("RSI is Oversold (<30), indicating strong reversal potential")
-        elif rsi_val > 70:
-            sell_votes += 2
-            reasons.append("RSI is Overbought (>70), suggesting potential cooldown")
-        else:
-            buy_votes += 0.5
+        if rsi_val is not None:
+            if rsi_val < 30:
+                buy_votes += 2
+                reasons.append("RSI is Oversold (<30), indicating strong reversal potential")
+            elif rsi_val > 70:
+                sell_votes += 2
+                reasons.append("RSI is Overbought (>70), suggesting potential cooldown")
+            else:
+                buy_votes += 0.5
             
-        if macd_line > macd_signal:
-            buy_votes += 1.5
-            reasons.append("MACD line crossed above Signal line (Bullish Cross)")
-        else:
-            sell_votes += 1.5
-            reasons.append("MACD line crossed below Signal line (Bearish Cross)")
+        if macd_line is not None and macd_signal is not None:
+            if macd_line > macd_signal:
+                buy_votes += 1.5
+                reasons.append("MACD line crossed above Signal line (Bullish Cross)")
+            else:
+                sell_votes += 1.5
+                reasons.append("MACD line crossed below Signal line (Bearish Cross)")
 
-        if close_latest > ema_200:
-            buy_votes += 1
-            reasons.append("Price trading above 200 EMA (Long-term Bullish Trend)")
-        else:
-            sell_votes += 1
-            reasons.append("Price trading below 200 EMA (Long-term Bearish Trend)")
+        if close_latest is not None and ema_200 is not None:
+            if close_latest > ema_200:
+                buy_votes += 1
+                reasons.append("Price trading above 200 EMA (Long-term Bullish Trend)")
+            else:
+                sell_votes += 1
+                reasons.append("Price trading below 200 EMA (Long-term Bearish Trend)")
 
         # Overall recommendation
         total_votes = buy_votes + sell_votes
@@ -213,10 +298,10 @@ class StockCardService:
         ai_summary = {
             "trend": "Bullish" if bullish_score >= 50 else "Bearish",
             "strength": "Strong" if confidence >= 70 else "Moderate",
-            "weakness": "Oversold conditions trigger warning" if rsi_val < 35 else "Resistance levels may cap gains",
-            "risk": "High volatility" if tech_indicators["atr"] > (cmp * 0.03) else "Stable rangebound movement",
-            "momentum": "Increasing" if abs(macd_line) > abs(macd_signal) else "Fading",
-            "volatility": "High" if tech_indicators["atr"] > (cmp * 0.02) else "Low",
+            "weakness": "Oversold conditions trigger warning" if rsi_val is not None and rsi_val < 35 else "Resistance levels may cap gains",
+            "risk": "High volatility" if tech_indicators["atr"] is not None and cmp and tech_indicators["atr"] > (cmp * 0.03) else "Stable rangebound movement",
+            "momentum": "Increasing" if macd_line is not None and macd_signal is not None and abs(macd_line) > abs(macd_signal) else "Fading",
+            "volatility": "High" if tech_indicators["atr"] is not None and cmp and tech_indicators["atr"] > (cmp * 0.02) else "Low",
             "suggested_observation": "Monitor near-term support levels for buying opportunities" if bullish_score >= 50 else "Watch for break of immediate resistance before taking long positions",
             "bullish_score": bullish_score,
             "confidence": confidence
@@ -224,7 +309,7 @@ class StockCardService:
 
         # 7. Risk Meter Calculation
         beta = info.get("beta", 1.0)
-        atr_pct = tech_indicators["atr"] / cmp if cmp else 0
+        atr_pct = tech_indicators["atr"] / cmp if cmp and tech_indicators["atr"] is not None else 0
         risk_score = (beta * 40) + (atr_pct * 600)
         if risk_score > 80:
             risk_label = "Very High"
@@ -444,7 +529,7 @@ class StockCardService:
                 "buy_percentage": buy_pct,
                 "reasons": reasons,
                 "trend": "Strong Bullish" if rec in ["Strong Buy", "Buy"] else "Strong Bearish",
-                "momentum": "Bullish" if macd_line > macd_signal else "Bearish",
+                "momentum": "Bullish" if (macd_line is not None and macd_signal is not None and macd_line > macd_signal) else "Bearish",
                 "volatility": "Average",
                 "volume_strength": "Above Average"
             },

@@ -30,8 +30,8 @@ const TechnicalSignals = ({ data }) => {
         {/* Dial Bar */}
         <div className="mt-6">
           <div className="flex justify-between text-xs font-bold text-slate-400 mb-2">
-            <span>Sell ({100 - buyPct}%)</span>
-            <span>Buy ({buyPct}%)</span>
+            <span>Buy ({Math.round(buyPct)}%)</span>
+            <span>Sell ({Math.round(100 - buyPct)}%)</span>
           </div>
           <div className="h-3 bg-red-500/20 rounded-full overflow-hidden flex shadow-inner">
             <div className="bg-gradient-to-r from-[#00E0A4] to-[#00B37E] shadow-[0_0_10px_rgba(0,224,164,0.5)] h-full transition-all duration-1000" style={{ width: `${buyPct}%` }} />

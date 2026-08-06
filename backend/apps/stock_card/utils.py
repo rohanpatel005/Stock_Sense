@@ -10,17 +10,20 @@ def calculate_technical_indicators(df: pd.DataFrame) -> dict:
     if df is None or len(df) < 50:
         # Return fallback values if history is insufficient
         return {
-            "ema_20": 0.0, "ema_50": 0.0, "ema_100": 0.0, "ema_200": 0.0, "sma_20": 0.0,
-            "rsi": 50.0, "macd_line": 0.0, "macd_signal": 0.0, "macd_hist": 0.0,
-            "adx": 20.0, "atr": 0.0, "cci": 0.0, "roc": 0.0, "mfi": 50.0, "obv": 0, "vwap": 0.0,
-            "supertrend": 0.0, "supertrend_dir": "up",
-            "pivot": 0.0, "s1": 0.0, "s2": 0.0, "s3": 0.0, "r1": 0.0, "r2": 0.0, "r3": 0.0,
-            "bb_upper": 0.0, "bb_middle": 0.0, "bb_lower": 0.0,
-            "ichimoku_tenkan": 0.0, "ichimoku_kijun": 0.0, "ichimoku_span_a": 0.0, "ichimoku_span_b": 0.0,
-            "psar": 0.0, "donchian_upper": 0.0, "donchian_middle": 0.0, "donchian_lower": 0.0,
-            "keltner_upper": 0.0, "keltner_middle": 0.0, "keltner_lower": 0.0,
-            "fib_236": 0.0, "fib_382": 0.0, "fib_500": 0.0, "fib_618": 0.0, "fib_786": 0.0
+            "ema_20": None, "ema_50": None, "ema_100": None, "ema_200": None, "sma_20": None,
+            "rsi": None, "macd_line": None, "macd_signal": None, "macd_hist": None,
+            "adx": None, "atr": None, "cci": None, "roc": None, "mfi": None, "obv": None, "vwap": None,
+            "supertrend": None, "supertrend_dir": None,
+            "pivot": None, "s1": None, "s2": None, "s3": None, "r1": None, "r2": None, "r3": None,
+            "bb_upper": None, "bb_middle": None, "bb_lower": None,
+            "ichimoku_tenkan": None, "ichimoku_kijun": None, "ichimoku_span_a": None, "ichimoku_span_b": None,
+            "psar": None, "donchian_upper": None, "donchian_middle": None, "donchian_lower": None,
+            "keltner_upper": None, "keltner_middle": None, "keltner_lower": None,
+            "fib_236": None, "fib_382": None, "fib_500": None, "fib_618": None, "fib_786": None
         }
+
+    # Fill any missing values to prevent NaNs propagating through rolling calculations
+    df = df.ffill().bfill()
 
     close = df['Close']
     high = df['High']
@@ -259,6 +262,6 @@ def calculate_technical_indicators(df: pd.DataFrame) -> dict:
     # Clean NaN and infinite values before returning
     for k, v in res.items():
         if isinstance(v, float) and (np.isnan(v) or np.isinf(v)):
-            res[k] = 0.0
+            res[k] = None
             
     return res

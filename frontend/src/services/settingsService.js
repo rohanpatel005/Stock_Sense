@@ -12,8 +12,12 @@ export const settingsService = {
         const response = await axios.get(`${API_URL}/profile/`, { headers: getAuthHeaders() });
         return response.data;
     },
-    resetPaperAccount: async (password) => {
-        const response = await axios.post(`${API_URL}/reset-paper-account/`, { password }, { headers: getAuthHeaders() });
+    requestResetOTP: async () => {
+        const response = await axios.post(`${API_URL}/request-reset-otp/`, {}, { headers: getAuthHeaders() });
+        return response.data;
+    },
+    resetPaperAccount: async (otp) => {
+        const response = await axios.post(`${API_URL}/reset-paper-account/`, { otp }, { headers: getAuthHeaders() });
         return response.data;
     }
 };

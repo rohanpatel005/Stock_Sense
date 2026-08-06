@@ -2,31 +2,41 @@
 const TechnicalIndicators = ({ data }) => {
   if (!data) return null;
 
+  const formatVal = (val, prefix = '') => {
+    if (val === null || val === undefined) return '—';
+    return `${prefix}${val.toFixed(2)}`;
+  };
+
+  const formatSentiment = (val, thresholds) => {
+    if (val === null || val === undefined) return null;
+    return val < thresholds[0] ? thresholds[1] : val > thresholds[2] ? thresholds[3] : thresholds[4];
+  };
+
   const maGroup = [
-    { name: 'EMA 20', value: `₹${data.ema_20.toFixed(2)}` },
-    { name: 'EMA 50', value: `₹${data.ema_50.toFixed(2)}` },
-    { name: 'EMA 100', value: `₹${data.ema_100.toFixed(2)}` },
-    { name: 'EMA 200', value: `₹${data.ema_200.toFixed(2)}` },
-    { name: 'SMA 20', value: `₹${data.sma_20.toFixed(2)}` },
-    { name: 'VWAP', value: `₹${data.vwap.toFixed(2)}` }
+    { name: 'EMA 20', value: formatVal(data.ema_20, '₹') },
+    { name: 'EMA 50', value: formatVal(data.ema_50, '₹') },
+    { name: 'EMA 100', value: formatVal(data.ema_100, '₹') },
+    { name: 'EMA 200', value: formatVal(data.ema_200, '₹') },
+    { name: 'SMA 20', value: formatVal(data.sma_20, '₹') },
+    { name: 'VWAP', value: formatVal(data.vwap, '₹') }
   ];
 
   const oscillators = [
-    { name: 'RSI (14)', value: data.rsi.toFixed(2), sentiment: data.rsi < 30 ? 'Oversold' : data.rsi > 70 ? 'Overbought' : 'Neutral' },
-    { name: 'MACD Line', value: data.macd_line.toFixed(2) },
-    { name: 'MACD Signal', value: data.macd_signal.toFixed(2) },
-    { name: 'ADX (14)', value: data.adx.toFixed(2), sentiment: data.adx > 25 ? 'Strong Trend' : 'Weak Trend' },
-    { name: 'CCI (20)', value: data.cci.toFixed(2) },
-    { name: 'MFI (14)', value: data.mfi.toFixed(2) }
+    { name: 'RSI (14)', value: formatVal(data.rsi), sentiment: formatSentiment(data.rsi, [30, 'Oversold', 70, 'Overbought', 'Neutral']) },
+    { name: 'MACD Line', value: formatVal(data.macd_line) },
+    { name: 'MACD Signal', value: formatVal(data.macd_signal) },
+    { name: 'ADX (14)', value: formatVal(data.adx), sentiment: formatSentiment(data.adx, [25, 'Weak Trend', 25, 'Strong Trend', 'Weak Trend']) },
+    { name: 'CCI (20)', value: formatVal(data.cci) },
+    { name: 'MFI (14)', value: formatVal(data.mfi) }
   ];
 
   const channels = [
-    { name: 'BB Upper', value: `₹${data.bb_upper.toFixed(2)}` },
-    { name: 'BB Lower', value: `₹${data.bb_lower.toFixed(2)}` },
-    { name: 'Donchian Upper', value: `₹${data.donchian_upper.toFixed(2)}` },
-    { name: 'Donchian Lower', value: `₹${data.donchian_lower.toFixed(2)}` },
-    { name: 'Keltner Upper', value: `₹${data.keltner_upper.toFixed(2)}` },
-    { name: 'Keltner Lower', value: `₹${data.keltner_lower.toFixed(2)}` }
+    { name: 'BB Upper', value: formatVal(data.bb_upper, '₹') },
+    { name: 'BB Lower', value: formatVal(data.bb_lower, '₹') },
+    { name: 'Donchian Upper', value: formatVal(data.donchian_upper, '₹') },
+    { name: 'Donchian Lower', value: formatVal(data.donchian_lower, '₹') },
+    { name: 'Keltner Upper', value: formatVal(data.keltner_upper, '₹') },
+    { name: 'Keltner Lower', value: formatVal(data.keltner_lower, '₹') }
   ];
 
   return (

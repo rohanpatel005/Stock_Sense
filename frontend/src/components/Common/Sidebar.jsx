@@ -1,5 +1,5 @@
 import { useNavigate, useLocation } from 'react-router-dom';
-import { LineChart, LogOut, Star } from 'lucide-react';
+import { LineChart, LogOut } from 'lucide-react';
 import { useWatchlist } from '../../context/WatchlistContext';
 
 /**
@@ -86,7 +86,6 @@ const Sidebar = ({ user = {} }) => {
               }`}
             >
               <div className="flex items-center gap-3">
-                {item.label === 'Watchlist' && <Star className={`w-4 h-4 ${isActive ? 'text-[#00E0A4]' : 'text-slate-400 group-hover:text-slate-300'}`} />}
                 {item.label}
               </div>
               {item.badge !== undefined && item.badge !== null && (

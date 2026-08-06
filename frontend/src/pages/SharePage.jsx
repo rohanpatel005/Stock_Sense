@@ -16,6 +16,8 @@ import { FinancialHighlights, AIAnalysis } from '../components/share/FinancialsA
 import { QuarterlyResults, AnnualResults } from '../components/share/FinancialResults';
 import { PeerComparison, RelatedStocks } from '../components/share/PeerComparison';
 import { CompanyProfile, Ownership, PerformanceCards } from '../components/share/ProfileNewsEvents';
+import AIAnalystDrawer from '../components/share/AIAnalystDrawer';
+import LatestNews from '../components/share/LatestNews';
 
 const SharePage = () => {
   const { symbol } = useParams();
@@ -24,8 +26,8 @@ const SharePage = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [tradeAction, setTradeAction] = useState(null); // 'BUY' or 'SELL' or null
-  const [askAiText, setAskAiText] = useState('');
-  const [aiChat, setAiChat] = useState([]);
+  const [isAiDrawerOpen, setIsAiDrawerOpen] = useState(false);
+
 
   // Local storage logged-in user parser
   const [user, _setUser] = useState(() => {
@@ -62,38 +64,7 @@ const SharePage = () => {
     }
   }, [symbol]);
 
-  const handleAskAI = async (e) => {
-    e.preventDefault();
-    if (!askAiText.trim()) return;
-    const currentQuery = askAiText;
-    const newChat = [...aiChat, { sender: 'user', text: currentQuery }];
-    setAiChat(newChat);
-    setAskAiText('');
-    
-    try {
-      const token = localStorage.getItem("access_token");
-      const response = await axios.post(
-        "http://127.0.0.1:8000/api/ai/chat/",
-        { message: currentQuery },
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-      setAiChat([
-        ...newChat,
-        {
-          sender: "ai",
-          text: response.data.reply || "I'm sorry, I couldn't process that request.",
-        },
-      ]);
-    } catch (_err) {
-      setAiChat([
-        ...newChat,
-        {
-          sender: "ai",
-          text: "I'm having trouble connecting right now. Please try again later.",
-        },
-      ]);
-    }
-  };
+
 
   if (loading) {
     return (
@@ -146,6 +117,27 @@ const SharePage = () => {
             fetchStockData();
           }}
         />
+        
+        {/* Render AI Analyst Drawer */}
+        <AIAnalystDrawer 
+          isOpen={isAiDrawerOpen}
+          onClose={() => setIsAiDrawerOpen(false)}
+          symbol={symbol}
+          companyName={data?.company_name}
+          livePrice={data?.live_price}
+        />
+        
+        {/* AI FAB */}
+        <button
+          onClick={() => setIsAiDrawerOpen(true)}
+          className="fixed bottom-8 right-8 z-30 group"
+          title="Analyze this Stock with AI"
+        >
+          <div className="absolute inset-0 bg-[#00E0A4] rounded-full blur-xl opacity-30 group-hover:opacity-60 transition-opacity duration-300"></div>
+          <div className="relative flex items-center justify-center w-16 h-16 bg-gradient-to-br from-[#0B1118]/90 to-[#121A25]/90 backdrop-blur-xl border border-[#00E0A4]/30 rounded-full shadow-[0_0_20px_rgba(0,224,164,0.3)] hover:shadow-[0_0_30px_rgba(0,224,164,0.5)] transition-all transform hover:scale-110">
+            <Sparkles className="w-7 h-7 text-[#00E0A4] group-hover:animate-pulse" />
+          </div>
+        </button>
         
         {/* Navigation Breadcrumb */}
         <div className="flex items-center gap-3">
@@ -204,6 +196,9 @@ const SharePage = () => {
         {/* 5. Indicators details */}
         <TechnicalIndicators data={data?.technical_indicators} />
 
+        {/* Latest News Asynchronous Section */}
+        <LatestNews symbol={symbol} />
+
         {/* 6. Financial Overview & AI summary */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
           <div className="lg:col-span-8">
@@ -243,51 +238,7 @@ const SharePage = () => {
         
 
 
-        {/* Floating Chat Widget */}
-        <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end">
-          {aiChat.length > 0 && (
-            <div className="w-80 bg-[#0B1118]/90 backdrop-blur-xl border border-white/10 rounded-[24px] shadow-[0_12px_40px_rgba(0,0,0,0.5)] mb-4 overflow-hidden flex flex-col max-h-96 animate-in fade-in slide-in-from-bottom-2 duration-200">
-              <div className="bg-gradient-to-r from-[#00E0A4]/20 to-[#00E0A4]/5 border-b border-white/5 text-white p-4 font-bold text-sm flex items-center gap-2">
-                <Sparkles className="w-4 h-4 text-[#00E0A4] drop-shadow-[0_0_5px_rgba(0,224,164,0.5)]" />
-                Ask StockSense AI
-              </div>
-              <div className="flex-1 p-4 overflow-y-auto space-y-3 max-h-64 custom-scrollbar bg-transparent">
-                {aiChat.map((msg, idx) => (
-                  <div key={idx} className={`p-3 rounded-2xl text-xs max-w-[85%] font-medium ${
-                    msg.sender === 'user' 
-                      ? 'bg-gradient-to-r from-[#00E0A4] to-[#00B37E] text-[#05070D] self-end ml-auto shadow-[0_0_10px_rgba(0,224,164,0.2)]' 
-                      : 'bg-white/5 text-slate-300 border border-white/10'
-                  }`}>
-                    {msg.text}
-                  </div>
-                ))}
-              </div>
-              <form onSubmit={handleAskAI} className="p-3 border-t border-white/5 flex gap-2 bg-[#05070D]/50">
-                <input
-                  type="text"
-                  value={askAiText}
-                  onChange={(e) => setAskAiText(e.target.value)}
-                  placeholder="Ask stock queries..."
-                  className="flex-1 text-xs bg-white/5 border border-white/10 text-white placeholder-slate-500 rounded-xl px-3 py-2 outline-none focus:border-[#00E0A4]/50 focus:ring-1 focus:ring-[#00E0A4]/30 transition-all"
-                />
-                <button type="submit" className="bg-white/10 hover:bg-[#00E0A4]/20 text-[#00E0A4] border border-white/10 hover:border-[#00E0A4]/30 text-xs font-bold px-4 py-2 rounded-xl transition-all">Send</button>
-              </form>
-            </div>
-          )}
-          
-          <button 
-            onClick={() => {
-              if (aiChat.length === 0) {
-                setAiChat([{ sender: 'ai', text: `Hello! Ask me any questions about ${symbol}!` }]);
-              } else {
-                setAiChat([]);
-              }
-            }}
-            className="bg-[#0B1118]/80 backdrop-blur-xl border border-white/10 hover:border-[#00E0A4]/50 text-[#00E0A4] w-14 h-14 rounded-full shadow-[0_0_20px_rgba(0,224,164,0.15)] hover:shadow-[0_0_30px_rgba(0,224,164,0.3)] flex items-center justify-center transition-all transform hover:-translate-y-1 active:scale-95 z-50 group"
-          >
-            <Sparkles className="w-6 h-6 group-hover:drop-shadow-[0_0_8px_rgba(0,224,164,0.8)] transition-all" />
-          </button>
-        </div>
+
 
       </main>
     );

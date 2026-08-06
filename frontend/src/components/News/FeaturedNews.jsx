@@ -14,21 +14,7 @@ const FeaturedNews = ({ article }) => {
       onClick={handleClick}
       className="relative group bg-[#0B1118]/80 rounded-[24px] overflow-hidden cursor-pointer premium-glass-card shadow-lg"
     >
-      <div className="absolute inset-0 bg-[#0B1118]/40 flex items-center justify-center">
-        {article.image ? (
-          <img
-            src={article.image}
-            alt={article.title}
-            className="w-full h-full object-cover opacity-60 transition-transform duration-700 group-hover:scale-105"
-            loading="lazy"
-          />
-        ) : (
-          <div className="w-full h-full flex flex-col items-center justify-center text-slate-500 opacity-20">
-            <span className="text-5xl font-bold tracking-widest">FEATURED</span>
-          </div>
-        )}
-        <div className="absolute inset-0 bg-gradient-to-t from-[#05070D] via-[#05070D]/80 to-transparent" />
-      </div>
+      <div className="absolute inset-0 bg-gradient-to-br from-[#0B1118] to-[#121A25]" />
 
       <div className="relative p-6 md:p-10 flex flex-col justify-end min-h-[400px] md:min-h-[500px]">
         <div className="flex items-center gap-3 mb-4">
@@ -45,8 +31,8 @@ const FeaturedNews = ({ article }) => {
           {article.title}
         </h2>
         
-        <p className="text-slate-300 text-sm md:text-base max-w-3xl mb-8 line-clamp-2">
-          {article.description}
+        <p className="text-slate-300 text-sm md:text-base max-w-3xl mb-8 line-clamp-3">
+          {article.description?.replace(/<[^>]*>?/gm, '')}
         </p>
 
         <div className="flex items-center justify-between">

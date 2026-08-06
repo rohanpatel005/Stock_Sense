@@ -13,11 +13,7 @@ class ResetError(Exception):
 
 class ResetPaperTradingService:
     @staticmethod
-    def process_reset(user, password):
-        # 1. Verify Password
-        if not user.check_password(password):
-            raise ResetError("Incorrect password.", status_code=400)
-
+    def process_reset(user):
         # 2. Check and rollover monthly count if necessary
         now = timezone.now()
         if user.last_reset_date and user.last_reset_date.month != now.month:

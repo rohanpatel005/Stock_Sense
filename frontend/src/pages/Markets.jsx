@@ -639,68 +639,8 @@ const Markets = () => {
           )}
         </section>
 
-        {/* SIDE-BY-SIDE GRID: BREADTH & QUICK INSIGHTS */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* MARKET BREADTH */}
-          <section className="space-y-4">
-            <div className="flex items-center gap-2">
-              <BarChart2 className="w-5 h-5 text-[#00E0A4]" />
-              <h2 className="text-lg font-bold text-white uppercase tracking-wide">Market Breadth</h2>
-            </div>
-
-            {loading.breadth ? (
-              <SkeletonLoader count={1} height="h-64" />
-            ) : errors.breadth ? (
-              <div className="bg-red-500/10 border border-red-500/20 text-red-400 p-4 rounded-2xl flex items-center gap-2 text-sm font-semibold">
-                <ShieldAlert className="w-5 h-5" /> {errors.breadth}
-              </div>
-            ) : (
-              <div className="bg-[#0B1118]/80 backdrop-blur-xl border border-white/10 rounded-[24px] p-6 premium-glass-card shadow-lg space-y-5 relative overflow-hidden">
-                <div className="grid grid-cols-3 gap-3 text-center">
-                  <div className="bg-[#00E0A4]/10 rounded-xl p-3.5 border border-[#00E0A4]/20">
-                    <span className="text-2xl font-extrabold text-[#00E0A4] block drop-shadow-[0_0_10px_rgba(0,224,164,0.3)]">{breadth?.advances}</span>
-                    <span className="text-[10px] text-[#00E0A4] font-bold uppercase tracking-wider">Advances</span>
-                  </div>
-                  <div className="bg-white/5 rounded-xl p-3.5 border border-white/10">
-                    <span className="text-2xl font-extrabold text-slate-300 block">{breadth?.unchanged}</span>
-                    <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Unchanged</span>
-                  </div>
-                  <div className="bg-red-500/10 rounded-xl p-3.5 border border-red-500/20">
-                    <span className="text-2xl font-extrabold text-red-400 block drop-shadow-[0_0_10px_rgba(248,113,113,0.3)]">{breadth?.declines}</span>
-                    <span className="text-[10px] text-red-400 font-bold uppercase tracking-wider">Declines</span>
-                  </div>
-                </div>
-
-                {/* Progress Bar visual indicator */}
-                <div className="space-y-2">
-                  <div className="flex justify-between text-xs font-bold text-slate-400">
-                    <span>AD Ratio: <strong className="text-white">{breadth?.ad_ratio}</strong></span>
-                    <span>Total Traded: <strong className="text-white">{breadth?.total_volume}</strong></span>
-                  </div>
-                  
-                  {/* advances vs declines ratio bar */}
-                  <div className="h-3.5 bg-red-500/20 border border-white/5 rounded-full overflow-hidden flex">
-                    <div
-                      className="bg-gradient-to-r from-[#00E0A4] to-[#00B37E] h-full transition-all duration-500 shadow-[0_0_10px_rgba(0,224,164,0.5)]"
-                      style={{ width: `${(breadth?.advances / (breadth?.advances + breadth?.declines || 1)) * 100}%` }}
-                    />
-                  </div>
-                </div>
-
-                <div className="pt-3 border-t border-white/10 grid grid-cols-2 gap-4">
-                  <div>
-                    <span className="text-xs text-slate-400 font-bold block">Total Volume</span>
-                    <span className="font-bold text-white text-sm">{breadth?.total_volume}</span>
-                  </div>
-                  <div>
-                    <span className="text-xs text-slate-400 font-bold block">Total Turnover</span>
-                    <span className="font-bold text-white text-sm">{breadth?.total_value}</span>
-                  </div>
-                </div>
-              </div>
-            )}
-          </section>
-
+        {/* QUICK INSIGHTS */}
+        <div className="grid grid-cols-1 gap-6">
           {/* QUICK INSIGHTS SECTION */}
           <section className="space-y-4">
             <div className="flex items-center gap-2">

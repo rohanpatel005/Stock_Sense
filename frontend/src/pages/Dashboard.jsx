@@ -105,8 +105,7 @@ const Dashboard = () => {
   const [_searchQuery, setSearchQuery] = useState("");
   const [_searchResults, setSearchResults] = useState([]);
   const [_mobileMenuOpen, _setMobileMenuOpen] = useState(false);
-  const [askAiText, setAskAiText] = useState("");
-  const [aiChat, setAiChat] = useState([]);
+
 
   const searchTimeoutRef = useRef(null);
 
@@ -448,38 +447,7 @@ const Dashboard = () => {
     }, 300);
   };
 
-  const handleAskAI = async (e) => {
-    e.preventDefault();
-    if (!askAiText.trim()) return;
-    const currentQuery = askAiText;
-    const newChat = [...aiChat, { sender: "user", text: currentQuery }];
-    setAiChat(newChat);
-    setAskAiText("");
 
-    try {
-      const token = localStorage.getItem("access_token");
-      const response = await axios.post(
-        "http://127.0.0.1:8000/api/ai/chat/",
-        { message: currentQuery },
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-      setAiChat([
-        ...newChat,
-        {
-          sender: "ai",
-          text: response.data.reply || "I'm sorry, I couldn't process that request.",
-        },
-      ]);
-    } catch (_err) {
-      setAiChat([
-        ...newChat,
-        {
-          sender: "ai",
-          text: "I'm having trouble connecting right now. Please try again later.",
-        },
-      ]);
-    }
-  };
 
   if (loading) {
     return (
@@ -1141,67 +1109,7 @@ const Dashboard = () => {
         </div>
       </div>
 
-      {/* 3. RIGHT FLOATING CHAT WIDGET (FAB for AI chat popup) */}
-      <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end">
-        {aiChat.length > 0 && (
-          <div className="w-80 bg-[#0B1118]/90 backdrop-blur-2xl border border-white/10 rounded-3xl shadow-[0_8px_32px_rgba(0,0,0,0.8)] mb-4 overflow-hidden flex flex-col max-h-96">
-            <div className="bg-gradient-to-r from-purple-600 to-indigo-600 text-white p-4 font-bold text-sm flex items-center gap-2 border-b border-white/10">
-              <Sparkles className="w-4 h-4 fill-white/50" />
-              Ask StockSense AI
-            </div>
-            <div className="flex-1 p-4 overflow-y-auto space-y-3 max-h-64 custom-scrollbar bg-transparent">
-              {aiChat.map((msg, idx) => (
-                <div
-                  key={idx}
-                  className={`p-3 rounded-2xl text-xs max-w-[85%] font-medium ${
-                    msg.sender === "user"
-                      ? "bg-purple-600 text-white self-end ml-auto"
-                      : "bg-white/10 text-slate-300 border border-white/5"
-                  }`}
-                >
-                  {msg.text}
-                </div>
-              ))}
-            </div>
-            <form
-              onSubmit={handleAskAI}
-              className="p-3 border-t border-white/10 flex gap-2 bg-black/20"
-            >
-              <input
-                type="text"
-                value={askAiText}
-                onChange={(e) => setAskAiText(e.target.value)}
-                placeholder="Ask stock queries..."
-                className="flex-1 text-xs bg-white/5 text-white border border-white/10 rounded-xl px-3 py-2 outline-none focus:border-purple-500 placeholder:text-slate-500 transition-colors"
-              />
-              <button
-                type="submit"
-                className="bg-purple-600 hover:bg-purple-700 text-white text-xs font-bold px-3 py-2 rounded-xl transition-colors"
-              >
-                Send
-              </button>
-            </form>
-          </div>
-        )}
 
-        <button
-          onClick={() => {
-            if (aiChat.length === 0) {
-              setAiChat([
-                {
-                  sender: "ai",
-                  text: "Hello! I am your StockSense AI assistant. Ask me anything about Indian stocks!",
-                },
-              ]);
-            } else {
-              setAiChat([]);
-            }
-          }}
-          className="bg-gradient-to-r from-purple-500 to-indigo-600 text-white w-14 h-14 rounded-full shadow-[0_0_20px_rgba(168,85,247,0.4)] flex items-center justify-center ai-fab-btn z-50 border border-white/10"
-        >
-          <Sparkles className="w-6 h-6" />
-        </button>
-      </div>
     </main>
   );
 };

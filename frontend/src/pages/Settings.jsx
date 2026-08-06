@@ -2,34 +2,43 @@ import { useState, useEffect } from 'react';
 import ProfileCard from '../components/settings/ProfileCard';
 import PaperTradingCard from '../components/settings/PaperTradingCard';
 import WarningModal from '../components/settings/WarningModal';
-import PasswordModal from '../components/settings/PasswordModal';
+import OTPModal from '../components/settings/OTPModal';
 import SuccessModal from '../components/settings/SuccessModal';
 import { useSettings } from '../hooks/useSettings';
-import { Settings as SettingsIcon } from 'lucide-react';
+import { Settings as SettingsIcon, Loader2 } from 'lucide-react';
 
 const Settings = ({ _user, _handleLogout }) => {
-    const { profile, loading, error, fetchProfile, resetAccount } = useSettings();
+    const { profile, loading, error, fetchProfile, requestOTP, resetAccount } = useSettings();
     
     const [isWarningOpen, setWarningOpen] = useState(false);
-    const [isPasswordOpen, setPasswordOpen] = useState(false);
+    const [isOTPOpen, setOTPOpen] = useState(false);
     const [isSuccessOpen, setSuccessOpen] = useState(false);
+    const [isRequestingOTP, setRequestingOTP] = useState(false);
 
     useEffect(() => {
         fetchProfile();
     }, [fetchProfile]);
 
-    const handleWarningContinue = () => {
+    const handleWarningContinue = async () => {
         setWarningOpen(false);
-        setPasswordOpen(true);
+        setRequestingOTP(true);
+        const result = await requestOTP();
+        setRequestingOTP(false);
+        
+        if (result.success) {
+            setOTPOpen(true);
+        } else {
+            alert(result.error || "Failed to send OTP. Please try again.");
+        }
     };
 
-    const handlePasswordVerify = async (password) => {
-        const result = await resetAccount(password);
+    const handleOTPVerify = async (otp) => {
+        const result = await resetAccount(otp);
         if (result.success) {
-            setPasswordOpen(false);
+            setOTPOpen(false);
             setSuccessOpen(true);
         }
-        return result; // returning so PasswordModal can handle errors
+        return result;
     };
 
     if (loading) return <div className="p-8 font-semibold text-slate-500">Loading settings...</div>;
@@ -67,11 +76,19 @@ const Settings = ({ _user, _handleLogout }) => {
                     onUnderstand={handleWarningContinue} 
                 />
             )}
+            {isRequestingOTP && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-sm">
+                    <div className="bg-[#0B1118]/90 p-8 rounded-2xl border border-white/10 flex flex-col items-center shadow-2xl">
+                        <Loader2 className="w-8 h-8 text-[#00E0A4] animate-spin mb-4" />
+                        <p className="text-white font-medium">Sending OTP to your email...</p>
+                    </div>
+                </div>
+            )}
             
-            {isPasswordOpen && (
-                <PasswordModal 
-                    onCancel={() => setPasswordOpen(false)} 
-                    onVerify={handlePasswordVerify} 
+            {isOTPOpen && (
+                <OTPModal 
+                    onCancel={() => setOTPOpen(false)} 
+                    onVerify={handleOTPVerify} 
                 />
             )}
             

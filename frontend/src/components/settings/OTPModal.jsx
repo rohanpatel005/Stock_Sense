@@ -1,22 +1,21 @@
 import { useState } from 'react';
-import { Lock, Loader2, Eye, EyeOff } from 'lucide-react';
+import { Lock, Loader2 } from 'lucide-react';
 
-const PasswordModal = ({ onCancel, onVerify }) => {
-    const [password, setPassword] = useState('');
-    const [showPassword, setShowPassword] = useState(false);
+const OTPModal = ({ onCancel, onVerify }) => {
+    const [otp, setOtp] = useState('');
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        if (!password) return;
+        if (!otp) return;
 
         setLoading(true);
         setError(null);
         
-        const result = await onVerify(password);
+        const result = await onVerify(otp);
         if (!result.success) {
-            setError(result.error || 'Incorrect password.');
+            setError(result.error || 'Invalid OTP.');
             setLoading(false);
         }
     };
@@ -29,33 +28,27 @@ const PasswordModal = ({ onCancel, onVerify }) => {
                         <Lock className="w-6 h-6 drop-shadow-[0_0_5px_rgba(0,224,164,0.5)]" />
                     </div>
                     <div>
-                        <h2 className="text-lg font-bold text-white">Confirm Password</h2>
-                        <p className="text-sm text-slate-400 font-medium mt-0.5">Enter your account password to continue.</p>
+                        <h2 className="text-lg font-bold text-white">Verify OTP</h2>
+                        <p className="text-sm text-slate-400 font-medium mt-0.5">Enter the 4-digit OTP sent to your email.</p>
                     </div>
                 </div>
                 
                 <form onSubmit={handleSubmit} className="flex flex-col flex-1 overflow-hidden min-h-0">
                     <div className="p-6 space-y-4 overflow-y-auto">
                         <div>
-                            <label className="block text-xs font-bold text-slate-400 mb-2 uppercase tracking-wider">Password</label>
+                            <label className="block text-xs font-bold text-slate-400 mb-2 uppercase tracking-wider">OTP Code</label>
                             <div className="relative group">
                                 <input 
-                                    type={showPassword ? 'text' : 'password'}
-                                    value={password}
-                                    onChange={(e) => setPassword(e.target.value)}
-                                    placeholder="Enter your password"
-                                    className="w-full px-4 py-3 bg-[#05070D]/50 border border-white/10 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#00E0A4]/30 focus:border-[#00E0A4]/50 transition-all text-sm font-medium pr-10 text-white placeholder-slate-600 shadow-inner group-hover:border-white/20"
+                                    type="text"
+                                    maxLength="4"
+                                    value={otp}
+                                    onChange={(e) => setOtp(e.target.value.replace(/[^0-9]/g, ''))}
+                                    placeholder="Enter 4-digit OTP"
+                                    className="w-full px-4 py-3 bg-[#05070D]/50 border border-white/10 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#00E0A4]/30 focus:border-[#00E0A4]/50 transition-all text-sm font-medium text-white placeholder-slate-600 shadow-inner group-hover:border-white/20 tracking-widest text-center"
                                     disabled={loading}
                                 />
-                                <button
-                                    type="button"
-                                    onClick={() => setShowPassword(!showPassword)}
-                                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-slate-500 hover:text-[#00E0A4] transition-colors"
-                                >
-                                    {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
-                                </button>
                             </div>
-                            {error && <p className="mt-2 text-sm text-red-400 font-medium">{error}</p>}
+                            {error && <p className="mt-2 text-sm text-red-400 font-medium text-center">{error}</p>}
                         </div>
                     </div>
                     
@@ -70,7 +63,7 @@ const PasswordModal = ({ onCancel, onVerify }) => {
                         </button>
                         <button 
                             type="submit"
-                            disabled={!password || loading}
+                            disabled={!otp || otp.length < 4 || loading}
                             className="px-5 py-2.5 text-sm font-bold text-[#05070D] bg-gradient-to-r from-[#00E0A4] to-[#00B37E] hover:from-[#00E0A4] hover:to-[#00E0A4] rounded-xl transition-all shadow-[0_0_15px_rgba(0,224,164,0.4)] hover:shadow-[0_0_25px_rgba(0,224,164,0.6)] disabled:opacity-50 disabled:shadow-none flex items-center gap-2 focus:outline-none focus:ring-2 focus:ring-[#00E0A4] focus:ring-offset-2 focus:ring-offset-[#0B1118]"
                         >
                             {loading && <Loader2 className="w-4 h-4 animate-spin text-[#05070D]" />}
@@ -83,4 +76,4 @@ const PasswordModal = ({ onCancel, onVerify }) => {
     );
 };
 
-export default PasswordModal;
+export default OTPModal;

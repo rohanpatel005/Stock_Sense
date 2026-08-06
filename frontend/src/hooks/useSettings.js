@@ -20,9 +20,19 @@ export const useSettings = () => {
         }
     }, []);
 
-    const resetAccount = async (password) => {
+    const requestOTP = async () => {
         try {
-            const data = await settingsService.resetPaperAccount(password);
+            const data = await settingsService.requestResetOTP();
+            return { success: true, data };
+        } catch (err) {
+            const errorMsg = err.response?.data?.error || 'Unable to request OTP. Please try again later.';
+            return { success: false, error: errorMsg };
+        }
+    };
+
+    const resetAccount = async (otp) => {
+        try {
+            const data = await settingsService.resetPaperAccount(otp);
             // Re-fetch profile to update balance/resets
             await fetchProfile();
             return { success: true, data };
@@ -32,5 +42,5 @@ export const useSettings = () => {
         }
     };
 
-    return { profile, loading, error, fetchProfile, resetAccount };
+    return { profile, loading, error, fetchProfile, requestOTP, resetAccount };
 };
