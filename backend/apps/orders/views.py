@@ -33,13 +33,13 @@ class OrdersAPIView(APIView):
         
         queryset = OrderService.get_orders(request.user, filters)
         
-        # 3. Paginate Orders
-        paginator = OrderPagination()
-        paginated_queryset = paginator.paginate_queryset(queryset, request)
-        serializer = OrderSerializer(paginated_queryset, many=True)
+        # 3. Serialize all Orders
+        serializer = OrderSerializer(queryset, many=True)
         
         # 4. Return combined response
-        return paginator.get_paginated_response({
-            "summary": summary,
-            "orders": serializer.data
+        return Response({
+            "results": {
+                "summary": summary,
+                "orders": serializer.data
+            }
         })

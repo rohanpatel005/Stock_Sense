@@ -1,0 +1,99 @@
+<!DOCTYPE html><html><head><style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+    width: 1920px; height: 1080px;
+    font-family: 'Inter', -apple-system, sans-serif;
+    background: linear-gradient(135deg, #040B1A 0%, #071A35 40%, #0A1628 100%);
+    color: #E2E8F0;
+    overflow: hidden;
+    position: relative;
+}
+
+body::before {
+    content: '';
+    position: absolute; inset: 0;
+    background:
+        radial-gradient(ellipse 600px 400px at 15% 20%, rgba(14,165,233,0.07), transparent),
+        radial-gradient(ellipse 500px 350px at 85% 75%, rgba(34,211,238,0.05), transparent),
+        radial-gradient(ellipse 400px 300px at 50% 50%, rgba(34,197,94,0.03), transparent);
+    pointer-events: none;
+}
+
+.grid-overlay {
+    position: absolute; inset: 0;
+    background-image:
+        linear-gradient(rgba(14,165,233,0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(14,165,233,0.03) 1px, transparent 1px);
+    background-size: 60px 60px;
+    pointer-events: none;
+}
+
+.glass-card {
+    background: rgba(14, 165, 233, 0.06);
+    border: 1px solid rgba(14, 165, 233, 0.15);
+    border-radius: 20px;
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    padding: 32px;
+    transition: all 0.3s;
+}
+
+.glass-card-green {
+    background: rgba(34, 197, 94, 0.06);
+    border: 1px solid rgba(34, 197, 94, 0.15);
+    border-radius: 20px;
+    backdrop-filter: blur(20px);
+    padding: 32px;
+}
+
+.glow-text {
+    text-shadow: 0 0 40px rgba(14,165,233,0.3);
+}
+
+.accent { color: #0EA5E9; }
+.cyan { color: #22D3EE; }
+.green { color: #22C55E; }
+.gold { color: #FACC15; }
+.muted { color: #94A3B8; }
+
+.tag {
+    display: inline-block;
+    padding: 6px 16px;
+    border-radius: 100px;
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+}
+
+.container { padding: 70px 100px; position: relative; z-index: 1; }
+h1 { font-size: 52px; font-weight: 800; margin-bottom: 50px; text-align: center; background: linear-gradient(135deg, #0EA5E9, #22D3EE); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+.grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 28px; }
+.tech-card { padding: 28px; text-align: center; }
+.tech-icon { width: 56px; height: 56px; border-radius: 16px; margin: 0 auto 18px; display: flex; align-items: center; justify-content: center; font-size: 24px; font-weight: 800; }
+.tech-cat { font-size: 11px; color: #64748B; text-transform: uppercase; letter-spacing: 2px; font-weight: 600; margin-bottom: 10px; }
+.tech-name { font-size: 20px; font-weight: 700; color: #F1F5F9; margin-bottom: 8px; }
+.tech-items { font-size: 14px; color: #94A3B8; line-height: 1.6; }
+.ti-blue { background: linear-gradient(135deg, rgba(14,165,233,0.2), rgba(14,165,233,0.05)); color: #0EA5E9; }
+.ti-cyan { background: linear-gradient(135deg, rgba(34,211,238,0.2), rgba(34,211,238,0.05)); color: #22D3EE; }
+.ti-green { background: linear-gradient(135deg, rgba(34,197,94,0.2), rgba(34,197,94,0.05)); color: #22C55E; }
+.ti-gold { background: linear-gradient(135deg, rgba(250,204,21,0.2), rgba(250,204,21,0.05)); color: #FACC15; }
+</style></head><body>
+<div class="grid-overlay"></div>
+<div class="container">
+    <h1 class="glow-text">Technology Stack</h1>
+    <div class="grid">
+        <div class="glass-card tech-card"><div class="tech-icon ti-blue">⚛</div><div class="tech-cat">Frontend</div><div class="tech-name">React + Vite</div><div class="tech-items">HTML5 · CSS3 · JavaScript<br>Lightweight Charts</div></div>
+        <div class="glass-card tech-card"><div class="tech-icon ti-green">◆</div><div class="tech-cat">Backend</div><div class="tech-name">Django</div><div class="tech-items">Django REST Framework<br>Python 3.12</div></div>
+        <div class="glass-card tech-card"><div class="tech-icon ti-cyan">⛁</div><div class="tech-cat">Database</div><div class="tech-name">PostgreSQL</div><div class="tech-items">Relational Database<br>Django ORM</div></div>
+        <div class="glass-card tech-card"><div class="tech-icon ti-gold">🔐</div><div class="tech-cat">Authentication</div><div class="tech-name">JWT</div><div class="tech-items">SimpleJWT<br>Stateless Auth</div></div>
+        <div class="glass-card tech-card"><div class="tech-icon ti-blue">📊</div><div class="tech-cat">Market Data</div><div class="tech-name">Yahoo Finance</div><div class="tech-items">yfinance Library<br>Live Prices &amp; History</div></div>
+        <div class="glass-card tech-card"><div class="tech-icon ti-green">🧠</div><div class="tech-cat">AI Engine</div><div class="tech-name">Groq API</div><div class="tech-items">Llama 3 LLM<br>RAG Architecture</div></div>
+        <div class="glass-card tech-card"><div class="tech-icon ti-cyan">📰</div><div class="tech-cat">News</div><div class="tech-name">News API</div><div class="tech-items">Financial Headlines<br>Company News</div></div>
+        <div class="glass-card tech-card"><div class="tech-icon ti-gold">⎇</div><div class="tech-cat">Version Control</div><div class="tech-name">Git &amp; GitHub</div><div class="tech-items">Source Control<br>Collaboration</div></div>
+    </div>
+</div>
+</body></html>

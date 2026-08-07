@@ -1,0 +1,178 @@
+<!DOCTYPE html><html><head><style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+    width: 1920px; height: 1080px;
+    font-family: 'Inter', -apple-system, sans-serif;
+    background: linear-gradient(135deg, #040B1A 0%, #071A35 40%, #0A1628 100%);
+    color: #E2E8F0;
+    overflow: hidden;
+    position: relative;
+}
+
+body::before {
+    content: '';
+    position: absolute; inset: 0;
+    background:
+        radial-gradient(ellipse 600px 400px at 15% 20%, rgba(14,165,233,0.07), transparent),
+        radial-gradient(ellipse 500px 350px at 85% 75%, rgba(34,211,238,0.05), transparent),
+        radial-gradient(ellipse 400px 300px at 50% 50%, rgba(34,197,94,0.03), transparent);
+    pointer-events: none;
+}
+
+.grid-overlay {
+    position: absolute; inset: 0;
+    background-image:
+        linear-gradient(rgba(14,165,233,0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(14,165,233,0.03) 1px, transparent 1px);
+    background-size: 60px 60px;
+    pointer-events: none;
+}
+
+.glass-card {
+    background: rgba(14, 165, 233, 0.06);
+    border: 1px solid rgba(14, 165, 233, 0.15);
+    border-radius: 20px;
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    padding: 32px;
+    transition: all 0.3s;
+}
+
+.glass-card-green {
+    background: rgba(34, 197, 94, 0.06);
+    border: 1px solid rgba(34, 197, 94, 0.15);
+    border-radius: 20px;
+    backdrop-filter: blur(20px);
+    padding: 32px;
+}
+
+.glow-text {
+    text-shadow: 0 0 40px rgba(14,165,233,0.3);
+}
+
+.accent { color: #0EA5E9; }
+.cyan { color: #22D3EE; }
+.green { color: #22C55E; }
+.gold { color: #FACC15; }
+.muted { color: #94A3B8; }
+
+.tag {
+    display: inline-block;
+    padding: 6px 16px;
+    border-radius: 100px;
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+}
+
+.container { padding: 60px 80px; position: relative; z-index: 1; }
+h1 { font-size: 48px; font-weight: 800; margin-bottom: 40px; text-align: center; background: linear-gradient(135deg, #0EA5E9, #22D3EE); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+.er-layout { display: flex; gap: 32px; justify-content: center; align-items: flex-start; position: relative; }
+.entity { width: 340px; border-radius: 20px; overflow: hidden; }
+.entity-header { padding: 16px 24px; font-size: 20px; font-weight: 800; text-align: center; letter-spacing: 1px; }
+.eh-blue { background: linear-gradient(135deg, rgba(14,165,233,0.3), rgba(14,165,233,0.1)); color: #0EA5E9; }
+.eh-cyan { background: linear-gradient(135deg, rgba(34,211,238,0.3), rgba(34,211,238,0.1)); color: #22D3EE; }
+.eh-green { background: linear-gradient(135deg, rgba(34,197,94,0.3), rgba(34,197,94,0.1)); color: #22C55E; }
+.eh-gold { background: linear-gradient(135deg, rgba(250,204,21,0.3), rgba(250,204,21,0.1)); color: #FACC15; }
+.entity-body { padding: 12px 24px; }
+.field { display: flex; justify-content: space-between; align-items: center; padding: 7px 0; border-bottom: 1px solid rgba(255,255,255,0.04); font-size: 14px; }
+.field:last-child { border-bottom: none; }
+.field-name { color: #CBD5E1; font-weight: 500; }
+.field-type { color: #64748B; font-size: 12px; font-family: monospace; }
+.field-key { font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 6px; margin-left: 8px; }
+.pk { background: rgba(250,204,21,0.15); color: #FACC15; }
+.fk { background: rgba(14,165,233,0.15); color: #0EA5E9; }
+.uk { background: rgba(34,211,238,0.15); color: #22D3EE; }
+.relationships { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; }
+.rel-legend { display: flex; gap: 32px; justify-content: center; margin-top: 24px; }
+.rel-item { display: flex; align-items: center; gap: 8px; font-size: 13px; color: #64748B; }
+.rel-dot { width: 10px; height: 10px; border-radius: 50%; }
+.center-entity { margin-top: 0; }
+.side-entities { display: flex; flex-direction: column; gap: 24px; margin-top: 60px; }
+.connector { position: absolute; display: flex; align-items: center; color: #334155; font-size: 11px; font-weight: 600; }
+</style></head><body>
+<div class="grid-overlay"></div>
+<div class="container">
+    <h1 class="glow-text">Database ER Diagram</h1>
+    <div class="er-layout">
+        <div class="side-entities">
+            <div class="glass-card entity">
+                <div class="entity-header eh-cyan">Portfolio</div>
+                <div class="entity-body">
+                    <div class="field"><span class="field-name">id<span class="field-key pk">PK</span></span><span class="field-type">INT</span></div>
+                    <div class="field"><span class="field-name">user_id<span class="field-key fk">FK</span></span><span class="field-type">INT</span></div>
+                    <div class="field"><span class="field-name">stock_symbol</span><span class="field-type">VARCHAR(20)</span></div>
+                    <div class="field"><span class="field-name">company_name</span><span class="field-type">VARCHAR(100)</span></div>
+                    <div class="field"><span class="field-name">quantity</span><span class="field-type">INT</span></div>
+                    <div class="field"><span class="field-name">average_buy_price</span><span class="field-type">DECIMAL</span></div>
+                    <div class="field"><span class="field-name">current_price</span><span class="field-type">DECIMAL</span></div>
+                    <div class="field"><span class="field-name">invested_amount</span><span class="field-type">DECIMAL</span></div>
+                    <div class="field"><span class="field-name">current_value</span><span class="field-type">DECIMAL</span></div>
+                    <div class="field"><span class="field-name">profit_loss</span><span class="field-type">DECIMAL</span></div>
+                    <div class="field"><span class="field-name">profit_loss_pct</span><span class="field-type">DECIMAL</span></div>
+                </div>
+            </div>
+            <div class="glass-card entity">
+                <div class="entity-header eh-gold">Watchlist</div>
+                <div class="entity-body">
+                    <div class="field"><span class="field-name">id<span class="field-key pk">PK</span></span><span class="field-type">INT</span></div>
+                    <div class="field"><span class="field-name">user_id<span class="field-key fk">FK</span></span><span class="field-type">INT</span></div>
+                    <div class="field"><span class="field-name">symbol</span><span class="field-type">VARCHAR(50)</span></div>
+                    <div class="field"><span class="field-name">created_at</span><span class="field-type">DATETIME</span></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="center-entity" style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:20px;padding-top:40px;">
+            <div style="font-size:14px;color:#334155;writing-mode:horizontal-tb;">1 ── ─ ─ ─ ──&lt;</div>
+            <div class="glass-card entity" style="border:1px solid rgba(14,165,233,0.3);">
+                <div class="entity-header eh-blue">User</div>
+                <div class="entity-body">
+                    <div class="field"><span class="field-name">id<span class="field-key pk">PK</span></span><span class="field-type">INT</span></div>
+                    <div class="field"><span class="field-name">full_name</span><span class="field-type">VARCHAR(100)</span></div>
+                    <div class="field"><span class="field-name">email<span class="field-key uk">UK</span></span><span class="field-type">EMAIL</span></div>
+                    <div class="field"><span class="field-name">password</span><span class="field-type">HASH</span></div>
+                    <div class="field"><span class="field-name">wallet</span><span class="field-type">DECIMAL(12,2)</span></div>
+                    <div class="field"><span class="field-name">is_verified</span><span class="field-type">BOOLEAN</span></div>
+                    <div class="field"><span class="field-name">is_active</span><span class="field-type">BOOLEAN</span></div>
+                    <div class="field"><span class="field-name">auth_provider</span><span class="field-type">VARCHAR(20)</span></div>
+                    <div class="field"><span class="field-name">google_id</span><span class="field-type">VARCHAR(255)</span></div>
+                    <div class="field"><span class="field-name">monthly_reset_count</span><span class="field-type">INT</span></div>
+                    <div class="field"><span class="field-name">created_at</span><span class="field-type">DATETIME</span></div>
+                    <div class="field"><span class="field-name">updated_at</span><span class="field-type">DATETIME</span></div>
+                </div>
+            </div>
+            <div style="font-size:14px;color:#334155;">1 ── ─ ─ ─ ──&lt;</div>
+        </div>
+
+        <div class="side-entities">
+            <div class="glass-card entity">
+                <div class="entity-header eh-green">Transaction</div>
+                <div class="entity-body">
+                    <div class="field"><span class="field-name">id<span class="field-key pk">PK</span></span><span class="field-type">INT</span></div>
+                    <div class="field"><span class="field-name">user_id<span class="field-key fk">FK</span></span><span class="field-type">INT</span></div>
+                    <div class="field"><span class="field-name">stock_symbol</span><span class="field-type">VARCHAR(20)</span></div>
+                    <div class="field"><span class="field-name">company_name</span><span class="field-type">VARCHAR(100)</span></div>
+                    <div class="field"><span class="field-name">transaction_type</span><span class="field-type">BUY / SELL</span></div>
+                    <div class="field"><span class="field-name">quantity</span><span class="field-type">INT</span></div>
+                    <div class="field"><span class="field-name">price</span><span class="field-type">DECIMAL</span></div>
+                    <div class="field"><span class="field-name">total_amount</span><span class="field-type">DECIMAL</span></div>
+                    <div class="field"><span class="field-name">order_type</span><span class="field-type">MARKET/LIMIT</span></div>
+                    <div class="field"><span class="field-name">order_status</span><span class="field-type">VARCHAR(10)</span></div>
+                    <div class="field"><span class="field-name">created_at</span><span class="field-type">DATETIME</span></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="rel-legend">
+        <div class="rel-item"><div class="rel-dot" style="background:#FACC15;"></div>PK = Primary Key</div>
+        <div class="rel-item"><div class="rel-dot" style="background:#0EA5E9;"></div>FK = Foreign Key</div>
+        <div class="rel-item"><div class="rel-dot" style="background:#22D3EE;"></div>UK = Unique</div>
+        <div class="rel-item" style="color:#94A3B8;">User (1) ──&lt; Portfolio, Transaction, Watchlist (Many)</div>
+    </div>
+</div>
+</body></html>

@@ -1,0 +1,121 @@
+<!DOCTYPE html><html><head><style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+    width: 1920px; height: 1080px;
+    font-family: 'Inter', -apple-system, sans-serif;
+    background: linear-gradient(135deg, #040B1A 0%, #071A35 40%, #0A1628 100%);
+    color: #E2E8F0;
+    overflow: hidden;
+    position: relative;
+}
+
+body::before {
+    content: '';
+    position: absolute; inset: 0;
+    background:
+        radial-gradient(ellipse 600px 400px at 15% 20%, rgba(14,165,233,0.07), transparent),
+        radial-gradient(ellipse 500px 350px at 85% 75%, rgba(34,211,238,0.05), transparent),
+        radial-gradient(ellipse 400px 300px at 50% 50%, rgba(34,197,94,0.03), transparent);
+    pointer-events: none;
+}
+
+.grid-overlay {
+    position: absolute; inset: 0;
+    background-image:
+        linear-gradient(rgba(14,165,233,0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(14,165,233,0.03) 1px, transparent 1px);
+    background-size: 60px 60px;
+    pointer-events: none;
+}
+
+.glass-card {
+    background: rgba(14, 165, 233, 0.06);
+    border: 1px solid rgba(14, 165, 233, 0.15);
+    border-radius: 20px;
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    padding: 32px;
+    transition: all 0.3s;
+}
+
+.glass-card-green {
+    background: rgba(34, 197, 94, 0.06);
+    border: 1px solid rgba(34, 197, 94, 0.15);
+    border-radius: 20px;
+    backdrop-filter: blur(20px);
+    padding: 32px;
+}
+
+.glow-text {
+    text-shadow: 0 0 40px rgba(14,165,233,0.3);
+}
+
+.accent { color: #0EA5E9; }
+.cyan { color: #22D3EE; }
+.green { color: #22C55E; }
+.gold { color: #FACC15; }
+.muted { color: #94A3B8; }
+
+.tag {
+    display: inline-block;
+    padding: 6px 16px;
+    border-radius: 100px;
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+}
+
+.container { padding: 70px 80px; position: relative; z-index: 1; }
+h1 { font-size: 52px; font-weight: 800; margin-bottom: 50px; text-align: center; background: linear-gradient(135deg, #0EA5E9, #22D3EE); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+.flow { display: flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: 12px; }
+.node { padding: 20px 32px; border-radius: 16px; font-size: 17px; font-weight: 600; text-align: center; min-width: 160px; position: relative; }
+.node-primary { background: linear-gradient(135deg, rgba(14,165,233,0.15), rgba(14,165,233,0.05)); border: 1px solid rgba(14,165,233,0.25); color: #E2E8F0; box-shadow: 0 0 30px rgba(14,165,233,0.08); }
+.node-accent { background: linear-gradient(135deg, rgba(34,211,238,0.15), rgba(34,211,238,0.05)); border: 1px solid rgba(34,211,238,0.25); color: #22D3EE; box-shadow: 0 0 30px rgba(34,211,238,0.08); }
+.node-green { background: linear-gradient(135deg, rgba(34,197,94,0.15), rgba(34,197,94,0.05)); border: 1px solid rgba(34,197,94,0.25); color: #22C55E; box-shadow: 0 0 30px rgba(34,197,94,0.08); }
+.node-gold { background: linear-gradient(135deg, rgba(250,204,21,0.15), rgba(250,204,21,0.05)); border: 1px solid rgba(250,204,21,0.25); color: #FACC15; box-shadow: 0 0 30px rgba(250,204,21,0.08); }
+.arrow { font-size: 28px; color: #334155; font-weight: 300; }
+.node-label { font-size: 11px; color: #64748B; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 6px; }
+.flow-section { display: flex; flex-direction: column; align-items: center; gap: 16px; }
+.flow-row { display: flex; align-items: center; gap: 16px; justify-content: center; width: 100%; }
+.v-arrow { font-size: 32px; color: #334155; }
+</style></head><body>
+<div class="grid-overlay"></div>
+<div class="container">
+    <h1 class="glow-text">System Workflow</h1>
+    <div class="flow-section">
+        <div class="flow-row">
+            <div class="node node-primary"><div class="node-label">Client</div>👤 User</div>
+            <div class="arrow">→</div>
+            <div class="node node-accent"><div class="node-label">Frontend</div>⚛ React + Vite</div>
+            <div class="arrow">→</div>
+            <div class="node node-primary"><div class="node-label">HTTP Client</div>📡 Axios API</div>
+            <div class="arrow">→</div>
+            <div class="node node-green"><div class="node-label">Backend</div>◆ Django REST</div>
+            <div class="arrow">→</div>
+            <div class="node node-gold"><div class="node-label">Security</div>🔐 JWT Auth</div>
+        </div>
+        <div class="v-arrow">↓</div>
+        <div class="flow-row">
+            <div class="node node-green"><div class="node-label">Core</div>⚙ Business Logic</div>
+            <div class="arrow">→</div>
+            <div class="node node-accent"><div class="node-label">External</div>📊 Yahoo Finance</div>
+            <div class="arrow">→</div>
+            <div class="node node-primary"><div class="node-label">Analysis</div>📈 Tech Indicators</div>
+            <div class="arrow">→</div>
+            <div class="node node-gold"><div class="node-label">Storage</div>⛁ PostgreSQL</div>
+        </div>
+        <div class="v-arrow">↓</div>
+        <div class="flow-row">
+            <div class="node node-green" style="min-width:220px;"><div class="node-label">AI Engine</div>🧠 AI Mentor (Groq LLM)</div>
+            <div class="arrow">→</div>
+            <div class="node node-accent" style="min-width:220px;"><div class="node-label">Response</div>📦 JSON API Response</div>
+            <div class="arrow">→</div>
+            <div class="node node-primary" style="min-width:220px;"><div class="node-label">Display</div>🖥 Frontend Dashboard</div>
+        </div>
+    </div>
+</div>
+</body></html>

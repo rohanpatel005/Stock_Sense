@@ -18,7 +18,7 @@ const CTA = () => {
           Start Your Stock Market <br />Journey Today.
         </h2>
         <p className="text-body-lg text-on-surface-variant mb-12 max-w-xl mx-auto">
-          Join 12,000+ traders who have already upgraded their edge with AI-powered insights and professional-grade tools.
+          Join traders who have already upgraded their edge with AI-powered insights and professional-grade tools.
         </p>
         <div className="flex flex-col sm:flex-row gap-6 justify-center">
           <button className="px-10 py-5 bg-primary text-on-primary text-headline-md font-bold rounded-2xl glow-button transition-all cursor-pointer">

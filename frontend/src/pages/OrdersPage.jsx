@@ -15,10 +15,8 @@ const OrdersPage = () => {
     status: '',
     type: '',
     symbol: '',
-    page: 1,
   });
-  
-  const [totalPages, setTotalPages] = useState(1);
+
   const [selectedOrder, setSelectedOrder] = useState(null);
 
   const [user, _setUser] = useState(() => {
@@ -38,7 +36,6 @@ const OrdersPage = () => {
       if (filters.status) params.append('status', filters.status);
       if (filters.type) params.append('type', filters.type);
       if (filters.symbol) params.append('symbol', filters.symbol);
-      if (filters.page) params.append('page', filters.page);
 
       const response = await axios.get(`http://127.0.0.1:8000/api/orders/?${params.toString()}`, {
         headers: { Authorization: `Bearer ${token}` }
@@ -52,9 +49,6 @@ const OrdersPage = () => {
         orders: fetchedOrders
       });
       
-      const totalItems = response.data.count || fetchedOrders.length;
-      setTotalPages(Math.max(1, Math.ceil(totalItems / 20)));
-      
     } catch (_err) {
       setError('Failed to fetch orders. Please try again.');
     } finally {
@@ -66,11 +60,7 @@ const OrdersPage = () => {
     fetchOrders();
   }, [fetchOrders]);
 
-  const handlePageChange = (newPage) => {
-    if (newPage >= 1 && newPage <= totalPages) {
-      setFilters(prev => ({ ...prev, page: newPage }));
-    }
-  };
+
 
   return (
     <main className="flex-1 pt-20 lg:pt-6 pb-24 px-4 lg:px-8 space-y-6 relative z-10">
@@ -102,30 +92,7 @@ const OrdersPage = () => {
             onRowClick={(order) => setSelectedOrder(order)} 
           />
 
-          {/* Pagination */}
-          {!loading && data.orders.length > 0 && (
-            <div className="flex items-center justify-between px-4 bg-[#0B1118]/80 backdrop-blur-xl p-4 rounded-2xl border border-white/10 shadow-[0_4px_20px_rgba(0,0,0,0.3)]">
-              <span className="text-sm font-semibold text-slate-400">
-                Page {filters.page} of {totalPages}
-              </span>
-              <div className="flex items-center gap-2">
-                <button 
-                  onClick={() => handlePageChange(filters.page - 1)}
-                  disabled={filters.page === 1}
-                  className="p-2 bg-white/5 text-slate-300 hover:bg-white/10 hover:text-white rounded-lg disabled:opacity-30 disabled:cursor-not-allowed transition-colors flex items-center justify-center border border-white/5"
-                >
-                  <ArrowLeft className="w-4 h-4" />
-                </button>
-                <button 
-                  onClick={() => handlePageChange(filters.page + 1)}
-                  disabled={filters.page === totalPages}
-                  className="p-2 bg-white/5 text-slate-300 hover:bg-white/10 hover:text-white rounded-lg disabled:opacity-30 disabled:cursor-not-allowed transition-colors flex items-center justify-center border border-white/5"
-                >
-                  <ArrowRight className="w-4 h-4" />
-                </button>
-              </div>
-            </div>
-          )}
+
         </div>
 
         {/* Order Details Drawer */}
