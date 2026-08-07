@@ -13,7 +13,6 @@ from .views import (
     market_losers,
     market_most_active,
     market_sectors,
-    market_breadth,
     market_status,
     market_stock_detail,
     market_stock_history,
@@ -40,7 +39,6 @@ urlpatterns = [
     path("losers", market_losers, name="market_losers"),
     path("most-active", market_most_active, name="market_most_active"),
     path("sectors", market_sectors, name="market_sectors"),
-    path("breadth", market_breadth, name="market_breadth"),
     path("market-status", market_status, name="market_status"),
     
     # ── Stock Details & Chart History for Drawer ─────────────────────────────
