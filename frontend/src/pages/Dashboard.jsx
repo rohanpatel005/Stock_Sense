@@ -217,19 +217,22 @@ const Dashboard = () => {
           if (!prevVal) return prevVal;
           const updated = {
             ...prevVal,
-            summary: live.summary
+            summary: live.indices
               ? {
                   ...prevVal.summary,
-                  nifty_50: live.summary.nifty_50,
-                  sensex: live.summary.sensex,
-                  bank_nifty: live.summary.bank_nifty,
-                  portfolio:
-                    live.summary.portfolio ?? prevVal.summary.portfolio,
-                  ai_mood: live.summary.ai_mood ?? prevVal.summary.ai_mood,
+                  nifty_50: live.indices.nifty_50,
+                  sensex: live.indices.sensex,
+                  bank_nifty: live.indices.bank_nifty,
+                  portfolio: live.summary?.portfolio ?? prevVal.summary.portfolio,
+                  ai_mood: live.summary?.ai_mood ?? prevVal.summary.ai_mood,
                   wallet: prevVal.summary.wallet, // wallet unchanged by live refresh
                 }
               : prevVal.summary,
-            market_overview: live.market_overview || prevVal.market_overview,
+            market_overview: live.indices ? [
+              {"symbol": "NIFTY 50", "value": live.indices.nifty_50.value, "change": live.indices.nifty_50.change_percent, "trend": live.indices.nifty_50.trend, "chart": live.indices.nifty_50.chart},
+              {"symbol": "BANK NIFTY", "value": live.indices.bank_nifty.value, "change": live.indices.bank_nifty.change_percent, "trend": live.indices.bank_nifty.trend, "chart": live.indices.bank_nifty.chart},
+              {"symbol": "SENSEX", "value": live.indices.sensex.value, "change": live.indices.sensex.change_percent, "trend": live.indices.sensex.trend, "chart": live.indices.sensex.chart}
+            ] : prevVal.market_overview,
             trending_stocks: live.trending_stocks || prevVal.trending_stocks,
             watchlist: live.watchlist || prevVal.watchlist,
             fii_dii: live.fii_dii || prevVal.fii_dii,
@@ -923,12 +926,12 @@ const Dashboard = () => {
             </div>
 
             {/* Net Flow */}
-            <div className="mt-4 flex justify-between items-center p-4 px-6 bg-slate-100/50 rounded-xl border border-slate-100">
-              <span className="text-sm font-bold text-slate-800 uppercase tracking-wider">
+            <div className="mt-4 flex justify-between items-center p-4 px-6 bg-white/5 rounded-xl border border-white/10 premium-glass-card">
+              <span className="text-sm font-bold text-slate-400 uppercase tracking-wider">
                 Overall Net Flow
               </span>
               <span
-                className={`text-lg font-bold ${data.fii_dii?.net_flow?.startsWith("-") ? "text-red-500" : "text-emerald-600"}`}
+                className={`text-lg font-bold ${data.fii_dii?.net_flow?.startsWith("-") ? "text-red-400" : "text-[#00E0A4] drop-shadow-[0_0_8px_rgba(0,224,164,0.3)]"}`}
               >
                 {data.fii_dii?.net_flow || "Loading..."}
               </span>
