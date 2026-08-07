@@ -16,6 +16,8 @@ const TradeModal = ({ isOpen, onClose, action, symbol, companyName, userWallet, 
   const _themeColor = isBuy ? 'emerald' : 'red';
   const themeHex = isBuy ? '#059669' : '#dc2626';
 
+  const [actualWallet, setActualWallet] = useState(parseFloat(userWallet) || 0);
+
   useEffect(() => {
     if (isOpen) {
       setQuantity(1);
@@ -25,6 +27,23 @@ const TradeModal = ({ isOpen, onClose, action, symbol, companyName, userWallet, 
       setError('');
       setSuccess('');
       setShowConfirm(false);
+      
+      const token = localStorage.getItem('access_token');
+      if (token) {
+        axios.get('http://127.0.0.1:8000/api/portfolio/summary/', {
+          headers: { Authorization: `Bearer ${token}` }
+        }).then(res => {
+          if (res.data && res.data.available_cash !== undefined) {
+            setActualWallet(res.data.available_cash);
+            // Optionally update local storage so other components might benefit
+            try {
+              const storedUser = JSON.parse(localStorage.getItem('user') || '{}');
+              storedUser.wallet = res.data.available_cash;
+              localStorage.setItem('user', JSON.stringify(storedUser));
+            } catch(e) {}
+          }
+        }).catch(err => console.error("Failed to fetch live wallet:", err));
+      }
     }
   }, [isOpen, livePrice]);
 
@@ -33,10 +52,9 @@ const TradeModal = ({ isOpen, onClose, action, symbol, companyName, userWallet, 
   const handleIncrement = () => setQuantity(q => q + 1);
   const handleDecrement = () => setQuantity(q => Math.max(1, q - 1));
 
-  const parsedWallet = parseFloat(userWallet) || 0;
   const currentPriceToUse = orderType === 'LIMIT' && limitPrice ? parseFloat(limitPrice) : (livePrice || 0);
   const requiredMargin = quantity * currentPriceToUse;
-  const isInsufficientFunds = isBuy && requiredMargin > parsedWallet;
+  const isInsufficientFunds = isBuy && requiredMargin > actualWallet;
 
   const handleInitiateTrade = (e) => {
     e.preventDefault();
@@ -242,7 +260,7 @@ const TradeModal = ({ isOpen, onClose, action, symbol, companyName, userWallet, 
               <div className="flex flex-col text-right">
                 <span className="text-slate-500 font-semibold">Available Funds</span>
                 <span className={`font-black text-lg ${isInsufficientFunds ? 'text-red-500' : 'text-slate-900'}`}>
-                  ₹{parsedWallet.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                  ₹{actualWallet.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                 </span>
               </div>
             </div>
