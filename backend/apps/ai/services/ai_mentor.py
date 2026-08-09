@@ -68,7 +68,7 @@ def generate_ai_response(user_message: str, user, messages_history=None) -> str:
     try:
         chat_completion = client.chat.completions.create(
             messages=messages,
-            model="qwen/qwen3.6-27b",
+            model="llama-3.3-70b-versatile",
             temperature=0.2
         )
         

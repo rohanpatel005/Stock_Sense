@@ -13,6 +13,7 @@ import NewsPage from './pages/NewsPage';
 import AIMentor from './pages/AIMentor';
 import Settings from './pages/Settings';
 import Layout from './components/Common/Layout';
+import ProtectedRoute from './components/Common/ProtectedRoute';
 import WatchlistPage from './pages/WatchlistPage';
 import { WatchlistProvider } from './context/WatchlistContext';
 
@@ -84,7 +85,11 @@ function App() {
         />
 
         {/* Authenticated Routes wrapped in Layout */}
-        <Route element={<Layout user={user} handleLogout={handleLogout} />}>
+        <Route element={
+          <ProtectedRoute>
+            <Layout user={user} handleLogout={handleLogout} />
+          </ProtectedRoute>
+        }>
           <Route path="/dashboard" element={<Dashboard user={user} handleLogout={handleLogout} />} />
           <Route path="/market" element={<Markets user={user} handleLogout={handleLogout} />} />
           <Route path="/market/:symbol" element={<Markets user={user} handleLogout={handleLogout} />} />

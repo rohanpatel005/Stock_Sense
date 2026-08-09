@@ -4,7 +4,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.pagination import PageNumberPagination
 from .services import OrderService
 from .serializers import OrderSerializer
-from market.services import TradeService
+from apps.market.services import TradeService
 
 class OrderPagination(PageNumberPagination):
     page_size = 20
