@@ -1,8 +1,8 @@
 import logging
 from django.db import transaction
 from django.utils import timezone
-from apps.users.models import Portfolio, Transaction
-from apps.ai.models import Conversation
+from users.models import Portfolio, Transaction
+from ai.models import Conversation
 
 logger = logging.getLogger(__name__)
 

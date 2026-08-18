@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from apps.users.models import Portfolio
+from users.models import Portfolio
 
 class PortfolioSerializer(serializers.ModelSerializer):
     # These fields might be dynamically updated by the service before serialization

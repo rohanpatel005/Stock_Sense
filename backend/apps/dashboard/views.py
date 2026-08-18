@@ -3,11 +3,11 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework import status
 from django.db.models import Sum
-from apps.users.models import Transaction, Portfolio
-from apps.market.views import is_nse_open_status, _cache_store, IST, dtime
+from users.models import Transaction, Portfolio
+from market.views import is_nse_open_status, _cache_store, IST, dtime
 
 
-from apps.market.views import market_overview, market_sectors, fetch_nse_api, fetch_nse_variations, get_cached_data, set_cached_data, sf
+from market.views import market_overview, market_sectors, fetch_nse_api, fetch_nse_variations, get_cached_data, set_cached_data, sf
 
 
 # Helper function to get real-time price from NSE API

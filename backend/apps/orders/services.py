@@ -1,5 +1,5 @@
 from django.db.models import Q
-from apps.users.models import Transaction
+from users.models import Transaction
 
 class OrderService:
     @staticmethod

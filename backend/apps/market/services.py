@@ -7,7 +7,7 @@ from datetime import datetime, time as dtime
 from decimal import Decimal
 from django.core.cache import cache
 from django.db import transaction
-from apps.users.models import Portfolio, Transaction
+from users.models import Portfolio, Transaction
 
 logger = logging.getLogger(__name__)
 

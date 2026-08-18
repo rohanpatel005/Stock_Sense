@@ -1,8 +1,8 @@
 import yfinance as yf
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from decimal import Decimal
-from apps.portfolio.services import PortfolioService
-from apps.users.models import Transaction, Portfolio
+from portfolio.services import PortfolioService
+from users.models import Transaction, Portfolio
 
 class PortfolioContextService:
     @staticmethod

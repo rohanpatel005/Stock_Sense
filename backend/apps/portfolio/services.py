@@ -1,7 +1,7 @@
 import logging
 import yfinance as yf
 from decimal import Decimal
-from apps.users.models import Portfolio
+from users.models import Portfolio
 from django.db.models import Sum
 
 logger = logging.getLogger(__name__)

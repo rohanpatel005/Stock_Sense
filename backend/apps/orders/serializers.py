@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from apps.users.models import Transaction
+from users.models import Transaction
 
 class OrderSerializer(serializers.ModelSerializer):
     class Meta:
